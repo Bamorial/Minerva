@@ -17,6 +17,13 @@ pub fn append_moved_event(
     append_event(layout, task, TaskEventRecord::moved(task, from_parent_id))
 }
 
+pub fn append_instructions_updated_event(
+    layout: &MinervaLayout,
+    task: &Task,
+) -> Result<EventId, MinervaError> {
+    append_event(layout, task, TaskEventRecord::instructions_updated(task))
+}
+
 fn append_event(
     layout: &MinervaLayout,
     task: &Task,

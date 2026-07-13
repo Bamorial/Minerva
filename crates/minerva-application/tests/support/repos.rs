@@ -98,7 +98,23 @@ impl TaskRepository for FakeTaskRepo {
             .cloned()
             .ok_or_else(|| MinervaError::TaskNotFound { task_ref: task_id.to_string() })
     }
+    fn read_task_instructions(
+        &self,
+        _: &Path,
+        _: TaskId,
+    ) -> Result<String, MinervaError> {
+        unreachable!()
+    }
     fn update_task(&self, _: &Path, _: &Task) -> Result<TaskWriteResult, MinervaError> {
+        unreachable!()
+    }
+    fn update_task_instructions(
+        &self,
+        _: &Path,
+        _: TaskId,
+        _: TaskVersion,
+        _: &str,
+    ) -> Result<TaskWriteResult, MinervaError> {
         unreachable!()
     }
     fn list_tasks(&self, _: &Path) -> Result<Vec<Task>, MinervaError> {
@@ -164,6 +180,13 @@ impl TaskRepository for FakeTaskRepo {
         Ok(Vec::new())
     }
     fn resolve_task(&self, _: &Path, _: &str) -> Result<Task, MinervaError> {
+        unreachable!()
+    }
+    fn prepare_task_instructions(
+        &self,
+        _: &Path,
+        _: TaskId,
+    ) -> Result<PathBuf, MinervaError> {
         unreachable!()
     }
     fn search_tasks(&self, _: &Path, _: &str) -> Result<Vec<Task>, MinervaError> {

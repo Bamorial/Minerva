@@ -39,4 +39,16 @@ impl TaskEventRecord {
             recorded_at: format_rfc3339(task.updated_at).to_string(),
         }
     }
+
+    pub fn instructions_updated(task: &Task) -> Self {
+        Self {
+            id: EventId::new(),
+            kind: TaskEventKind::TaskInstructionsUpdated,
+            task_id: task.id,
+            version: task.version,
+            from_parent_id: None,
+            to_parent_id: None,
+            recorded_at: format_rfc3339(task.updated_at).to_string(),
+        }
+    }
 }

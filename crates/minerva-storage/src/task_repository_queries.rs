@@ -1,7 +1,8 @@
 use crate::{
     MinervaLayout, list_relationships as load_relationships,
     list_relationships_from as load_relationships_from,
-    list_relationships_to as load_relationships_to, task_repository_support,
+    list_relationships_to as load_relationships_to,
+    read_task_instructions as load_task_instructions, task_repository_support,
 };
 use minerva_domain::{MinervaError, Relationship, Task, TaskId, TaskIdAllocator};
 use std::path::Path;
@@ -13,6 +14,13 @@ pub fn next_task_id(root: &Path) -> Result<TaskId, MinervaError> {
 
 pub fn read_task(root: &Path, task_id: TaskId) -> Result<Task, MinervaError> {
     task_repository_support::read_existing(&MinervaLayout::new(root), task_id)
+}
+
+pub fn read_task_instructions(
+    root: &Path,
+    task_id: TaskId,
+) -> Result<String, MinervaError> {
+    load_task_instructions(&MinervaLayout::new(root), task_id)
 }
 
 pub fn list_tasks(root: &Path) -> Result<Vec<Task>, MinervaError> {

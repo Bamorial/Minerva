@@ -2,7 +2,7 @@ use minerva_application::{TaskCreateRecord, TaskRepository, TaskWriteResult};
 use minerva_domain::{
     MinervaError, Relationship, RelationshipId, Task, TaskId, TaskVersion,
 };
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct FilesystemTaskRepository;
@@ -21,12 +21,30 @@ impl TaskRepository for FilesystemTaskRepository {
     fn read_task(&self, root: &Path, task_id: TaskId) -> Result<Task, MinervaError> {
         crate::task_repository_queries::read_task(root, task_id)
     }
+    fn read_task_instructions(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<String, MinervaError> {
+        crate::task_repository_queries::read_task_instructions(root, task_id)
+    }
     fn update_task(
         &self,
         root: &Path,
         task: &Task,
     ) -> Result<TaskWriteResult, MinervaError> {
         crate::task_repository_mutations::update_task(root, task)
+    }
+    fn update_task_instructions(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+        version: TaskVersion,
+        contents: &str,
+    ) -> Result<TaskWriteResult, MinervaError> {
+        crate::task_repository_mutations::update_task_instructions(
+            root, task_id, version, contents,
+        )
     }
     fn list_tasks(&self, root: &Path) -> Result<Vec<Task>, MinervaError> {
         crate::task_repository_queries::list_tasks(root)
@@ -89,6 +107,13 @@ impl TaskRepository for FilesystemTaskRepository {
     }
     fn resolve_task(&self, root: &Path, task_ref: &str) -> Result<Task, MinervaError> {
         crate::task_repository_queries::resolve_task(root, task_ref)
+    }
+    fn prepare_task_instructions(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<PathBuf, MinervaError> {
+        crate::task_repository_mutations::prepare_task_instructions(root, task_id)
     }
     fn search_tasks(
         &self,

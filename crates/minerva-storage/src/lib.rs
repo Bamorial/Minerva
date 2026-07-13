@@ -55,7 +55,9 @@ pub use relationship_catalog::{
 };
 pub use relationship_files::{read_relationships, write_relationships};
 pub use relationship_mutations::{create_relationship, remove_relationship};
-pub use task_events::{append_created_event, append_moved_event};
+pub use task_events::{
+    append_created_event, append_instructions_updated_event, append_moved_event,
+};
 pub use task_files::{
     read_task, read_task_declaration, read_task_instructions, read_task_notes,
     write_task, write_task_declaration, write_task_instructions, write_task_notes,

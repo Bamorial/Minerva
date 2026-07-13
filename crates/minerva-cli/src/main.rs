@@ -1,5 +1,7 @@
-use minerva_application::{ProjectInstructionService, ProjectRepository, render_cli};
-use minerva_storage::FilesystemProjectRepository;
+use minerva_application::{
+    ProjectInstructionService, ProjectRepository, TaskInstructionService, render_cli,
+};
+use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::{env, process::ExitCode};
 
 fn main() -> ExitCode {
@@ -25,16 +27,28 @@ fn main() -> ExitCode {
 
 fn run(args: Vec<String>) -> Result<String, Failure> {
     let root = env::current_dir().map_err(|err| Failure::Usage(err.to_string()))?;
-    let repo = FilesystemProjectRepository;
+    let project_repo = FilesystemProjectRepository;
+    let task_repo = FilesystemTaskRepository;
     match parse_command(args)? {
         Command::Init { force } => {
-            let project =
-                repo.initialize_project(&root, force).map_err(Failure::Domain)?;
+            let project = project_repo
+                .initialize_project(&root, force)
+                .map_err(Failure::Domain)?;
             Ok(format!("initialized Minerva in {}", project.name))
         }
-        Command::Instruction => {
-            let path = ProjectInstructionService::edit(&repo, &root)
+        Command::Instruction { task_ref: None } => {
+            let path = ProjectInstructionService::edit(&project_repo, &root)
                 .map_err(Failure::Domain)?;
+            Ok(format!("opened {}", path.display()))
+        }
+        Command::Instruction { task_ref: Some(task_ref) } => {
+            let path = TaskInstructionService::edit(
+                &project_repo,
+                &task_repo,
+                &root,
+                &task_ref,
+            )
+            .map_err(Failure::Domain)?;
             Ok(format!("opened {}", path.display()))
         }
     }
@@ -46,16 +60,21 @@ fn parse_command(args: Vec<String>) -> Result<Command, Failure> {
         [command, flag] if command == "init" && flag == "--force" => {
             Ok(Command::Init { force: true })
         }
-        [command] if command == "instruction" => Ok(Command::Instruction),
+        [command] if command == "instruction" => {
+            Ok(Command::Instruction { task_ref: None })
+        }
+        [command, task_ref] if command == "instruction" => {
+            Ok(Command::Instruction { task_ref: Some(task_ref.clone()) })
+        }
         _ => Err(Failure::Usage(
-            "usage: minerva-cli init [--force]\n       minerva-cli instruction".into(),
+            "usage: minerva-cli init [--force]\n       minerva-cli instruction [<task>]".into(),
         )),
     }
 }
 
 enum Command {
     Init { force: bool },
-    Instruction,
+    Instruction { task_ref: Option<String> },
 }
 
 enum Failure {

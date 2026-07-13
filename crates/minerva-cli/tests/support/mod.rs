@@ -1,7 +1,13 @@
+use minerva_application::{TaskCreateRecord, TaskRepository};
+use minerva_domain::{
+    ArchiveState, DeclarationActor, DeclarationMetadata, StatusKey, Task,
+    TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
+};
+use minerva_storage::FilesystemTaskRepository;
 use std::{
     fs,
     os::unix::fs::PermissionsExt,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Command, Output},
     sync::atomic::{AtomicU64, Ordering},
     time::{SystemTime, UNIX_EPOCH},
@@ -30,6 +36,55 @@ pub fn write_editor(root: &PathBuf, name: &str, body: &str) -> PathBuf {
     perms.set_mode(0o755);
     fs::set_permissions(&path, perms).unwrap();
     path
+}
+
+#[allow(dead_code)]
+pub fn write_config(root: &Path, editor: &Path) {
+    fs::write(root.join(".minerva/config.yaml"), format!(
+        "schema_version: 1\neditor: {}\ndefault_priority: Medium\ndefault_tags: []\n",
+        editor.display()
+    )).unwrap();
+}
+
+#[allow(dead_code)]
+pub fn create_task(root: &Path, task: Task) {
+    FilesystemTaskRepository
+        .create_task(
+            root,
+            &TaskCreateRecord {
+                task,
+                instructions: "# Feature\n".into(),
+                declaration: "# Declaration\n".into(),
+            },
+        )
+        .unwrap();
+}
+
+#[allow(dead_code)]
+pub fn task(sequence: u32, title: &str) -> Task {
+    Task::new(Task {
+        schema_version: 1,
+        id: TaskIdAllocator::new(sequence - 1).next_id(),
+        title: title.into(),
+        slug: None,
+        task_type: TaskTypeKey::new("feature").unwrap(),
+        status: StatusKey::new("backlog").unwrap(),
+        parent_id: None,
+        priority: TaskPriority::Medium,
+        tags: Default::default(),
+        created_at: UNIX_EPOCH,
+        updated_at: UNIX_EPOCH,
+        completed_at: None,
+        version: TaskVersion::initial(),
+        declaration: DeclarationMetadata {
+            version: 1,
+            updated_at: UNIX_EPOCH,
+            updated_by: DeclarationActor::Human,
+            commit_hash: None,
+        },
+        archive_state: ArchiveState::Active,
+    })
+    .unwrap()
 }
 
 fn binary() -> PathBuf {

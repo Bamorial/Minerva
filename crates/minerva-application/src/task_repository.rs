@@ -19,10 +19,22 @@ pub trait TaskRepository {
         record: &TaskCreateRecord,
     ) -> Result<TaskWriteResult, MinervaError>;
     fn read_task(&self, root: &Path, task_id: TaskId) -> Result<Task, MinervaError>;
+    fn read_task_instructions(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<String, MinervaError>;
     fn update_task(
         &self,
         root: &Path,
         task: &Task,
+    ) -> Result<TaskWriteResult, MinervaError>;
+    fn update_task_instructions(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+        version: TaskVersion,
+        contents: &str,
     ) -> Result<TaskWriteResult, MinervaError>;
     fn list_tasks(&self, root: &Path) -> Result<Vec<Task>, MinervaError>;
     fn archive_task(
@@ -63,6 +75,11 @@ pub trait TaskRepository {
         task_id: TaskId,
     ) -> Result<Vec<Relationship>, MinervaError>;
     fn resolve_task(&self, root: &Path, task_ref: &str) -> Result<Task, MinervaError>;
+    fn prepare_task_instructions(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<std::path::PathBuf, MinervaError>;
     fn search_tasks(&self, root: &Path, query: &str)
     -> Result<Vec<Task>, MinervaError>;
 }
