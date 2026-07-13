@@ -94,13 +94,21 @@ impl LogArgs {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum LogKindArg {
+    #[value(name = "task-created", alias = "created")]
     Created,
+    #[value(name = "task-declaration-updated", alias = "declaration-updated")]
     DeclarationUpdated,
+    #[value(name = "task-instructions-updated", alias = "instructions-updated")]
     InstructionsUpdated,
+    #[value(name = "task-parent-changed", alias = "parent-changed")]
     ParentChanged,
+    #[value(name = "task-status-changed", alias = "status-changed")]
     StatusChanged,
+    #[value(name = "task-relationship-added", alias = "relationship-added")]
     RelationshipAdded,
+    #[value(name = "task-relationship-removed", alias = "relationship-removed")]
     RelationshipRemoved,
+    #[value(name = "task-archived", alias = "archived")]
     Archived,
 }
 
