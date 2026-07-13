@@ -1,3 +1,15 @@
+mod context_graph_selection;
+mod context_graph_selector;
+mod context_inclusion_reason;
+mod context_selection_item;
+
+pub use context_graph_selection::ContextGraphSelection;
+pub use context_graph_selector::ContextGraphSelector;
+pub use context_inclusion_reason::{
+    ContextInclusionReason, ContextRelationshipDirection,
+};
+pub use context_selection_item::ContextSelectionItem;
+
 use minerva_application::{BootstrapService, render_task_facts};
 use minerva_domain::Task;
 
