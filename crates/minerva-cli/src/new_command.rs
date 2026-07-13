@@ -3,7 +3,7 @@ use minerva_application::{
     CreateTaskRequest, EditorLauncher, ProjectRepository, TaskCreationService,
     TaskRepository,
 };
-use minerva_domain::{MinervaError, Task};
+use minerva_domain::{DeclarationActor, MinervaError, Task};
 use serde_json::json;
 use std::path::Path;
 
@@ -75,10 +75,28 @@ fn edit_new_task(
     let before = task_repo.read_task_instructions(root, task.id)?;
     EditorLauncher::edit_path(path, Some(config))?;
     let after = task_repo.read_task_instructions(root, task.id)?;
-    (after != before)
-        .then(|| {
-            task_repo.update_task_instructions(root, task.id, task.version, &after)
-        })
-        .transpose()?;
-    Ok(after != before)
+    if after == before {
+        return Ok(false);
+    }
+    task_repo.update_task_instructions(root, task.id, task.version, &after)?;
+    refresh_new_task_declaration(task_repo, root, task.id)?;
+    Ok(true)
+}
+
+fn refresh_new_task_declaration(
+    task_repo: &impl TaskRepository,
+    root: &Path,
+    task_id: minerva_domain::TaskId,
+) -> Result<(), MinervaError> {
+    let current = task_repo.read_task(root, task_id)?;
+    let declaration = task_repo.read_task_declaration(root, task_id)?;
+    task_repo.update_task_declaration(
+        root,
+        task_id,
+        current.version,
+        DeclarationActor::System,
+        None,
+        &declaration,
+    )?;
+    Ok(())
 }

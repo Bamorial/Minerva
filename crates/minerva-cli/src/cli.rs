@@ -31,6 +31,7 @@ pub enum Command {
     List(ListArgs),
     Tree(TreeArgs),
     Show(ShowArgs),
+    Context(ContextArgs),
     Log(LogArgs),
     Instruction {
         task_ref: Option<String>,
@@ -76,6 +77,25 @@ pub struct ShowArgs {
     pub instructions: bool,
     #[arg(long)]
     pub declaration: bool,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct ContextArgs {
+    pub task_ref: String,
+    #[arg(long, value_name = "PATH")]
+    pub output: Option<PathBuf>,
+    #[arg(long, value_name = "FORMAT", default_value = "markdown")]
+    pub format: ContextFormatArg,
+    #[arg(long, value_name = "TOKENS")]
+    pub budget: Option<usize>,
+    #[arg(long)]
+    pub explain: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum ContextFormatArg {
+    Markdown,
+    Json,
 }
 
 #[derive(Debug, Clone, Args)]
@@ -168,6 +188,7 @@ impl Command {
             Self::List(_) => "list",
             Self::Tree(_) => "tree",
             Self::Show(_) => "show",
+            Self::Context(_) => "context",
             Self::Log(_) => "log",
             Self::Instruction { .. } => "instruction",
             Self::Declaration { .. } => "declaration",

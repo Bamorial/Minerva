@@ -1,4 +1,6 @@
 mod cli;
+mod context_command;
+mod context_output;
 mod exit_code;
 mod hierarchy_command;
 mod hierarchy_output;

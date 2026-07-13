@@ -18,7 +18,25 @@ fn new_command_prompts_for_type_and_opens_instructions() {
     assert!(
         fs::read_to_string(dir.join("instructions.md")).unwrap().contains("edited")
     );
-    assert!(fs::read_to_string(dir.join("task.yaml")).unwrap().contains("version: 2"));
+    assert!(fs::read_to_string(dir.join("task.yaml")).unwrap().contains("version: 3"));
+}
+
+#[test]
+fn new_command_keeps_fresh_tasks_context_compilable_after_initial_edit() {
+    let root = temp_dir("cli-new-context-fresh");
+    assert!(run_with_input(&root, &["init"], "").status.success());
+    write_config(
+        &root,
+        &write_editor(&root, "fake-editor.sh", "printf '\\nedited\\n' >> \"$1\"\n"),
+    );
+    let output = run_with_input(&root, &["new", "Draft context"], "4\n");
+    assert!(output.status.success(), "{output:?}");
+    let context = run_with_input(&root, &["context", "TSK-000001"], "");
+    assert!(context.status.success(), "{context:?}");
+    assert!(
+        String::from_utf8_lossy(&context.stdout)
+            .contains("## Context Manifest Summary")
+    );
 }
 
 #[test]

@@ -278,6 +278,7 @@ dependencies = [
  "clap",
  "humantime",
  "minerva-application",
+ "minerva-context",
  "minerva-domain",
  "minerva-storage",
  "serde_json",
