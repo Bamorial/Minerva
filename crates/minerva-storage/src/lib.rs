@@ -20,6 +20,9 @@ mod relationship_mutations;
 mod task_catalog;
 mod task_document;
 mod task_document_parts;
+mod task_event_actor;
+mod task_event_data;
+mod task_event_reader;
 mod task_event_record;
 mod task_events;
 mod task_files;
@@ -56,9 +59,12 @@ pub use relationship_catalog::{
 };
 pub use relationship_files::{read_relationships, write_relationships};
 pub use relationship_mutations::{create_relationship, remove_relationship};
+pub use task_event_reader::read_task_events;
 pub use task_events::{
-    append_created_event, append_declaration_updated_event,
-    append_instructions_updated_event, append_moved_event, append_status_updated_event,
+    append_archived_event, append_created_event, append_declaration_updated_event,
+    append_instructions_updated_event, append_parent_changed_event,
+    append_relationship_added_event, append_relationship_removed_event,
+    append_status_changed_event,
 };
 pub use task_files::{
     read_task, read_task_declaration, read_task_instructions, read_task_notes,

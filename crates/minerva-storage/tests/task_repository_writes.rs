@@ -47,9 +47,15 @@ fn repository_creates_updates_and_archives_tasks() {
     let archived = repo.archive_task(&root, updated.id, updated.version).unwrap();
     assert_eq!(archived.previous_version, Some(updated.version));
     assert_eq!(archived.current_version, updated.version.next());
+    assert!(archived.event_id.is_some());
     assert_eq!(
         repo.read_task(&root, updated.id).unwrap().archive_state,
         ArchiveState::Archived
+    );
+    assert!(
+        fs::read_to_string(task_dir.join("events.jsonl"))
+            .unwrap()
+            .contains("task-archived")
     );
 }
 

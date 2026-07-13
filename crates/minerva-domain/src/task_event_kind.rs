@@ -6,6 +6,9 @@ pub enum TaskEventKind {
     TaskCreated,
     TaskDeclarationUpdated,
     TaskInstructionsUpdated,
-    TaskMoved,
-    TaskStatusUpdated,
+    TaskParentChanged,
+    TaskStatusChanged,
+    TaskRelationshipAdded,
+    TaskRelationshipRemoved,
+    TaskArchived,
 }

@@ -1,6 +1,7 @@
 use crate::{
-    MinervaLayout, TaskLock, append_created_event, append_declaration_updated_event,
-    append_instructions_updated_event, append_moved_event, append_status_updated_event,
+    MinervaLayout, TaskLock, append_archived_event, append_created_event,
+    append_declaration_updated_event, append_instructions_updated_event,
+    append_parent_changed_event, append_status_changed_event,
     create_relationship as persist_relationship,
     remove_relationship as delete_relationship, task_hierarchy,
     task_repository_support, write_task as persist_task, write_task_declaration,
@@ -59,7 +60,7 @@ pub fn transition_task(
     task.validate_successor(&previous)?;
     task_hierarchy::validate_write(&layout, task)?;
     persist_task(&layout, task)?;
-    let event_id = append_status_updated_event(
+    let event_id = append_status_changed_event(
         &layout,
         task,
         previous.status,
@@ -160,14 +161,14 @@ pub fn update_task_declaration(
         declaration: DeclarationMetadata {
             version: previous.declaration.version + 1,
             updated_at,
-            updated_by: actor,
+            updated_by: actor.clone(),
             commit_hash,
         },
         ..previous.clone()
     };
     write_task_declaration(&layout, task_id, contents)?;
     persist_task(&layout, &updated)?;
-    let event_id = append_declaration_updated_event(&layout, &updated)?;
+    let event_id = append_declaration_updated_event(&layout, &updated, actor.clone())?;
     Ok(TaskWriteResult {
         previous_version: Some(previous.version),
         current_version: updated.version,
@@ -186,10 +187,11 @@ pub fn archive_task(
     let archived =
         task_repository_support::archive(previous.clone(), &layout, version)?;
     persist_task(&layout, &archived)?;
+    let event_id = append_archived_event(&layout, &archived, previous.archive_state)?;
     Ok(TaskWriteResult {
         previous_version: Some(previous.version),
         current_version: archived.version,
-        event_id: None,
+        event_id: Some(event_id),
     })
 }
 
@@ -220,7 +222,7 @@ pub fn move_task(
     };
     task_hierarchy::validate_write(&layout, &moved)?;
     persist_task(&layout, &moved)?;
-    let event_id = append_moved_event(&layout, &moved, previous.parent_id)?;
+    let event_id = append_parent_changed_event(&layout, &moved, previous.parent_id)?;
     let result = TaskWriteResult {
         previous_version: Some(previous.version),
         current_version: moved.version,

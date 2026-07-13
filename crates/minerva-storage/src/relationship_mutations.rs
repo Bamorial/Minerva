@@ -1,5 +1,7 @@
 use crate::{
-    MinervaLayout, ProjectLock, read_relationships, task_catalog, write_relationships,
+    MinervaLayout, ProjectLock, append_relationship_added_event,
+    append_relationship_removed_event, read_relationships, task_catalog,
+    write_relationships,
 };
 use minerva_domain::{
     MinervaError, Relationship, RelationshipId, validate_relationships,
@@ -17,6 +19,7 @@ pub fn create_relationship(
     graph.push(relationship.clone());
     validate_relationships(&tasks, &graph)?;
     write_relationships(layout, relationship.source_task, &existing)?;
+    append_relationship_added_event(layout, relationship)?;
     Ok(relationship.clone())
 }
 
@@ -32,6 +35,7 @@ pub fn remove_relationship(
         {
             let removed = relationships.remove(index);
             write_relationships(layout, task.id, &relationships)?;
+            append_relationship_removed_event(layout, &removed)?;
             return Ok(removed);
         }
     }

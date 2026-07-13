@@ -47,4 +47,11 @@ fn repository_updates_declaration_metadata_and_records_events() {
         .unwrap()
         .contains("task-declaration-updated")
     );
+    assert!(
+        std::fs::read_to_string(
+            root.join(".minerva/tasks").join(task.id.to_string()).join("events.jsonl")
+        )
+        .unwrap()
+        .contains("\"updated_by\":\"Human\"")
+    );
 }

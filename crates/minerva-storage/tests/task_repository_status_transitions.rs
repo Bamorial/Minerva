@@ -32,7 +32,7 @@ fn transition_task_records_status_event_and_override_flag() {
     assert_eq!(result.previous_version, Some(task.version));
     let events =
         fs::read_to_string(MinervaLayout::new(&root).events_file(task.id)).unwrap();
-    assert!(events.contains("\"kind\":\"task-status-updated\""));
+    assert!(events.contains("\"kind\":\"task-status-changed\""));
     assert!(events.contains("\"from_status\":\"review\""));
     assert!(events.contains("\"to_status\":\"completed\""));
     assert!(events.contains("\"completion_override\":true"));

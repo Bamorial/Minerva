@@ -52,6 +52,16 @@ fn repository_manages_relationships_and_queries_by_source_and_target() {
     let removed = repo.remove_relationship(&root, created[1].id).unwrap();
     assert_eq!(removed.relationship_type, RelationshipType::Blocks);
     assert_eq!(repo.list_relationships(&root).unwrap().len(), created.len() - 1);
+    let events = std::fs::read_to_string(
+        root.join(".minerva/tasks").join(left.id.to_string()).join("events.jsonl"),
+    )
+    .unwrap();
+    assert!(events.contains("\"kind\":\"task-relationship-added\""));
+    let right_events = std::fs::read_to_string(
+        root.join(".minerva/tasks").join(right.id.to_string()).join("events.jsonl"),
+    )
+    .unwrap();
+    assert!(right_events.contains("\"kind\":\"task-relationship-removed\""));
 }
 
 #[test]

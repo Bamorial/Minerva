@@ -1,4 +1,4 @@
-use crate::{MinervaLayout, task_repository_support};
+use crate::{MinervaLayout, read_task_events, task_repository_support};
 use humantime::parse_rfc3339;
 use minerva_domain::{DeclarationFreshnessProbe, MinervaError, TaskEventKind, TaskId};
 use std::{fs, path::Path, time::SystemTime};
@@ -26,20 +26,9 @@ fn instructions_updated_at(
     task_id: TaskId,
 ) -> Result<Option<SystemTime>, MinervaError> {
     let path = layout.events_file(task_id);
-    if !path.exists() {
-        return Ok(None);
-    }
-    fs::read_to_string(&path)
-        .map_err(|err| schema(&path, err))?
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .map(|line| {
-            serde_json::from_str::<crate::task_event_record::TaskEventRecord>(line)
-                .map_err(|err| schema(&path, err))
-        })
-        .collect::<Result<Vec<_>, _>>()?
+    read_task_events(layout, task_id)?
         .into_iter()
-        .filter(|event| event.kind == TaskEventKind::TaskInstructionsUpdated)
+        .filter(|event| matches!(event.kind, TaskEventKind::TaskInstructionsUpdated))
         .map(|event| {
             parse_rfc3339(&event.recorded_at).map_err(|err| schema(&path, err))
         })

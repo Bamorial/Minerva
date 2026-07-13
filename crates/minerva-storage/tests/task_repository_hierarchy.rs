@@ -23,7 +23,7 @@ fn repository_moves_tasks_between_valid_parents() {
         root.join(".minerva/tasks").join(child.id.to_string()).join("events.jsonl"),
     )
     .unwrap();
-    assert!(events.contains("\"kind\":\"task-moved\""));
+    assert!(events.contains("\"kind\":\"task-parent-changed\""));
     assert!(events.contains(&format!("\"from_parent_id\":\"{}\"", left.id)));
     assert!(events.contains(&format!("\"to_parent_id\":\"{}\"", right.id)));
 }
