@@ -1,4 +1,7 @@
+mod archive_state;
 mod context_policy;
+mod declaration_actor;
+mod declaration_metadata;
 mod error;
 mod error_code;
 mod error_detail;
@@ -10,10 +13,18 @@ mod project_id;
 mod project_status;
 mod project_task_type;
 mod relationship_id;
+mod task;
 mod task_id;
 mod task_identity;
+mod task_priority;
+mod task_slug;
+mod task_tag;
+mod task_version;
 
+pub use archive_state::ArchiveState;
 pub use context_policy::ContextPolicy;
+pub use declaration_actor::DeclarationActor;
+pub use declaration_metadata::DeclarationMetadata;
 pub use error::MinervaError;
 pub use error_code::ErrorCode;
 pub use error_detail::{ErrorDetail, ErrorValue};
@@ -24,8 +35,13 @@ pub use project_id::ProjectId;
 pub use project_status::{StatusDefinition, StatusKey, StatusTransition};
 pub use project_task_type::TaskTypeKey;
 pub use relationship_id::RelationshipId;
+pub use task::Task;
 pub use task_id::{TaskId, TaskIdAllocator};
 pub use task_identity::TaskIdentity;
+pub use task_priority::TaskPriority;
+pub use task_slug::TaskSlug;
+pub use task_tag::TaskTag;
+pub use task_version::TaskVersion;
 
 pub const WORKSPACE_CRATES: [&str; 7] = [
     "minerva-domain",

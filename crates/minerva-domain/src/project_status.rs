@@ -10,6 +10,11 @@ impl StatusKey {
         validate_key("status", &value)?;
         Ok(Self(value))
     }
+
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 
 impl std::fmt::Display for StatusKey {
