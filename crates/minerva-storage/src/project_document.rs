@@ -1,6 +1,5 @@
-use crate::project_document_parts::{
-    ContextPolicyDocument, StatusDocument, TransitionDocument,
-};
+use crate::context_policy_document::ContextPolicyDocument;
+use crate::project_document_parts::{StatusDocument, TransitionDocument};
 use humantime::{format_rfc3339, parse_rfc3339};
 use minerva_domain::{MinervaError, Project, ProjectId};
 use serde::{Deserialize, Serialize};

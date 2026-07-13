@@ -1,43 +1,55 @@
-use crate::MinervaError;
+use crate::{ContextDetail, ContextRelationPolicy, MinervaError};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ContextPolicy {
-    pub max_items: u16,
-    pub max_dependency_hops: u8,
-    pub stale_after_hours: u16,
+    pub project_instructions: Option<ContextDetail>,
+    pub target_task_instructions: Option<ContextDetail>,
+    pub target_declaration: Option<ContextDetail>,
+    pub ancestors: Option<ContextRelationPolicy>,
+    pub dependencies: Option<ContextRelationPolicy>,
+    pub related_tasks: Option<ContextRelationPolicy>,
+    pub children: Option<ContextRelationPolicy>,
+    pub siblings: Option<ContextRelationPolicy>,
+    pub include_archived: bool,
+    pub include_completed: bool,
 }
 
 impl ContextPolicy {
-    pub fn new(
-        max_items: u16,
-        max_dependency_hops: u8,
-        stale_after_hours: u16,
-    ) -> Result<Self, MinervaError> {
-        let policy = Self { max_items, max_dependency_hops, stale_after_hours };
+    pub fn new(policy: Self) -> Result<Self, MinervaError> {
         policy.validate()?;
         Ok(policy)
     }
 
+    #[must_use]
+    pub fn strict() -> Self {
+        Self {
+            project_instructions: Some(ContextDetail::Full),
+            target_task_instructions: Some(ContextDetail::Full),
+            target_declaration: Some(ContextDetail::Full),
+            ancestors: Some(ContextRelationPolicy {
+                detail: ContextDetail::Summary,
+                depth: 1,
+            }),
+            dependencies: Some(ContextRelationPolicy {
+                detail: ContextDetail::Summary,
+                depth: 1,
+            }),
+            related_tasks: None,
+            children: None,
+            siblings: None,
+            include_archived: false,
+            include_completed: false,
+        }
+    }
+
     pub fn validate(&self) -> Result<(), MinervaError> {
-        validate_non_zero("context_policy.max_items", &self.max_items)?;
-        validate_non_zero(
-            "context_policy.max_dependency_hops",
-            &self.max_dependency_hops,
-        )?;
-        validate_non_zero("context_policy.stale_after_hours", &self.stale_after_hours)
+        crate::context_policy_validation::validate(self)
     }
 }
 
-fn validate_non_zero<T>(key: &str, value: &T) -> Result<(), MinervaError>
-where
-    T: Default + PartialEq,
-{
-    if value == &T::default() {
-        return Err(MinervaError::InvalidConfiguration {
-            key: key.into(),
-            reason: "must be greater than zero".into(),
-        });
+impl Default for ContextPolicy {
+    fn default() -> Self {
+        Self::strict()
     }
-    Ok(())
 }

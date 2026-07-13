@@ -1,6 +1,4 @@
-use minerva_domain::{
-    ContextPolicy, MinervaError, StatusDefinition, StatusKey, StatusTransition,
-};
+use minerva_domain::{MinervaError, StatusDefinition, StatusKey, StatusTransition};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -15,14 +13,6 @@ pub struct StatusDocument {
 pub struct TransitionDocument {
     pub from: String,
     pub to: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct ContextPolicyDocument {
-    pub max_items: u16,
-    pub max_dependency_hops: u8,
-    pub stale_after_hours: u16,
 }
 
 impl TryFrom<StatusDocument> for StatusDefinition {
@@ -52,28 +42,6 @@ impl From<&StatusTransition> for TransitionDocument {
         Self {
             from: transition.from.as_str().into(),
             to: transition.to.as_str().into(),
-        }
-    }
-}
-
-impl TryFrom<ContextPolicyDocument> for ContextPolicy {
-    type Error = MinervaError;
-
-    fn try_from(doc: ContextPolicyDocument) -> Result<Self, Self::Error> {
-        ContextPolicy::new(
-            doc.max_items,
-            doc.max_dependency_hops,
-            doc.stale_after_hours,
-        )
-    }
-}
-
-impl From<&ContextPolicy> for ContextPolicyDocument {
-    fn from(policy: &ContextPolicy) -> Self {
-        Self {
-            max_items: policy.max_items,
-            max_dependency_hops: policy.max_dependency_hops,
-            stale_after_hours: policy.stale_after_hours,
         }
     }
 }

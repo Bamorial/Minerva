@@ -21,6 +21,14 @@ transitions:
   - from: in-progress
     to: completed
 context_policy:
-  max_items: 12
-  max_dependency_hops: 2
-  stale_after_hours: 24
+  project_instructions: full
+  target_task_instructions: full
+  target_declaration: full
+  ancestors:
+    detail: summary
+    depth: 1
+  dependencies:
+    detail: summary
+    depth: 1
+  include_archived: false
+  include_completed: false

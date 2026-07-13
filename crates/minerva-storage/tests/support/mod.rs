@@ -82,7 +82,7 @@ pub fn sample_project() -> Project {
             StatusKey::new("backlog").unwrap(),
             StatusKey::new("done").unwrap(),
         )],
-        context_policy: ContextPolicy::new(12, 2, 24).unwrap(),
+        context_policy: ContextPolicy::strict(),
     })
     .unwrap()
 }

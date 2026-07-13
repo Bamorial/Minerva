@@ -58,7 +58,7 @@ fn project() -> minerva_domain::Project {
             StatusKey::new("review").unwrap(),
             StatusKey::new("completed").unwrap(),
         )],
-        context_policy: ContextPolicy::new(12, 2, 24).unwrap(),
+        context_policy: ContextPolicy::strict(),
     })
     .unwrap()
 }

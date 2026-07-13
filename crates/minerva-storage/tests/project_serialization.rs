@@ -21,7 +21,7 @@ fn project_fixture_round_trips_through_yaml_storage() {
 fn project_reader_rejects_unknown_fields() {
     let root = temp_repo("project-unknown");
     let layout = MinervaLayout::new(&root);
-    fs::write(layout.project_file(), "schema_version: 1\nid: PRJ-01ARZ3NDEKTSV4RRFFQ69G5FAV\nname: Minerva\ncreated_at: 2026-07-13T09:00:00Z\ndefault_task_type: feature\ndefault_status: backlog\nstatuses: []\ntransitions: []\ncontext_policy: { max_items: 12, max_dependency_hops: 2, stale_after_hours: 24 }\nextra: nope\n").unwrap();
+    fs::write(layout.project_file(), "schema_version: 1\nid: PRJ-01ARZ3NDEKTSV4RRFFQ69G5FAV\nname: Minerva\ncreated_at: 2026-07-13T09:00:00Z\ndefault_task_type: feature\ndefault_status: backlog\nstatuses: []\ntransitions: []\ncontext_policy:\n  project_instructions: full\n  target_task_instructions: full\n  target_declaration: full\n  ancestors:\n    detail: summary\n    depth: 1\n  dependencies:\n    detail: summary\n    depth: 1\n  include_archived: false\n  include_completed: false\nextra: nope\n").unwrap();
     let error = read_project(&layout).unwrap_err();
     assert!(
         matches!(error, MinervaError::SchemaError { reason, .. } if reason.contains("unknown field `extra`"))

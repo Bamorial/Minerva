@@ -1,5 +1,8 @@
 mod archive_state;
+mod context_detail;
 mod context_policy;
+mod context_policy_validation;
+mod context_relation_policy;
 mod declaration_actor;
 mod declaration_document;
 mod declaration_freshness;
@@ -33,7 +36,9 @@ mod task_transition;
 mod task_version;
 
 pub use archive_state::ArchiveState;
+pub use context_detail::ContextDetail;
 pub use context_policy::ContextPolicy;
+pub use context_relation_policy::ContextRelationPolicy;
 pub use declaration_actor::DeclarationActor;
 pub use declaration_document::DeclarationDocument;
 pub use declaration_freshness::{

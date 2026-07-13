@@ -25,7 +25,7 @@ fn project_accepts_valid_status_and_transition_configuration() {
             StatusTransition::new(todo.clone(), doing.clone()),
             StatusTransition::new(doing.clone(), done.clone()),
         ],
-        context_policy: ContextPolicy::new(12, 2, 24).unwrap(),
+        context_policy: ContextPolicy::strict(),
     })
     .unwrap();
     assert!(project.can_transition(&todo, &doing));

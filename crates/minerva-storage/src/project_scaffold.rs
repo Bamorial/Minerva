@@ -45,7 +45,7 @@ pub fn default_project(root: &Path) -> Project {
             StatusTransition::new(in_progress.clone(), completed.clone()),
             StatusTransition::new(completed, in_progress),
         ],
-        context_policy: ContextPolicy::new(12, 2, 24).expect("static policy is valid"),
+        context_policy: ContextPolicy::strict(),
     })
     .expect("default project is valid")
 }

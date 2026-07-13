@@ -19,7 +19,7 @@ fn project_rejects_duplicate_statuses() {
             StatusDefinition::new(todo, true),
         ],
         transitions: vec![],
-        context_policy: ContextPolicy::new(12, 2, 24).unwrap(),
+        context_policy: ContextPolicy::strict(),
     });
     assert!(
         matches!(result, Err(MinervaError::InvalidConfiguration { key, .. }) if key == "statuses")
@@ -40,7 +40,7 @@ fn project_rejects_missing_default_status_and_unknown_transition_targets() {
         default_status: blocked.clone(),
         statuses: vec![StatusDefinition::new(todo.clone(), false)],
         transitions: vec![],
-        context_policy: ContextPolicy::new(12, 2, 24).unwrap(),
+        context_policy: ContextPolicy::strict(),
     });
     let unknown_target = Project::new(Project {
         schema_version: 1,
@@ -51,7 +51,7 @@ fn project_rejects_missing_default_status_and_unknown_transition_targets() {
         default_status: todo.clone(),
         statuses: vec![StatusDefinition::new(todo.clone(), false)],
         transitions: vec![StatusTransition::new(todo, done)],
-        context_policy: ContextPolicy::new(12, 2, 24).unwrap(),
+        context_policy: ContextPolicy::strict(),
     });
     assert!(
         matches!(missing_default, Err(MinervaError::InvalidConfiguration { key, .. }) if key == "default_status")
