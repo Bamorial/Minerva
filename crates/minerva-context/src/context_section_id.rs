@@ -30,4 +30,34 @@ impl ContextSectionId {
             Self::ContextManifestSummary => "Context Manifest Summary",
         }
     }
+
+    #[must_use]
+    pub const fn budget_priority(self) -> u8 {
+        match self {
+            Self::ContextManifestSummary => 0,
+            Self::RelatedTaskSummaries => 1,
+            Self::AncestorDeclarations => 2,
+            Self::AncestorInstructions => 3,
+            Self::DependencyDeclarations => 4,
+            Self::ProjectInstructions => 5,
+            Self::OutputRequirements => 6,
+            Self::TargetInstructions => 7,
+            Self::TargetDeclaration => 8,
+            Self::TargetMetadataAndFacts => 9,
+            Self::MinervaExecutionContract => 10,
+        }
+    }
+
+    #[must_use]
+    pub const fn is_critical(self) -> bool {
+        matches!(
+            self,
+            Self::MinervaExecutionContract
+                | Self::ProjectInstructions
+                | Self::TargetMetadataAndFacts
+                | Self::TargetInstructions
+                | Self::TargetDeclaration
+                | Self::OutputRequirements
+        )
+    }
 }

@@ -98,7 +98,7 @@ fn context_sections_allow_replacing_the_estimator() {
     let section = ContextSection::new_with_estimator(
         ContextSectionId::TargetDeclaration,
         "Implementation note.",
-        FixedEstimator,
+        &FixedEstimator,
     )
     .unwrap();
     let document = ContextDocument::new(vec![section]);

@@ -1,15 +1,23 @@
+mod context_budget;
+mod context_budget_error;
+mod context_budget_report;
 mod context_document;
+mod context_exclusion_reason;
 mod context_graph_selection;
 mod context_graph_selector;
 mod context_inclusion_reason;
 mod context_manifest;
 mod context_section;
+mod context_section_exclusion;
 mod context_section_id;
 mod context_selection_item;
 mod task_context_render;
 mod token_estimator;
 
+pub use context_budget_error::ContextBudgetError;
+pub use context_budget_report::ContextBudgetReport;
 pub use context_document::ContextDocument;
+pub use context_exclusion_reason::ContextExclusionReason;
 pub use context_graph_selection::ContextGraphSelection;
 pub use context_graph_selector::ContextGraphSelector;
 pub use context_inclusion_reason::{
@@ -17,6 +25,7 @@ pub use context_inclusion_reason::{
 };
 pub use context_manifest::render_context_manifest;
 pub use context_section::ContextSection;
+pub use context_section_exclusion::ContextSectionExclusion;
 pub use context_section_id::ContextSectionId;
 pub use context_selection_item::ContextSelectionItem;
 pub use task_context_render::{render_target_metadata, render_task_summary};
@@ -46,4 +55,19 @@ pub fn compile_task_context(task: &Task) -> String {
         .unwrap(),
     ])
     .render_with_manifest()
+}
+
+pub fn compile_task_context_with_budget(
+    task: &Task,
+    budget: usize,
+) -> Result<String, ContextBudgetError> {
+    ContextDocument::new(vec![
+        ContextSection::new(
+            ContextSectionId::TargetMetadataAndFacts,
+            render_target_metadata(task),
+        )
+        .unwrap(),
+    ])
+    .enforce_budget(budget)
+    .map(|report| report.render_with_manifest())
 }

@@ -40,6 +40,8 @@ impl ContextDocument {
             &self.sections,
             self.estimation_method,
             self.total_estimated_tokens,
+            None,
+            &[],
         );
         let heading = ContextSectionId::ContextManifestSummary.heading();
         if body.is_empty() {

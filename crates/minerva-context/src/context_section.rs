@@ -11,14 +11,14 @@ pub struct ContextSection {
 impl ContextSection {
     #[must_use]
     pub fn new(id: ContextSectionId, body: impl Into<String>) -> Option<Self> {
-        Self::new_with_estimator(id, body, ApproximateTokenEstimator)
+        Self::new_with_estimator(id, body, &ApproximateTokenEstimator)
     }
 
     #[must_use]
     pub fn new_with_estimator(
         id: ContextSectionId,
         body: impl Into<String>,
-        estimator: impl TokenEstimator,
+        estimator: &impl TokenEstimator,
     ) -> Option<Self> {
         let body = body.into().trim().to_owned();
         (!body.is_empty()).then(|| Self {
