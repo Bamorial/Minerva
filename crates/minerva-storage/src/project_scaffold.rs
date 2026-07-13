@@ -1,7 +1,8 @@
 use minerva_domain::{
     ContextPolicy, Project, ProjectConfig, ProjectId, StatusDefinition, StatusKey,
-    StatusTransition, TaskTypeKey,
+    StatusTransition, TaskPriority, TaskTypeKey,
 };
+use std::collections::BTreeSet;
 use std::{path::Path, time::SystemTime};
 
 pub const SCHEMA_VERSION: &str = "1\n";
@@ -48,8 +49,13 @@ pub fn default_project(root: &Path) -> Project {
 }
 
 pub fn default_config() -> ProjectConfig {
-    ProjectConfig::new(ProjectConfig { schema_version: 1, editor: None })
-        .expect("default config is valid")
+    ProjectConfig::new(ProjectConfig {
+        schema_version: 1,
+        editor: None,
+        default_priority: TaskPriority::Medium,
+        default_tags: BTreeSet::new(),
+    })
+    .expect("default config is valid")
 }
 
 pub const fn agents_md() -> &'static str {

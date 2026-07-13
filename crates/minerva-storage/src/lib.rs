@@ -16,9 +16,12 @@ mod project_scaffold;
 mod task_catalog;
 mod task_document;
 mod task_document_parts;
+mod task_event_record;
+mod task_events;
 mod task_files;
 mod task_lock;
 mod task_markdown;
+mod task_repository_support;
 mod task_type_document;
 mod task_type_files;
 mod yaml_codec;
@@ -40,6 +43,7 @@ pub use project_scaffold::{
     SCHEMA_VERSION, TASK_TYPES, agents_md, default_config, default_project,
     instructions_md,
 };
+pub use task_events::append_created_event;
 pub use task_files::{
     read_task, read_task_declaration, read_task_instructions, read_task_notes,
     write_task, write_task_declaration, write_task_instructions, write_task_notes,

@@ -6,6 +6,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+use minerva_application::TaskCreateRecord;
 use minerva_domain::{
     ArchiveState, ContextPolicy, DeclarationActor, DeclarationMetadata, Project,
     ProjectId, StatusDefinition, StatusKey, StatusTransition, Task, TaskIdAllocator,
@@ -25,6 +26,14 @@ pub fn temp_repo(name: &str) -> PathBuf {
 
 pub fn sample_task() -> Task {
     task(1, "Define task serializer")
+}
+
+pub fn create_record(task: Task) -> TaskCreateRecord {
+    TaskCreateRecord {
+        task,
+        instructions: "# Feature\n".into(),
+        declaration: "# Declaration\n".into(),
+    }
 }
 
 pub fn task(sequence: u32, title: &str) -> Task {

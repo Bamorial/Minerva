@@ -1,2 +1,5 @@
 schema_version: 1
 editor: zed --wait
+default_priority: High
+default_tags:
+- release

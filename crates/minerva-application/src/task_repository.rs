@@ -1,17 +1,20 @@
-use minerva_domain::{MinervaError, Task, TaskId, TaskVersion};
+use crate::TaskCreateRecord;
+use minerva_domain::{EventId, MinervaError, Task, TaskId, TaskVersion};
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TaskWriteResult {
     pub previous_version: Option<TaskVersion>,
     pub current_version: TaskVersion,
+    pub event_id: Option<EventId>,
 }
 
 pub trait TaskRepository {
+    fn next_task_id(&self, root: &Path) -> Result<TaskId, MinervaError>;
     fn create_task(
         &self,
         root: &Path,
-        task: &Task,
+        record: &TaskCreateRecord,
     ) -> Result<TaskWriteResult, MinervaError>;
     fn read_task(&self, root: &Path, task_id: TaskId) -> Result<Task, MinervaError>;
     fn update_task(

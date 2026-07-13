@@ -2,12 +2,21 @@ mod error_cli;
 mod error_mcp;
 mod error_tui;
 mod project_repository;
+mod task_create_record;
+mod task_creation_request;
+mod task_creation_result;
+mod task_creation_service;
 mod task_repository;
+mod task_slug_builder;
 
 pub use error_cli::{CliErrorReport, render_cli};
 pub use error_mcp::{McpErrorData, McpErrorResponse, render_mcp};
 pub use error_tui::{TuiErrorMessage, render_tui};
 pub use project_repository::ProjectRepository;
+pub use task_create_record::TaskCreateRecord;
+pub use task_creation_request::CreateTaskRequest;
+pub use task_creation_result::TaskCreationResult;
+pub use task_creation_service::TaskCreationService;
 pub use task_repository::{TaskRepository, TaskWriteResult};
 
 use minerva_domain::{InterfaceKind, WorkspaceBlueprint};

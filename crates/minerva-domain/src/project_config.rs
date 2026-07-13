@@ -1,9 +1,12 @@
-use crate::MinervaError;
+use crate::{MinervaError, TaskPriority, TaskTag};
+use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProjectConfig {
     pub schema_version: u32,
     pub editor: Option<String>,
+    pub default_priority: TaskPriority,
+    pub default_tags: BTreeSet<TaskTag>,
 }
 
 impl ProjectConfig {

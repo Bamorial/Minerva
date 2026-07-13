@@ -3,7 +3,7 @@ mod support;
 use minerva_application::TaskRepository;
 use minerva_domain::MinervaError;
 use minerva_storage::FilesystemTaskRepository;
-use support::{task, temp_repo};
+use support::{create_record, task, temp_repo};
 
 #[test]
 fn repository_lists_reads_searches_and_resolves_tasks() {
@@ -12,9 +12,9 @@ fn repository_lists_reads_searches_and_resolves_tasks() {
     let first = task(1, "Implement task repo");
     let second = task(2, "Review task repo");
     let third = task(3, "Write docs");
-    repo.create_task(&root, &second).unwrap();
-    repo.create_task(&root, &third).unwrap();
-    repo.create_task(&root, &first).unwrap();
+    repo.create_task(&root, &create_record(second.clone())).unwrap();
+    repo.create_task(&root, &create_record(third.clone())).unwrap();
+    repo.create_task(&root, &create_record(first.clone())).unwrap();
     assert_eq!(
         repo.list_tasks(&root).unwrap(),
         vec![first.clone(), second.clone(), third]
@@ -39,8 +39,8 @@ fn repository_lists_reads_searches_and_resolves_tasks() {
 fn ambiguous_title_matches_return_a_structured_error() {
     let root = temp_repo("task-repository-ambiguous");
     let repo = FilesystemTaskRepository;
-    repo.create_task(&root, &task(1, "Implement task repo")).unwrap();
-    repo.create_task(&root, &task(2, "Review task repo")).unwrap();
+    repo.create_task(&root, &create_record(task(1, "Implement task repo"))).unwrap();
+    repo.create_task(&root, &create_record(task(2, "Review task repo"))).unwrap();
     let error = repo.resolve_task(&root, "task repo").unwrap_err();
     assert_eq!(
         error,

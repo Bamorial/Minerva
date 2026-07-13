@@ -12,6 +12,11 @@ fn config_fixture_round_trips_through_yaml_storage() {
     fs::copy(fixture("config.yaml"), layout.config_file()).unwrap();
     let config = read_project_config(&layout).unwrap();
     assert_eq!(config.editor.as_deref(), Some("zed --wait"));
+    assert_eq!(config.default_priority, minerva_domain::TaskPriority::High);
+    assert_eq!(
+        config.default_tags,
+        std::collections::BTreeSet::from([minerva_domain::TaskTag::new("release").unwrap()])
+    );
     write_project_config(&layout, &config).unwrap();
     assert_eq!(read_project_config(&layout).unwrap(), config);
 }
@@ -22,7 +27,7 @@ fn config_reader_rejects_unknown_fields_and_schema_mismatches() {
     let unknown = MinervaLayout::new(&unknown_root);
     fs::write(
         unknown.config_file(),
-        "schema_version: 1\neditor: zed --wait\nshell: zsh\n",
+        "schema_version: 1\neditor: zed --wait\ndefault_priority: Medium\ndefault_tags: []\nshell: zsh\n",
     )
     .unwrap();
     let unknown_error = read_project_config(&unknown).unwrap_err();
@@ -31,8 +36,11 @@ fn config_reader_rejects_unknown_fields_and_schema_mismatches() {
     );
     let version_root = temp_repo("config-version");
     let versioned = MinervaLayout::new(&version_root);
-    fs::write(versioned.config_file(), "schema_version: 2\neditor: zed --wait\n")
-        .unwrap();
+    fs::write(
+        versioned.config_file(),
+        "schema_version: 2\neditor: zed --wait\ndefault_priority: Medium\ndefault_tags: []\n",
+    )
+    .unwrap();
     let version_error = read_project_config(&versioned).unwrap_err();
     assert!(
         matches!(version_error, MinervaError::SchemaError { reason, .. } if reason.contains("unsupported schema version `2`"))
