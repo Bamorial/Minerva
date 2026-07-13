@@ -2,11 +2,13 @@ mod error_cli;
 mod error_mcp;
 mod error_tui;
 mod project_repository;
+mod task_repository;
 
 pub use error_cli::{CliErrorReport, render_cli};
 pub use error_mcp::{McpErrorData, McpErrorResponse, render_mcp};
 pub use error_tui::{TuiErrorMessage, render_tui};
 pub use project_repository::ProjectRepository;
+pub use task_repository::{TaskRepository, TaskWriteResult};
 
 use minerva_domain::{InterfaceKind, WorkspaceBlueprint};
 

@@ -9,7 +9,7 @@ use std::{
 use minerva_domain::{
     ArchiveState, ContextPolicy, DeclarationActor, DeclarationMetadata, Project,
     ProjectId, StatusDefinition, StatusKey, StatusTransition, Task, TaskIdAllocator,
-    TaskPriority, TaskTypeKey, TaskVersion,
+    TaskPriority, TaskSlug, TaskTypeKey, TaskVersion,
 };
 
 pub fn fixture(name: &str) -> PathBuf {
@@ -24,11 +24,16 @@ pub fn temp_repo(name: &str) -> PathBuf {
 }
 
 pub fn sample_task() -> Task {
+    task(1, "Define task serializer")
+}
+
+pub fn task(sequence: u32, title: &str) -> Task {
+    let allocator = TaskIdAllocator::new(sequence - 1);
     Task::new(Task {
         schema_version: 1,
-        id: TaskIdAllocator::new(0).next_id(),
-        title: "Define task serializer".into(),
-        slug: None,
+        id: allocator.next_id(),
+        title: title.into(),
+        slug: Some(TaskSlug::new(title.to_lowercase().replace(' ', "-")).unwrap()),
         task_type: TaskTypeKey::new("feature").unwrap(),
         status: StatusKey::new("in-progress").unwrap(),
         parent_id: None,
