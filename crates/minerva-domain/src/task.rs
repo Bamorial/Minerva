@@ -37,6 +37,9 @@ impl Task {
         if self.title.trim().is_empty() {
             return invalid("title", "must not be empty");
         }
+        if self.parent_id == Some(self.id) {
+            return invalid("parent_id", "task cannot be its own parent");
+        }
         self.declaration.validate()?;
         if self.status.as_str() == "completed" && self.completed_at.is_none() {
             return invalid("completed_at", "is required when status is completed");

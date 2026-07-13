@@ -7,10 +7,17 @@ use std::{collections::BTreeSet, time::UNIX_EPOCH};
 #[test]
 fn task_rejects_empty_titles_and_missing_completed_timestamps() {
     let empty = Task::new(task("  ", "in-progress", None, TaskVersion::initial()));
+    let self_parent = Task::new(Task {
+        parent_id: Some(TaskIdAllocator::new(0).next_id()),
+        ..task("Ship feature", "in-progress", None, TaskVersion::initial())
+    });
     let missing_completed_at =
         Task::new(task("Ship feature", "completed", None, TaskVersion::initial()));
     assert!(
         matches!(empty, Err(MinervaError::InvalidConfiguration { key, .. }) if key == "title")
+    );
+    assert!(
+        matches!(self_parent, Err(MinervaError::InvalidConfiguration { key, .. }) if key == "parent_id")
     );
     assert!(
         matches!(missing_completed_at, Err(MinervaError::InvalidConfiguration { key, .. }) if key == "completed_at")

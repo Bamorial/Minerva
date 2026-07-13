@@ -1,7 +1,7 @@
 use crate::{
-    MinervaLayout, TaskLock, append_created_event, task_repository_support,
-    write_task as persist_task, write_task_declaration, write_task_instructions,
-    write_task_notes,
+    MinervaLayout, TaskLock, append_created_event, task_hierarchy,
+    task_repository_support, write_task as persist_task, write_task_declaration,
+    write_task_instructions, write_task_notes,
 };
 use minerva_application::{TaskCreateRecord, TaskRepository, TaskWriteResult};
 use minerva_domain::{MinervaError, Task, TaskId, TaskIdAllocator, TaskVersion};
@@ -28,6 +28,7 @@ impl TaskRepository for FilesystemTaskRepository {
     ) -> Result<TaskWriteResult, MinervaError> {
         let layout = MinervaLayout::new(root);
         let _lock = TaskLock::acquire(&layout, record.task.id)?;
+        task_hierarchy::validate_write(&layout, &record.task)?;
         persist_task(&layout, &record.task)?;
         write_task_instructions(&layout, record.task.id, &record.instructions)?;
         write_task_declaration(&layout, record.task.id, &record.declaration)?;
@@ -52,6 +53,7 @@ impl TaskRepository for FilesystemTaskRepository {
         let layout = MinervaLayout::new(root);
         let _lock = TaskLock::acquire(&layout, task.id)?;
         let previous = task_repository_support::read_existing(&layout, task.id)?;
+        task_hierarchy::validate_write(&layout, task)?;
         persist_task(&layout, task)?;
         Ok(TaskWriteResult {
             previous_version: Some(previous.version),
@@ -73,7 +75,8 @@ impl TaskRepository for FilesystemTaskRepository {
         let layout = MinervaLayout::new(root);
         let _lock = TaskLock::acquire(&layout, task_id)?;
         let previous = task_repository_support::read_existing(&layout, task_id)?;
-        let archived = task_repository_support::archive(previous.clone(), &layout, version)?;
+        let archived =
+            task_repository_support::archive(previous.clone(), &layout, version)?;
         persist_task(&layout, &archived)?;
         Ok(TaskWriteResult {
             previous_version: Some(previous.version),
