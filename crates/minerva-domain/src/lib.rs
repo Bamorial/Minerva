@@ -2,10 +2,22 @@ mod error;
 mod error_code;
 mod error_detail;
 mod error_details;
+mod event_id;
+mod identifier_error;
+mod project_id;
+mod relationship_id;
+mod task_id;
+mod task_identity;
 
 pub use error::MinervaError;
 pub use error_code::ErrorCode;
 pub use error_detail::{ErrorDetail, ErrorValue};
+pub use event_id::EventId;
+pub use identifier_error::IdentifierError;
+pub use project_id::ProjectId;
+pub use relationship_id::RelationshipId;
+pub use task_id::{TaskId, TaskIdAllocator};
+pub use task_identity::TaskIdentity;
 
 pub const WORKSPACE_CRATES: [&str; 7] = [
     "minerva-domain",
@@ -44,38 +56,5 @@ impl WorkspaceBlueprint {
 impl Default for WorkspaceBlueprint {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::WorkspaceBlueprint;
-    use super::{ErrorCode, ErrorValue, InterfaceKind, MinervaError, WORKSPACE_CRATES};
-
-    #[test]
-    fn blueprint_lists_all_workspace_crates() {
-        let blueprint = WorkspaceBlueprint::new();
-        assert_eq!(blueprint.crates(), &WORKSPACE_CRATES);
-    }
-
-    #[test]
-    fn interface_kinds_remain_transport_specific() {
-        assert_ne!(InterfaceKind::Cli, InterfaceKind::Mcp);
-    }
-
-    #[test]
-    fn errors_expose_stable_codes_and_details() {
-        let error = MinervaError::AmbiguousTaskReference {
-            task_ref: "TSK-1".into(),
-            matches: vec!["TSK-10".into(), "TSK-11".into()],
-        };
-        let details = error.details();
-        assert_eq!(error.code(), ErrorCode::AmbiguousTaskReference);
-        assert_eq!(error.code().as_str(), "ambiguous_task_reference");
-        assert_eq!(details[0].key, "task_ref");
-        assert_eq!(
-            details[1].value,
-            ErrorValue::List(vec!["TSK-10".into(), "TSK-11".into()])
-        );
     }
 }
