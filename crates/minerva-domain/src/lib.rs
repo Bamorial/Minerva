@@ -1,20 +1,28 @@
+mod context_policy;
 mod error;
 mod error_code;
 mod error_detail;
 mod error_details;
 mod event_id;
 mod identifier_error;
+mod project;
 mod project_id;
+mod project_status;
+mod project_task_type;
 mod relationship_id;
 mod task_id;
 mod task_identity;
 
+pub use context_policy::ContextPolicy;
 pub use error::MinervaError;
 pub use error_code::ErrorCode;
 pub use error_detail::{ErrorDetail, ErrorValue};
 pub use event_id::EventId;
 pub use identifier_error::IdentifierError;
+pub use project::Project;
 pub use project_id::ProjectId;
+pub use project_status::{StatusDefinition, StatusKey, StatusTransition};
+pub use project_task_type::TaskTypeKey;
 pub use relationship_id::RelationshipId;
 pub use task_id::{TaskId, TaskIdAllocator};
 pub use task_identity::TaskIdentity;
