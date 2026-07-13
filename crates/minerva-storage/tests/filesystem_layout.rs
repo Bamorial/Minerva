@@ -46,6 +46,10 @@ fn helper_paths_cover_project_task_and_lock_files() {
         expected(&["/tmp/minerva", ".minerva", "tasks", "TSK-000007", "events.jsonl"])
     );
     assert_eq!(
+        layout.project_lock_file(),
+        expected(&["/tmp/minerva", ".minerva", "locks", "project.lock"])
+    );
+    assert_eq!(
         layout.task_lock_file(task_id),
         expected(&["/tmp/minerva", ".minerva", "locks", "TSK-000007.lock"])
     );

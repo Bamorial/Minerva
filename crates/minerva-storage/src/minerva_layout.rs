@@ -57,6 +57,10 @@ impl MinervaLayout {
         self.minerva_dir().join("locks")
     }
     #[must_use]
+    pub fn project_lock_file(&self) -> PathBuf {
+        self.locks_dir().join("project.lock")
+    }
+    #[must_use]
     pub fn task_dir(&self, task_id: TaskId) -> PathBuf {
         self.tasks_dir().join(task_id.to_string())
     }

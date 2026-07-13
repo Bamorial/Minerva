@@ -3,7 +3,10 @@ use std::fs;
 use std::io::{self, ErrorKind};
 use std::path::PathBuf;
 use std::process;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+static NEXT_DIR_ID: AtomicU64 = AtomicU64::new(0);
 
 #[test]
 fn atomic_replace_writes_new_file() {
@@ -51,8 +54,9 @@ fn temp_file_stays_in_target_directory() {
 
 fn temp_dir() -> PathBuf {
     let unique = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
+    let sequence = NEXT_DIR_ID.fetch_add(1, Ordering::Relaxed);
     let dir = std::env::temp_dir()
-        .join(format!("minerva-storage-{}-{unique}", process::id()));
+        .join(format!("minerva-storage-{}-{unique}-{sequence}", process::id()));
     fs::create_dir(&dir).unwrap();
     dir
 }
