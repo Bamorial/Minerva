@@ -39,7 +39,7 @@ pub use project::Project;
 pub use project_config::ProjectConfig;
 pub use project_id::ProjectId;
 pub use project_status::{StatusDefinition, StatusKey, StatusTransition};
-pub use project_task_type::TaskTypeKey;
+pub use project_task_type::{TaskTypeDefinition, TaskTypeKey};
 pub use relationship::Relationship;
 pub use relationship_graph::validate_relationships;
 pub use relationship_id::RelationshipId;

@@ -19,6 +19,8 @@ mod task_document_parts;
 mod task_files;
 mod task_lock;
 mod task_markdown;
+mod task_type_document;
+mod task_type_files;
 mod yaml_codec;
 
 pub use atomic_write::atomic_replace;
@@ -43,6 +45,7 @@ pub use task_files::{
     write_task, write_task_declaration, write_task_instructions, write_task_notes,
 };
 pub use task_lock::{TaskLock, TaskLocks};
+pub use task_type_files::read_task_types;
 
 #[cfg(test)]
 mod atomic_write_tests;

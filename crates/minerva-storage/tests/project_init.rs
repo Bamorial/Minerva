@@ -1,7 +1,7 @@
 mod support;
 
 use minerva_application::ProjectRepository;
-use minerva_domain::MinervaError;
+use minerva_domain::{MinervaError, TaskTypeKey};
 use minerva_storage::{
     FilesystemProjectRepository, MinervaLayout, SCHEMA_VERSION, agents_md,
     default_config, instructions_md, read_project_config,
@@ -27,6 +27,9 @@ fn init_creates_expected_layout_and_loadable_project_files() {
     assert_eq!(repo.load_project_config(&root).unwrap(), default_config());
     assert_eq!(read_project_config(&layout).unwrap(), default_config());
     assert_eq!(repo.read_project_instructions(&root).unwrap(), instructions_md());
+    let task_types = repo.load_task_types(&root).unwrap();
+    assert_eq!(task_types.len(), 6);
+    assert_eq!(task_types[0].name, TaskTypeKey::new("bug").unwrap());
     assert_eq!(fs::read_to_string(root.join("AGENTS.md")).unwrap(), AGENTS_SNAPSHOT);
     assert_eq!(
         fs::read_to_string(layout.schema_version_file()).unwrap(),

@@ -5,13 +5,20 @@ use minerva_domain::{
 use std::{path::Path, time::SystemTime};
 
 pub const SCHEMA_VERSION: &str = "1\n";
+const FEATURE_TASK_TYPE: &str = "---\nname: feature\ndisplay_name: Feature\ndescription: User-facing capability or workflow change.\n---\n# Feature\n\nDescribe the user-facing capability.\n";
+const BUG_TASK_TYPE: &str = "---\nname: bug\ndisplay_name: Bug\ndescription: Incorrect behavior that should be fixed.\n---\n# Bug\n\nDescribe the defect and expected behavior.\n";
+const RESEARCH_TASK_TYPE: &str = "---\nname: research\ndisplay_name: Research\ndescription: Investigation that produces findings or recommendations.\n---\n# Research\n\nCapture the question and findings.\n";
+const REFACTOR_TASK_TYPE: &str = "---\nname: refactor\ndisplay_name: Refactor\ndescription: Internal code change that preserves behavior.\n---\n# Refactor\n\nDescribe the code change and constraints.\n";
+const DOCUMENTATION_TASK_TYPE: &str = "---\nname: documentation\ndisplay_name: Documentation\ndescription: Docs-only change for users or maintainers.\n---\n# Documentation\n\nDescribe the docs update.\n";
+const CHORE_TASK_TYPE: &str = "---\nname: chore\ndisplay_name: Chore\ndescription: Maintenance work with limited product impact.\n---\n# Chore\n\nDescribe the maintenance task.\n";
+
 pub const TASK_TYPES: [(&str, &str); 6] = [
-    ("feature.md", "# Feature\n\nDescribe the user-facing capability.\n"),
-    ("bug.md", "# Bug\n\nDescribe the defect and expected behavior.\n"),
-    ("research.md", "# Research\n\nCapture the question and findings.\n"),
-    ("refactor.md", "# Refactor\n\nDescribe the code change and constraints.\n"),
-    ("documentation.md", "# Documentation\n\nDescribe the docs update.\n"),
-    ("chore.md", "# Chore\n\nDescribe the maintenance task.\n"),
+    ("feature.md", FEATURE_TASK_TYPE),
+    ("bug.md", BUG_TASK_TYPE),
+    ("research.md", RESEARCH_TASK_TYPE),
+    ("refactor.md", REFACTOR_TASK_TYPE),
+    ("documentation.md", DOCUMENTATION_TASK_TYPE),
+    ("chore.md", CHORE_TASK_TYPE),
 ];
 
 pub fn default_project(root: &Path) -> Project {

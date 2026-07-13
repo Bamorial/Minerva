@@ -1,4 +1,4 @@
-use minerva_domain::{MinervaError, Project, ProjectConfig};
+use minerva_domain::{MinervaError, Project, ProjectConfig, TaskTypeDefinition};
 use std::path::{Path, PathBuf};
 
 pub trait ProjectRepository {
@@ -15,6 +15,11 @@ pub trait ProjectRepository {
     fn load_project(&self, root: &Path) -> Result<Project, MinervaError>;
 
     fn load_project_config(&self, root: &Path) -> Result<ProjectConfig, MinervaError>;
+
+    fn load_task_types(
+        &self,
+        root: &Path,
+    ) -> Result<Vec<TaskTypeDefinition>, MinervaError>;
 
     fn save_project(&self, root: &Path, project: &Project) -> Result<(), MinervaError>;
 
