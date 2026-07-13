@@ -1,12 +1,17 @@
 mod cli;
 mod exit_code;
+mod hierarchy_command;
+mod hierarchy_output;
 mod list_args;
 mod list_command;
 mod list_output;
+mod move_command;
 mod new_command;
 mod new_prompt;
 mod new_resolve;
 mod output;
+mod relationship_command;
+mod relationship_output;
 mod response;
 mod run;
 mod show_output;

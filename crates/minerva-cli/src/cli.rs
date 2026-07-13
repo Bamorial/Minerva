@@ -40,6 +40,13 @@ pub enum Command {
     Status(StatusArgs),
     Complete(TaskRefArg),
     Reopen(TaskRefArg),
+    Move(MoveArgs),
+    Depend(DependArgs),
+    Undepend(DependArgs),
+    Relate(RelateArgs),
+    Unrelate(UnrelateArgs),
+    Children(TaskRefArg),
+    Ancestors(TaskRefArg),
     Rebuild {
         #[arg(long)]
         dry_run: bool,
@@ -70,6 +77,39 @@ pub struct ShowArgs {
     pub declaration: bool,
 }
 
+#[derive(Debug, Clone, Args)]
+pub struct MoveArgs {
+    pub task_ref: String,
+    #[arg(long, value_name = "TASK_REF", required_unless_present = "to_root")]
+    pub parent: Option<String>,
+    #[arg(long = "to-root", conflicts_with = "parent")]
+    pub to_root: bool,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct DependArgs {
+    pub task_ref: String,
+    pub depends_on_ref: String,
+    #[arg(long)]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct RelateArgs {
+    pub source_ref: String,
+    pub target_ref: String,
+    pub relationship_type: String,
+    #[arg(long)]
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct UnrelateArgs {
+    pub source_ref: String,
+    pub target_ref: String,
+    pub relationship_type: String,
+}
+
 impl Command {
     pub const fn name(&self) -> &'static str {
         match self {
@@ -83,6 +123,13 @@ impl Command {
             Self::Status(_) => "status",
             Self::Complete(_) => "complete",
             Self::Reopen(_) => "reopen",
+            Self::Move(_) => "move",
+            Self::Depend(_) => "depend",
+            Self::Undepend(_) => "undepend",
+            Self::Relate(_) => "relate",
+            Self::Unrelate(_) => "unrelate",
+            Self::Children(_) => "children",
+            Self::Ancestors(_) => "ancestors",
             Self::Rebuild { .. } => "rebuild",
         }
     }

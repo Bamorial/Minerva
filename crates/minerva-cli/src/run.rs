@@ -1,6 +1,7 @@
 use crate::{
     cli::{Cli, Command, ShowArgs},
-    list_command, new_command, output,
+    hierarchy_command, list_command, move_command, new_command, output,
+    relationship_command,
     response::CommandOutput,
     show_output, status_command, tree_command,
 };
@@ -66,6 +67,40 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
             status_command::reopen(&project_repo, &task_repo, &root, &args.task_ref)
                 .map_err(Failure::Domain)
         }
+        Command::Move(args) => {
+            move_command::execute(&project_repo, &task_repo, &root, args)
+                .map_err(Failure::Domain)
+        }
+        Command::Depend(args) => {
+            relationship_command::depend(&project_repo, &task_repo, &root, args)
+                .map_err(Failure::Domain)
+        }
+        Command::Undepend(args) => {
+            relationship_command::undepend(&project_repo, &task_repo, &root, args)
+                .map_err(Failure::Domain)
+        }
+        Command::Relate(args) => {
+            relationship_command::relate(&project_repo, &task_repo, &root, args)
+                .map_err(Failure::Domain)
+        }
+        Command::Unrelate(args) => {
+            relationship_command::unrelate(&project_repo, &task_repo, &root, args)
+                .map_err(Failure::Domain)
+        }
+        Command::Children(args) => hierarchy_command::children(
+            &project_repo,
+            &task_repo,
+            &root,
+            &args.task_ref,
+        )
+        .map_err(Failure::Domain),
+        Command::Ancestors(args) => hierarchy_command::ancestors(
+            &project_repo,
+            &task_repo,
+            &root,
+            &args.task_ref,
+        )
+        .map_err(Failure::Domain),
         Command::Instruction { task_ref: None } => {
             ProjectInstructionService::edit(&project_repo, &root)
                 .map(|path| CommandOutput::text(format!("opened {}", path.display())))
