@@ -1,8 +1,8 @@
 mod support;
 
 use minerva_context::{
-    ContextDocument, ContextSection, ContextSectionId, compile_task_context,
-    compile_workspace_context,
+    ContextDocument, ContextSection, ContextSectionId, TokenEstimator,
+    compile_task_context, compile_workspace_context,
 };
 use support::task;
 
@@ -19,6 +19,8 @@ fn task_context_includes_structured_facts_under_stable_heading() {
     assert!(context.starts_with("## Target Metadata and Facts"));
     assert!(context.contains("facts.modules: minerva-domain"));
     assert!(context.contains("facts.migrations_required: true"));
+    assert!(context.contains("## Context Manifest Summary"));
+    assert!(context.contains("total_estimated_tokens:"));
 }
 
 #[test]
@@ -60,6 +62,49 @@ fn context_document_skips_missing_optional_sections() {
         document.render(),
         "## Project Instructions\n\nUse Rust.\n\n## Target Declaration\n\nImplementation note."
     );
+}
+
+#[test]
+fn context_document_reports_estimates_for_markdown_sections() {
+    let document = ContextDocument::new(
+        [
+            section(ContextSectionId::ProjectInstructions, "Use Rust."),
+            section(ContextSectionId::TargetDeclaration, "Implementation note."),
+        ]
+        .into_iter()
+        .flatten()
+        .collect(),
+    );
+    assert_eq!(document.sections()[0].estimated_tokens(), 10);
+    assert_eq!(document.sections()[1].estimated_tokens(), 13);
+    assert_eq!(document.total_estimated_tokens(), 23);
+    assert!(document.render_with_manifest().contains("- Project Instructions: 10"));
+    assert!(document.render_with_manifest().contains("- Target Declaration: 13"));
+}
+
+#[test]
+fn context_sections_allow_replacing_the_estimator() {
+    struct FixedEstimator;
+
+    impl TokenEstimator for FixedEstimator {
+        fn method(&self) -> &'static str {
+            "fixed estimator"
+        }
+        fn estimate(&self, _: &str) -> usize {
+            41
+        }
+    }
+
+    let section = ContextSection::new_with_estimator(
+        ContextSectionId::TargetDeclaration,
+        "Implementation note.",
+        FixedEstimator,
+    )
+    .unwrap();
+    let document = ContextDocument::new(vec![section]);
+    assert_eq!(document.sections()[0].estimated_tokens(), 41);
+    assert_eq!(document.total_estimated_tokens(), 41);
+    assert_eq!(document.estimation_method(), "fixed estimator");
 }
 
 fn section(id: ContextSectionId, body: &str) -> Option<ContextSection> {
