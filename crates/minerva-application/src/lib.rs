@@ -32,6 +32,7 @@ mod task_show_render;
 mod task_show_result;
 mod task_show_service;
 mod task_slug_builder;
+mod task_status_result;
 mod task_status_service;
 mod task_tree_result;
 mod task_tree_service;
@@ -72,6 +73,7 @@ pub use task_show_result::{
     TaskShowResult, TaskShowTimestamps,
 };
 pub use task_show_service::TaskShowService;
+pub use task_status_result::TaskStatusResult;
 pub use task_status_service::TaskStatusService;
 pub use task_tree_result::{TaskTreeNode, TaskTreeOptions, TaskTreeResult};
 pub use task_tree_service::TaskTreeService;

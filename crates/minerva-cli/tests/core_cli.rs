@@ -15,6 +15,8 @@ fn help_includes_global_options_and_exit_codes() {
     assert!(stdout.contains("--quiet"));
     assert!(stdout.contains("--verbose"));
     assert!(stdout.contains("show"));
+    assert!(stdout.contains("complete"));
+    assert!(stdout.contains("reopen"));
     assert!(stdout.contains("Exit codes:"));
     fs::remove_dir_all(root).unwrap();
 }
@@ -45,7 +47,14 @@ fn json_errors_use_stable_exit_codes_and_root_override() {
     create_task(&root, task(1, "Inspect status output"));
     let other = temp_dir("cli-json-cwd");
     let output = Command::new(std::env::var_os("CARGO_BIN_EXE_minerva-cli").unwrap())
-        .args(["--root", root.to_str().unwrap(), "--json", "status", "TSK-000099"])
+        .args([
+            "--root",
+            root.to_str().unwrap(),
+            "--json",
+            "status",
+            "TSK-000099",
+            "in-progress",
+        ])
         .current_dir(&other)
         .output()
         .unwrap();

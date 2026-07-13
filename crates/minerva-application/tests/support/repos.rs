@@ -242,8 +242,12 @@ impl TaskRepository for FakeTaskRepo {
     ) -> Result<Vec<Relationship>, MinervaError> {
         Ok(Vec::new())
     }
-    fn resolve_task(&self, _: &Path, _: &str) -> Result<Task, MinervaError> {
-        unreachable!()
+    fn resolve_task(&self, _: &Path, task_ref: &str) -> Result<Task, MinervaError> {
+        self.tasks
+            .iter()
+            .find(|task| task.id.to_string() == task_ref || task.title == task_ref)
+            .cloned()
+            .ok_or_else(|| MinervaError::TaskNotFound { task_ref: task_ref.into() })
     }
     fn prepare_task_instructions(
         &self,

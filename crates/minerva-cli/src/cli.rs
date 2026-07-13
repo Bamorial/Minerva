@@ -1,5 +1,5 @@
-use crate::list_args::ListArgs;
 use crate::tree_args::TreeArgs;
+use crate::{list_args::ListArgs, status_args::StatusArgs, task_ref_arg::TaskRefArg};
 use clap::{ArgAction, Args, Parser, Subcommand};
 use std::path::PathBuf;
 
@@ -37,7 +37,9 @@ pub enum Command {
     Declaration {
         task_ref: String,
     },
-    Status(ShowArgs),
+    Status(StatusArgs),
+    Complete(TaskRefArg),
+    Reopen(TaskRefArg),
     Rebuild {
         #[arg(long)]
         dry_run: bool,
@@ -79,6 +81,8 @@ impl Command {
             Self::Instruction { .. } => "instruction",
             Self::Declaration { .. } => "declaration",
             Self::Status(_) => "status",
+            Self::Complete(_) => "complete",
+            Self::Reopen(_) => "reopen",
             Self::Rebuild { .. } => "rebuild",
         }
     }

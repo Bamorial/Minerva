@@ -92,6 +92,21 @@ fn list_command_supports_json_and_archived_filter() {
     fs::remove_dir_all(root).unwrap();
 }
 
+#[test]
+fn list_command_shows_single_match_with_default_limit() {
+    let root = temp_dir("cli-task-list-default-limit");
+    assert!(run(&root, &["init"]).status.success());
+    create_task(&root, task(1, "Only task"));
+    let output = run(&root, &["list"]);
+    assert!(output.status.success(), "{output:?}");
+    let stdout = str::from_utf8(&output.stdout).unwrap();
+    assert!(stdout.contains("showing 1 of 1 matching tasks"));
+    assert!(
+        stdout.contains("TSK-000001 Only task | backlog | feature | medium | active")
+    );
+    fs::remove_dir_all(root).unwrap();
+}
+
 fn tags(values: [&str; 1]) -> BTreeSet<TaskTag> {
     values.into_iter().map(|value| TaskTag::new(value).unwrap()).collect()
 }

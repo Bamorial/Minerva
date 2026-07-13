@@ -2,7 +2,7 @@ use crate::{
     cli::{Cli, Command, ShowArgs},
     list_command, new_command, output,
     response::CommandOutput,
-    show_output, tree_command,
+    show_output, status_command, tree_command,
 };
 use minerva_application::{
     ProjectInstructionService, ProjectRepository, RebuildAction, RebuildResult,
@@ -51,8 +51,20 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
             tree_command::execute(&project_repo, &task_repo, &root, args)
                 .map_err(Failure::Domain)
         }
-        Command::Show(args) | Command::Status(args) => {
+        Command::Show(args) => {
             show(&project_repo, &task_repo, &root, args).map_err(Failure::Domain)
+        }
+        Command::Status(args) => {
+            status_command::set(&project_repo, &task_repo, &root, args)
+                .map_err(Failure::Domain)
+        }
+        Command::Complete(args) => {
+            status_command::complete(&project_repo, &task_repo, &root, &args.task_ref)
+                .map_err(Failure::Domain)
+        }
+        Command::Reopen(args) => {
+            status_command::reopen(&project_repo, &task_repo, &root, &args.task_ref)
+                .map_err(Failure::Domain)
         }
         Command::Instruction { task_ref: None } => {
             ProjectInstructionService::edit(&project_repo, &root)

@@ -30,11 +30,13 @@ impl TaskListService {
             .collect::<Vec<_>>();
         sort(&mut tasks, options.sort);
         let matched = tasks.len();
-        let slice =
-            options.limit.map_or(tasks.get(options.offset..).unwrap_or(&[]), |limit| {
-                let end = options.offset.saturating_add(limit);
+        let slice = options.limit.map_or_else(
+            || tasks.get(options.offset..).unwrap_or(&[]),
+            |limit| {
+                let end = options.offset.saturating_add(limit).min(matched);
                 tasks.get(options.offset..end).unwrap_or(&[])
-            });
+            },
+        );
         Ok(TaskListResult {
             tasks: slice.iter().cloned().map(|task| item(&map, task)).collect(),
             total,
