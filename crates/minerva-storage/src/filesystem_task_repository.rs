@@ -1,7 +1,8 @@
+use crate::MinervaLayout;
 use minerva_application::{TaskCreateRecord, TaskRepository, TaskWriteResult};
 use minerva_domain::{
-    DeclarationActor, MinervaError, Relationship, RelationshipId, Task, TaskId,
-    TaskVersion,
+    DeclarationActor, DeclarationFreshnessProbe, MinervaError, Relationship,
+    RelationshipId, Task, TaskId, TaskVersion,
 };
 use std::path::{Path, PathBuf};
 
@@ -35,6 +36,16 @@ impl TaskRepository for FilesystemTaskRepository {
         task_id: TaskId,
     ) -> Result<String, MinervaError> {
         crate::task_repository_queries::read_task_declaration(root, task_id)
+    }
+    fn read_declaration_freshness(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<DeclarationFreshnessProbe, MinervaError> {
+        crate::task_freshness::read_declaration_freshness(
+            &MinervaLayout::new(root),
+            task_id,
+        )
     }
     fn update_task(
         &self,

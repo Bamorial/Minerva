@@ -1,7 +1,7 @@
 use crate::TaskCreateRecord;
 use minerva_domain::{
-    DeclarationActor, EventId, MinervaError, Relationship, RelationshipId, Task,
-    TaskId, TaskVersion,
+    DeclarationActor, DeclarationFreshnessProbe, EventId, MinervaError, Relationship,
+    RelationshipId, Task, TaskId, TaskVersion,
 };
 use std::path::Path;
 
@@ -30,6 +30,11 @@ pub trait TaskRepository {
         root: &Path,
         task_id: TaskId,
     ) -> Result<String, MinervaError>;
+    fn read_declaration_freshness(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<DeclarationFreshnessProbe, MinervaError>;
     fn update_task(
         &self,
         root: &Path,

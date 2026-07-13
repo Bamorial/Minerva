@@ -5,10 +5,10 @@ use minerva_application::{
     TaskWriteResult,
 };
 use minerva_domain::{
-    ArchiveState, DeclarationActor, DeclarationDocument, DeclarationMetadata, EventId,
-    MinervaError, Project, ProjectConfig, Relationship, RelationshipId, Task, TaskId,
-    TaskIdAllocator, TaskPriority, TaskSlug, TaskTypeDefinition, TaskTypeKey,
-    TaskVersion,
+    ArchiveState, DeclarationActor, DeclarationDocument, DeclarationFreshnessProbe,
+    DeclarationMetadata, EventId, MinervaError, Project, ProjectConfig, Relationship,
+    RelationshipId, Task, TaskId, TaskIdAllocator, TaskPriority, TaskSlug,
+    TaskTypeDefinition, TaskTypeKey, TaskVersion,
 };
 use std::cell::RefCell;
 use std::collections::BTreeSet;
@@ -111,6 +111,21 @@ impl TaskRepository for FakeTaskRepo {
         _: TaskId,
     ) -> Result<String, MinervaError> {
         Ok(DeclarationDocument::template())
+    }
+    fn read_declaration_freshness(
+        &self,
+        _: &Path,
+        task_id: TaskId,
+    ) -> Result<DeclarationFreshnessProbe, MinervaError> {
+        let task = self.read_task(Path::new("."), task_id)?;
+        Ok(DeclarationFreshnessProbe {
+            declaration_updated_at: task.declaration.updated_at,
+            task_updated_at: task.updated_at,
+            instructions_updated_at: None,
+            relationships_updated_at: None,
+            covered_commit_hash: task.declaration.commit_hash,
+            current_commit_hash: None,
+        })
     }
     fn update_task(&self, _: &Path, _: &Task) -> Result<TaskWriteResult, MinervaError> {
         unreachable!()

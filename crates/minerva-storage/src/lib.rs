@@ -23,6 +23,7 @@ mod task_document_parts;
 mod task_event_record;
 mod task_events;
 mod task_files;
+mod task_freshness;
 mod task_hierarchy;
 mod task_lock;
 mod task_markdown;

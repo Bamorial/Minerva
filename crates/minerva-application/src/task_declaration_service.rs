@@ -1,9 +1,6 @@
 use crate::{EditorLauncher, ProjectRepository, TaskRepository};
 use minerva_domain::{DeclarationActor, DeclarationDocument, MinervaError};
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::path::{Path, PathBuf};
 
 pub struct TaskDeclarationService;
 
@@ -29,7 +26,7 @@ impl TaskDeclarationService {
                 task.id,
                 task.version,
                 actor(),
-                git_head(&root),
+                crate::git_support::git_head(&root),
                 &after,
             )?;
         }
@@ -43,17 +40,4 @@ fn actor() -> DeclarationActor {
         .filter(|value| !value.trim().is_empty())
         .and_then(|value| DeclarationActor::agent(value).ok())
         .unwrap_or(DeclarationActor::Human)
-}
-
-fn git_head(root: &Path) -> Option<String> {
-    let output = Command::new("git")
-        .args(["rev-parse", "HEAD"])
-        .current_dir(root)
-        .output()
-        .ok()?;
-    output
-        .status
-        .success()
-        .then(|| String::from_utf8_lossy(&output.stdout).trim().to_string())
-        .filter(|value| !value.is_empty())
 }

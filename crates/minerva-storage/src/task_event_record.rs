@@ -1,8 +1,8 @@
 use humantime::format_rfc3339;
 use minerva_domain::{EventId, Task, TaskEventKind};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct TaskEventRecord {
     pub id: EventId,
     pub kind: TaskEventKind,

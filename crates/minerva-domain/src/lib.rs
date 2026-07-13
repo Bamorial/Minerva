@@ -2,6 +2,7 @@ mod archive_state;
 mod context_policy;
 mod declaration_actor;
 mod declaration_document;
+mod declaration_freshness;
 mod declaration_metadata;
 mod error;
 mod error_code;
@@ -33,6 +34,10 @@ pub use archive_state::ArchiveState;
 pub use context_policy::ContextPolicy;
 pub use declaration_actor::DeclarationActor;
 pub use declaration_document::DeclarationDocument;
+pub use declaration_freshness::{
+    DeclarationFreshness, DeclarationFreshnessProbe, DeclarationFreshnessReason,
+    DeclarationFreshnessReport,
+};
 pub use declaration_metadata::DeclarationMetadata;
 pub use error::MinervaError;
 pub use error_code::ErrorCode;
