@@ -10,6 +10,7 @@ impl ProjectLock {
         Ok(Self(FileLock::acquire(layout.project_lock_file())?))
     }
 
+    #[must_use]
     pub fn path(&self) -> &Path {
         self.0.path()
     }

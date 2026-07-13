@@ -144,7 +144,7 @@ pub fn update_task_declaration(
     root: &Path,
     task_id: TaskId,
     version: TaskVersion,
-    actor: DeclarationActor,
+    actor: &DeclarationActor,
     commit_hash: Option<String>,
     contents: &str,
 ) -> Result<TaskWriteResult, MinervaError> {

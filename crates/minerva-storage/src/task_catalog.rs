@@ -26,13 +26,11 @@ pub fn resolve_task(
     task_ref: &str,
 ) -> Result<Task, MinervaError> {
     if let Ok(task_id) = task_ref.parse::<TaskId>() {
-        return layout
-            .task_file(task_id)
-            .exists()
-            .then(|| read_task(layout, task_id))
-            .unwrap_or_else(|| {
-                Err(MinervaError::TaskNotFound { task_ref: task_ref.into() })
-            });
+        return if layout.task_file(task_id).exists() {
+            read_task(layout, task_id)
+        } else {
+            Err(MinervaError::TaskNotFound { task_ref: task_ref.into() })
+        };
     }
     let matches = search_tasks(layout, task_ref)?;
     match matches.as_slice() {
@@ -40,7 +38,7 @@ pub fn resolve_task(
         [task] => Ok(task.clone()),
         _ => Err(MinervaError::AmbiguousTaskReference {
             task_ref: task_ref.into(),
-            matches: matches.into_iter().map(label).collect(),
+            matches: matches.iter().map(label).collect(),
         }),
     }
 }
@@ -53,6 +51,6 @@ fn contains(title: &str, query: &str) -> bool {
     title.to_lowercase().contains(&query.trim().to_lowercase())
 }
 
-fn label(task: Task) -> String {
+fn label(task: &Task) -> String {
     format!("{} {}", task.id, task.title)
 }

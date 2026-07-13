@@ -16,8 +16,7 @@ fn visit(
     state: &mut BTreeMap<TaskId, Visit>,
 ) -> Result<(), MinervaError> {
     match state.get(&id) {
-        Some(Visit::Done) => return Ok(()),
-        Some(Visit::Active) => return Ok(()),
+        Some(Visit::Done | Visit::Active) => return Ok(()),
         None => {}
     }
     state.insert(id, Visit::Active);

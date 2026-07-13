@@ -93,7 +93,7 @@ fn create(
         relationship_type,
         reason,
     )
-    .map(relationship_output::created)
+    .map(|relationship| relationship_output::created(&relationship))
 }
 
 fn remove(
@@ -114,7 +114,7 @@ fn remove(
         target_task.id,
         relationship_type,
     )
-    .map(relationship_output::removed)
+    .map(|relationship| relationship_output::removed(&relationship))
 }
 
 fn parse_general(value: &str) -> Result<RelationshipType, MinervaError> {

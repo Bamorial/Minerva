@@ -32,7 +32,7 @@ fn instructions_updated_at(
         .map(|event| {
             parse_rfc3339(&event.recorded_at).map_err(|err| schema(&path, err))
         })
-        .last()
+        .next_back()
         .transpose()
 }
 

@@ -43,7 +43,7 @@ fn completion_persists_status_change_when_declaration_is_valid() {
     .unwrap();
     assert_eq!(result.task.status.as_str(), "completed");
     assert_eq!(result.write_result.previous_version, Some(TaskVersion::initial()));
-    assert_eq!(repo.transitioned.borrow().as_ref().unwrap().1, false);
+    assert!(!repo.transitioned.borrow().as_ref().unwrap().1);
 }
 
 #[test]
@@ -62,7 +62,7 @@ fn completion_override_bypasses_validation_and_is_audited() {
     )
     .unwrap();
     assert_eq!(result.task.status.as_str(), "completed");
-    assert_eq!(repo.transitioned.borrow().as_ref().unwrap().1, true);
+    assert!(repo.transitioned.borrow().as_ref().unwrap().1);
 }
 
 fn project_repo() -> FakeProjectRepo {

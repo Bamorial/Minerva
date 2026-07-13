@@ -13,6 +13,7 @@ pub struct LayoutEntry {
 }
 
 impl LayoutEntry {
+    #[must_use]
     pub const fn new(
         relative_path: &'static str,
         class: LayoutClass,

@@ -79,16 +79,16 @@ fn item(all: &BTreeMap<TaskId, Task>, task: Task) -> TaskListItem {
 fn sort(tasks: &mut [Task], sort: TaskListSort) {
     match sort {
         TaskListSort::Created => {
-            tasks.sort_by_key(|task| (Reverse(task.created_at), task.id))
+            tasks.sort_by_key(|task| (Reverse(task.created_at), task.id));
         }
         TaskListSort::Updated => {
-            tasks.sort_by_key(|task| (Reverse(task.updated_at), task.id))
+            tasks.sort_by_key(|task| (Reverse(task.updated_at), task.id));
         }
         TaskListSort::Priority => {
-            tasks.sort_by_key(|task| (Reverse(priority(task.priority)), task.id))
+            tasks.sort_by_key(|task| (Reverse(priority(task.priority)), task.id));
         }
         TaskListSort::Title => {
-            tasks.sort_by_cached_key(|task| (task.title.to_ascii_lowercase(), task.id))
+            tasks.sort_by_cached_key(|task| (task.title.to_ascii_lowercase(), task.id));
         }
         TaskListSort::Id => tasks.sort_by_key(|task| task.id),
     }

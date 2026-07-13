@@ -3,8 +3,8 @@ use minerva_application::{TaskTreeNode, TaskTreeResult};
 use minerva_domain::ArchiveState;
 use serde_json::json;
 
-pub fn render(result: TaskTreeResult) -> CommandOutput {
-    CommandOutput::with_json(text(&result), json(&result))
+pub fn render(result: &TaskTreeResult) -> CommandOutput {
+    CommandOutput::with_json(text(result), json(result))
 }
 
 fn text(result: &TaskTreeResult) -> String {

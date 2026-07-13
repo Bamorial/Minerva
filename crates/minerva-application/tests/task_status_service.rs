@@ -14,7 +14,7 @@ fn status_transition_persists_changes() {
         &repo,
         Path::new("."),
         &task.id.to_string(),
-        StatusKey::new("completed").unwrap(),
+        &StatusKey::new("completed").unwrap(),
     )
     .unwrap();
     assert_eq!(result.task.status.as_str(), "completed");
@@ -32,7 +32,7 @@ fn reapplying_same_status_is_a_noop() {
         &repo,
         Path::new("."),
         &task.id.to_string(),
-        StatusKey::new("completed").unwrap(),
+        &StatusKey::new("completed").unwrap(),
     )
     .unwrap();
     assert_eq!(result.write_result.event_id, None);

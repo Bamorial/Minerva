@@ -13,14 +13,14 @@ use minerva_application::{
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::{env, process::ExitCode};
 
-pub fn run(cli: Cli) -> ExitCode {
-    match execute(&cli) {
-        Ok(output_text) => output::success(&cli, output_text),
+pub fn run(cli: &Cli) -> ExitCode {
+    match execute(cli) {
+        Ok(output_text) => output::success(cli, &output_text),
         Err(Failure::Domain(error)) => {
-            output::domain(&cli, render_cli(&error), error.code())
+            output::domain(cli, render_cli(&error), error.code())
         }
         Err(Failure::Rebuild(result, dry_run)) => {
-            output::rebuild(&cli, &render_rebuild(&result, dry_run), &result)
+            output::rebuild(cli, &render_rebuild(&result, dry_run), &result)
         }
         Err(Failure::Internal(message)) => output::internal(&message),
     }
@@ -53,7 +53,7 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
                 .map_err(Failure::Domain)
         }
         Command::Show(args) => {
-            show(&project_repo, &task_repo, &root, args).map_err(Failure::Domain)
+            show(&project_repo, task_repo, &root, args).map_err(Failure::Domain)
         }
         Command::Status(args) => {
             status_command::set(&project_repo, &task_repo, &root, args)
@@ -131,13 +131,13 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
 
 fn show(
     project_repo: &impl ProjectRepository,
-    task_repo: &FilesystemTaskRepository,
+    task_repo: FilesystemTaskRepository,
     root: &std::path::Path,
     args: &ShowArgs,
 ) -> Result<CommandOutput, minerva_domain::MinervaError> {
     TaskShowService::show(
         project_repo,
-        task_repo,
+        &task_repo,
         root,
         &args.task_ref,
         &TaskShowOptions {
@@ -145,7 +145,7 @@ fn show(
             include_declaration: args.declaration,
         },
     )
-    .map(show_output::render)
+    .map(|result| show_output::render(&result))
 }
 
 enum Failure {

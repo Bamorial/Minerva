@@ -13,7 +13,7 @@ fn main() {
 }
 
 fn run() -> Result<String, MinervaError> {
-    let root = std::env::current_dir().map_err(io_error)?;
+    let root = std::env::current_dir().map_err(|error| io_error(&error))?;
     let project_repo = FilesystemProjectRepository;
     let task_repo = FilesystemTaskRepository;
     let root = project_repo.locate_project_root(&root)?;
@@ -27,6 +27,6 @@ fn run() -> Result<String, MinervaError> {
     Ok(format!("{workspace}\n\n{task}"))
 }
 
-fn io_error(error: std::io::Error) -> MinervaError {
+fn io_error(error: &std::io::Error) -> MinervaError {
     MinervaError::InvalidConfiguration { key: "cwd".into(), reason: error.to_string() }
 }

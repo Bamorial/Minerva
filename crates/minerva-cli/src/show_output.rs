@@ -2,7 +2,7 @@ use crate::response::CommandOutput;
 use minerva_application::{TaskShowLink, TaskShowRelationship, TaskShowResult};
 use serde_json::json;
 
-pub fn render(result: TaskShowResult) -> CommandOutput {
+pub fn render(result: &TaskShowResult) -> CommandOutput {
     let text = result.render();
     let json = json!({
         "task": {

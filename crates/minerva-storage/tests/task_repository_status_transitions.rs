@@ -24,7 +24,7 @@ fn transition_task_records_status_event_and_override_flag() {
     let completed = TaskTransitionService::apply(
         &project(),
         &task,
-        StatusKey::new("completed").unwrap(),
+        &StatusKey::new("completed").unwrap(),
         UNIX_EPOCH,
     )
     .unwrap();

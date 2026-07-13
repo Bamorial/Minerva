@@ -13,7 +13,7 @@ pub fn children(
 ) -> Result<CommandOutput, MinervaError> {
     let root = project_repo.locate_project_root(root)?;
     TaskHierarchyQueryService::children(task_repo, &root, task_ref)
-        .map(hierarchy_output::children)
+        .map(|result| hierarchy_output::children(&result))
 }
 
 pub fn ancestors(
@@ -24,5 +24,5 @@ pub fn ancestors(
 ) -> Result<CommandOutput, MinervaError> {
     let root = project_repo.locate_project_root(root)?;
     TaskHierarchyQueryService::ancestors(task_repo, &root, task_ref)
-        .map(hierarchy_output::ancestors)
+        .map(|result| hierarchy_output::ancestors(&result))
 }

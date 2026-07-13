@@ -23,6 +23,7 @@ pub const TASK_TYPES: [(&str, &str); 6] = [
     ("chore.md", CHORE_TASK_TYPE),
 ];
 
+#[must_use]
 pub fn default_project(root: &Path) -> Project {
     let backlog = status("backlog");
     let in_progress = status("in-progress");
@@ -49,6 +50,7 @@ pub fn default_project(root: &Path) -> Project {
     .expect("default project is valid")
 }
 
+#[must_use]
 pub fn default_config() -> ProjectConfig {
     ProjectConfig::new(ProjectConfig {
         schema_version: 1,
@@ -59,6 +61,7 @@ pub fn default_config() -> ProjectConfig {
     .expect("default config is valid")
 }
 
+#[must_use]
 pub const fn agents_md() -> &'static str {
     "# Minerva Project\n\n\
 This repository uses Minerva for task and context management.\n\n\
@@ -74,6 +77,7 @@ Preferred operations:\n\n\
 - Keep detailed project guidance in `.minerva/instructions.md`.\n"
 }
 
+#[must_use]
 pub const fn instructions_md() -> &'static str {
     "# Project Instructions\n\nAdd repository-wide Minerva instructions here.\n"
 }

@@ -1,5 +1,6 @@
 use minerva_domain::Task;
 
+#[must_use]
 pub fn render_task_facts(task: &Task) -> String {
     let facts = &task.facts;
     [

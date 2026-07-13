@@ -14,6 +14,12 @@ impl EventId {
     }
 }
 
+impl Default for EventId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl std::fmt::Display for EventId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{PREFIX}{}", self.0)

@@ -12,7 +12,7 @@ fn dependencies_reject_self_links_and_missing_targets() {
     let self_link =
         Relationship::new(relationship(task.id, task.id, RelationshipType::DependsOn));
     let missing = validate_relationships(
-        &[task.clone()],
+        std::slice::from_ref(&task),
         &[relationship(task.id, ids.next_id(), RelationshipType::DependsOn)],
     );
     assert!(

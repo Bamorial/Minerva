@@ -21,7 +21,7 @@ pub fn execute(
     let result = TaskMovementService::move_task(
         task_repo,
         &root,
-        MoveTaskRequest { task_id: task.id, new_parent_id, version: task.version },
+        &MoveTaskRequest { task_id: task.id, new_parent_id, version: task.version },
     )?;
     let summary = new_parent_id
         .map_or_else(|| "to root".into(), |parent_id| format!("under {parent_id}"));
@@ -34,7 +34,7 @@ pub fn execute(
                 "version": result.task.version.get(),
             },
             "write": {
-                "previous_version": result.write_result.previous_version.map(|v| v.get()),
+                "previous_version": result.write_result.previous_version.map(minerva_domain::TaskVersion::get),
                 "current_version": result.write_result.current_version.get(),
                 "event_id": result.write_result.event_id,
             }

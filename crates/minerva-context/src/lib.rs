@@ -20,8 +20,10 @@ mod tests {
     use super::{compile_task_context, compile_workspace_context};
     use minerva_domain::{
         ArchiveState, DeclarationActor, DeclarationMetadata, StatusKey, Task,
-        TaskFacts, TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
+        TaskFacts, TaskIdAllocator, TaskPriority, TaskResources, TaskTypeKey,
+        TaskVersion,
     };
+    use std::collections::BTreeSet;
     use std::time::UNIX_EPOCH;
 
     #[test]
@@ -42,7 +44,7 @@ mod tests {
             status: StatusKey::new("backlog").unwrap(),
             parent_id: None,
             priority: TaskPriority::Medium,
-            tags: Default::default(),
+            tags: BTreeSet::default(),
             created_at: UNIX_EPOCH,
             updated_at: UNIX_EPOCH,
             completed_at: None,
@@ -59,7 +61,7 @@ mod tests {
                 migrations_required: true,
                 feature_flags: vec!["task-facts".into()],
                 acceptance_checks: vec!["round-trip persistence".into()],
-                resources: Default::default(),
+                resources: TaskResources::default(),
             },
             archive_state: ArchiveState::Active,
         })

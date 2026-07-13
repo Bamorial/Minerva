@@ -6,6 +6,7 @@ pub struct TuiErrorMessage {
     pub body: String,
 }
 
+#[must_use]
 pub fn render_tui(error: &MinervaError) -> TuiErrorMessage {
     TuiErrorMessage { title: title_for(error.code()), body: error.to_string() }
 }

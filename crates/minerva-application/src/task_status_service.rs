@@ -10,7 +10,7 @@ impl TaskStatusService {
         task_repo: &impl TaskRepository,
         root: &Path,
         task_ref: &str,
-        status: StatusKey,
+        status: &StatusKey,
     ) -> Result<TaskStatusResult, MinervaError> {
         let project = project_repo.load_project(root)?;
         let task = task_repo.resolve_task(root, task_ref)?;
@@ -22,7 +22,7 @@ impl TaskStatusService {
         task_repo: &impl TaskRepository,
         root: &Path,
         task: &Task,
-        status: StatusKey,
+        status: &StatusKey,
         completion_override: bool,
     ) -> Result<TaskStatusResult, MinervaError> {
         let next = TaskTransitionService::apply(

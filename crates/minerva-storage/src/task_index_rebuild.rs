@@ -85,8 +85,8 @@ fn task_error(
         task_ref: task_ref.into(),
         path: relative(layout, path),
         reason: match err {
-            MinervaError::SchemaError { reason, .. } => reason,
-            MinervaError::InvalidConfiguration { reason, .. } => reason,
+            MinervaError::SchemaError { reason, .. }
+            | MinervaError::InvalidConfiguration { reason, .. } => reason,
             other => other.to_string(),
         },
     }

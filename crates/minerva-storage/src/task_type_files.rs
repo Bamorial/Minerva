@@ -7,10 +7,10 @@ pub fn read_task_types(
 ) -> Result<Vec<TaskTypeDefinition>, MinervaError> {
     let dir = layout.task_types_dir();
     let mut paths = fs::read_dir(&dir)
-        .map_err(|err| io_schema(&dir, err))?
+        .map_err(|err| io_schema(&dir, &err))?
         .collect::<Result<Vec<_>, _>>()
-        .map_err(|err| io_schema(&dir, err))?;
-    paths.sort_by_key(|entry| entry.path());
+        .map_err(|err| io_schema(&dir, &err))?;
+    paths.sort_by_key(std::fs::DirEntry::path);
     let mut seen = HashSet::new();
     let mut task_types = Vec::new();
     for entry in paths {
@@ -21,7 +21,7 @@ pub fn read_task_types(
         let source =
             path.file_name().and_then(|value| value.to_str()).unwrap_or("task-type");
         let contents =
-            fs::read_to_string(&path).map_err(|err| io_schema(&path, err))?;
+            fs::read_to_string(&path).map_err(|err| io_schema(&path, &err))?;
         let task_type =
             parse_task_type(source, &contents).map_err(|err| schema(&path, err))?;
         if !seen.insert(task_type.name.clone()) {
@@ -50,7 +50,7 @@ fn schema(path: &std::path::Path, err: MinervaError) -> MinervaError {
     MinervaError::SchemaError { path: path.display().to_string(), reason }
 }
 
-fn io_schema(path: &std::path::Path, err: std::io::Error) -> MinervaError {
+fn io_schema(path: &std::path::Path, err: &std::io::Error) -> MinervaError {
     MinervaError::SchemaError {
         path: path.display().to_string(),
         reason: err.to_string(),

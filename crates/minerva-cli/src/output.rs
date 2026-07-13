@@ -1,14 +1,14 @@
 use crate::{cli::Cli, exit_code, response::CommandOutput};
 use minerva_application::{CliErrorReport, RebuildResult};
 use serde_json::json;
-use std::{io::Write, process::ExitCode};
+use std::process::ExitCode;
 
-pub fn success(cli: &Cli, output: CommandOutput) -> ExitCode {
+pub fn success(cli: &Cli, output: &CommandOutput) -> ExitCode {
     if cli.quiet {
         return ExitCode::SUCCESS;
     }
     if cli.json {
-        print_json(&success_json(cli, &output));
+        print_json(&success_json(cli, output));
         return ExitCode::SUCCESS;
     }
     if cli.verbose > 0 {
@@ -77,9 +77,9 @@ pub fn internal(message: &str) -> ExitCode {
 }
 
 #[rustfmt::skip]
-fn print_json(value: &serde_json::Value) { writeln!(std::io::stdout(), "{value}").unwrap(); }
+fn print_json(value: &serde_json::Value) { println!("{value}"); }
 #[rustfmt::skip]
-fn print_ejson(value: &serde_json::Value) { writeln!(std::io::stderr(), "{value}").unwrap(); }
+fn print_ejson(value: &serde_json::Value) { eprintln!("{value}"); }
 fn success_json(cli: &Cli, output: &CommandOutput) -> serde_json::Value {
     output.json.clone().map_or_else(
         || {

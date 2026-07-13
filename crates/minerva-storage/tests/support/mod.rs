@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::{
+    collections::BTreeSet,
     env, fs,
     path::PathBuf,
     time::{SystemTime, UNIX_EPOCH},
@@ -48,7 +49,7 @@ pub fn task(sequence: u32, title: &str) -> Task {
         status: StatusKey::new("in-progress").unwrap(),
         parent_id: None,
         priority: TaskPriority::Medium,
-        tags: Default::default(),
+        tags: BTreeSet::default(),
         created_at: UNIX_EPOCH,
         updated_at: UNIX_EPOCH,
         completed_at: None,

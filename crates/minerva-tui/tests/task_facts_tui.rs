@@ -1,9 +1,10 @@
 use minerva_application::{ProjectRepository, TaskCreateRecord, TaskRepository};
 use minerva_domain::{
-    DeclarationDocument, StatusKey, TaskFacts, TaskPriority, TaskTypeKey,
+    DeclarationDocument, StatusKey, TaskFacts, TaskPriority, TaskResources, TaskTypeKey,
 };
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::{
+    collections::BTreeSet,
     fs,
     path::PathBuf,
     process::Command,
@@ -24,7 +25,7 @@ fn tui_renders_task_facts_for_first_task() {
         migrations_required: false,
         feature_flags: vec!["task-facts".into()],
         acceptance_checks: vec!["render task facts".into()],
-        resources: Default::default(),
+        resources: TaskResources::default(),
     };
     FilesystemTaskRepository
         .create_task(
@@ -54,7 +55,7 @@ fn task() -> minerva_domain::Task {
         status: StatusKey::new("backlog").unwrap(),
         parent_id: None,
         priority: TaskPriority::Medium,
-        tags: Default::default(),
+        tags: BTreeSet::default(),
         created_at: now,
         updated_at: now,
         completed_at: None,

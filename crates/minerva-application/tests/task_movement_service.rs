@@ -13,7 +13,7 @@ fn movement_checks_parent_existence_and_returns_updated_task() {
     let result = TaskMovementService::move_task(
         &repo,
         Path::new("."),
-        MoveTaskRequest {
+        &MoveTaskRequest {
             task_id: child.id,
             new_parent_id: Some(parent.id),
             version: TaskVersion::initial(),
@@ -31,7 +31,7 @@ fn movement_rejects_missing_new_parents() {
     let error = TaskMovementService::move_task(
         &repo,
         Path::new("."),
-        MoveTaskRequest {
+        &MoveTaskRequest {
             task_id: "TSK-000001".parse().unwrap(),
             new_parent_id: Some("TSK-000999".parse().unwrap()),
             version: TaskVersion::initial(),

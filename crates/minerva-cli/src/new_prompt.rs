@@ -14,9 +14,9 @@ pub fn prompt(label: &str) -> Result<String, MinervaError> {
 
 pub fn prompt_optional(label: &str) -> Result<String, MinervaError> {
     print!("{label}");
-    io::stdout().flush().map_err(io_error)?;
+    io::stdout().flush().map_err(|err| io_error(&err))?;
     let mut input = String::new();
-    io::stdin().read_line(&mut input).map_err(io_error)?;
+    io::stdin().read_line(&mut input).map_err(|err| io_error(&err))?;
     Ok(input.trim().to_string())
 }
 
@@ -26,8 +26,7 @@ pub fn choose_type(
 ) -> Result<Option<TaskTypeKey>, MinervaError> {
     println!("Task type:");
     for (index, task_type) in task_types.iter().enumerate() {
-        let default_marker =
-            (task_type.name == *default).then_some(" (default)").unwrap_or("");
+        let default_marker = if task_type.name == *default { " (default)" } else { "" };
         println!("  {}. {}{}", index + 1, task_type.name, default_marker);
     }
     let choice = prompt_optional("Select task type by number (Enter for default): ")?;
@@ -64,7 +63,7 @@ fn invalid(key: &str) -> MinervaError {
     }
 }
 
-fn io_error(err: io::Error) -> MinervaError {
+fn io_error(err: &io::Error) -> MinervaError {
     MinervaError::InvalidConfiguration {
         key: "interactive".into(),
         reason: err.to_string(),

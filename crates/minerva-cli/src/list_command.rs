@@ -16,7 +16,7 @@ pub fn execute(
     args: &ListArgs,
 ) -> Result<CommandOutput, MinervaError> {
     TaskListService::list(project_repo, task_repo, root, &options(args)?)
-        .map(crate::list_output::render)
+        .map(|result| crate::list_output::render(&result))
 }
 
 fn options(args: &ListArgs) -> Result<TaskListOptions, MinervaError> {

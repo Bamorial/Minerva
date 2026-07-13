@@ -19,7 +19,7 @@ fn task_ids(layout: &MinervaLayout) -> Result<Vec<TaskId>, MinervaError> {
         .map_err(|err| schema(layout, err))?
         .filter_map(Result::ok)
         .filter_map(|entry| {
-            entry.file_type().ok().filter(|kind| kind.is_dir()).map(|_| entry)
+            entry.file_type().ok().filter(std::fs::FileType::is_dir).map(|_| entry)
         })
         .filter_map(|entry| {
             entry.file_name().to_str().and_then(|value| value.parse().ok())

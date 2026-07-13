@@ -8,7 +8,7 @@ impl TaskMovementService {
     pub fn move_task(
         task_repo: &impl TaskRepository,
         root: &Path,
-        request: MoveTaskRequest,
+        request: &MoveTaskRequest,
     ) -> Result<TaskMoveResult, MinervaError> {
         if let Some(parent_id) = request.new_parent_id {
             task_repo.read_task(root, parent_id)?;

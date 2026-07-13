@@ -13,6 +13,7 @@ impl TaskLock {
         Ok(Self(FileLock::acquire(layout.task_lock_file(task_id))?))
     }
 
+    #[must_use]
     pub fn path(&self) -> &Path {
         self.0.path()
     }
@@ -45,6 +46,7 @@ impl TaskLocks {
         Ok(Self { locks })
     }
 
+    #[must_use]
     pub fn paths(&self) -> Vec<PathBuf> {
         self.locks.iter().map(|lock| lock.path().to_path_buf()).collect()
     }

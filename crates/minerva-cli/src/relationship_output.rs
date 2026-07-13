@@ -2,19 +2,19 @@ use crate::response::CommandOutput;
 use minerva_domain::Relationship;
 use serde_json::json;
 
-pub fn created(relationship: Relationship) -> CommandOutput {
+pub fn created(relationship: &Relationship) -> CommandOutput {
     render("created", relationship)
 }
 
-pub fn removed(relationship: Relationship) -> CommandOutput {
+pub fn removed(relationship: &Relationship) -> CommandOutput {
     render("removed", relationship)
 }
 
-fn render(action: &str, relationship: Relationship) -> CommandOutput {
+fn render(action: &str, relationship: &Relationship) -> CommandOutput {
     CommandOutput::with_json(
         format!(
             "{action} {} {} -> {} ({})",
-            kind(&relationship),
+            kind(relationship),
             relationship.source_task,
             relationship.target_task,
             relationship.id
@@ -25,7 +25,7 @@ fn render(action: &str, relationship: Relationship) -> CommandOutput {
                 "id": relationship.id,
                 "source_task": relationship.source_task,
                 "target_task": relationship.target_task,
-                "type": kind(&relationship),
+                "type": kind(relationship),
                 "reason": relationship.reason,
             }
         }),

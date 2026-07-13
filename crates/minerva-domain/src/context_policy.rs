@@ -20,20 +20,20 @@ impl ContextPolicy {
     }
 
     pub fn validate(&self) -> Result<(), MinervaError> {
-        validate_non_zero("context_policy.max_items", self.max_items)?;
+        validate_non_zero("context_policy.max_items", &self.max_items)?;
         validate_non_zero(
             "context_policy.max_dependency_hops",
-            self.max_dependency_hops,
+            &self.max_dependency_hops,
         )?;
-        validate_non_zero("context_policy.stale_after_hours", self.stale_after_hours)
+        validate_non_zero("context_policy.stale_after_hours", &self.stale_after_hours)
     }
 }
 
-fn validate_non_zero<T>(key: &str, value: T) -> Result<(), MinervaError>
+fn validate_non_zero<T>(key: &str, value: &T) -> Result<(), MinervaError>
 where
     T: Default + PartialEq,
 {
-    if value == T::default() {
+    if value == &T::default() {
         return Err(MinervaError::InvalidConfiguration {
             key: key.into(),
             reason: "must be greater than zero".into(),

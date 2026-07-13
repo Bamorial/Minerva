@@ -42,10 +42,12 @@ const TASK_LAYOUT: [LayoutEntry; 6] = [
     ),
 ];
 
+#[must_use]
 pub const fn project_layout() -> &'static [LayoutEntry] {
     &PROJECT_LAYOUT
 }
 
+#[must_use]
 pub const fn task_layout() -> &'static [LayoutEntry] {
     &TASK_LAYOUT
 }

@@ -13,7 +13,7 @@ pub fn execute(
     args: &TreeArgs,
 ) -> Result<CommandOutput, MinervaError> {
     TaskTreeService::tree(project_repo, task_repo, root, &options(args)?)
-        .map(crate::tree_output::render)
+        .map(|result| crate::tree_output::render(&result))
 }
 
 fn options(args: &TreeArgs) -> Result<TaskTreeOptions, MinervaError> {

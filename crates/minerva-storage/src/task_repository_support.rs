@@ -6,13 +6,11 @@ pub fn read_existing(
     layout: &MinervaLayout,
     task_id: TaskId,
 ) -> Result<Task, MinervaError> {
-    layout
-        .task_file(task_id)
-        .exists()
-        .then(|| load_task(layout, task_id))
-        .unwrap_or_else(|| {
-            Err(MinervaError::TaskNotFound { task_ref: task_id.to_string() })
-        })
+    if layout.task_file(task_id).exists() {
+        load_task(layout, task_id)
+    } else {
+        Err(MinervaError::TaskNotFound { task_ref: task_id.to_string() })
+    }
 }
 
 pub fn archive(

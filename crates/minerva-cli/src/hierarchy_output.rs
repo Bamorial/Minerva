@@ -3,12 +3,12 @@ use minerva_application::TaskHierarchyQueryResult;
 use minerva_domain::Task;
 use serde_json::json;
 
-pub fn children(result: TaskHierarchyQueryResult) -> CommandOutput {
+pub fn children(result: &TaskHierarchyQueryResult) -> CommandOutput {
     let summary = format!("{} has {} children", result.task.id, result.items.len());
     CommandOutput::with_json(lines(summary, &result.items), body("children", result))
 }
 
-pub fn ancestors(result: TaskHierarchyQueryResult) -> CommandOutput {
+pub fn ancestors(result: &TaskHierarchyQueryResult) -> CommandOutput {
     let summary = format!("{} has {} ancestors", result.task.id, result.items.len());
     CommandOutput::with_json(lines(summary, &result.items), body("ancestors", result))
 }
@@ -23,7 +23,7 @@ fn line(task: &Task) -> String {
     format!("{} [{}] {}", task.id, task.status, task.title)
 }
 
-fn body(kind: &str, result: TaskHierarchyQueryResult) -> serde_json::Value {
+fn body(kind: &str, result: &TaskHierarchyQueryResult) -> serde_json::Value {
     json!({
         "kind": kind,
         "task": item(&result.task),

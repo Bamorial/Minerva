@@ -15,8 +15,8 @@ pub fn set(
 ) -> Result<CommandOutput, MinervaError> {
     let status = StatusKey::new(&args.status)?;
     let result =
-        TaskStatusService::set(project_repo, task_repo, root, &args.task_ref, status)?;
-    Ok(render(result.task, result.write_result))
+        TaskStatusService::set(project_repo, task_repo, root, &args.task_ref, &status)?;
+    Ok(render(&result.task, &result.write_result))
 }
 
 pub fn complete(
@@ -36,7 +36,7 @@ pub fn complete(
             allow_declaration_override: false,
         },
     )?;
-    Ok(render(result.task, result.write_result))
+    Ok(render(&result.task, &result.write_result))
 }
 
 pub fn reopen(
@@ -47,11 +47,11 @@ pub fn reopen(
 ) -> Result<CommandOutput, MinervaError> {
     let status = StatusKey::new("in-progress").unwrap();
     let result =
-        TaskStatusService::set(project_repo, task_repo, root, task_ref, status)?;
-    Ok(render(result.task, result.write_result))
+        TaskStatusService::set(project_repo, task_repo, root, task_ref, &status)?;
+    Ok(render(&result.task, &result.write_result))
 }
 
-fn render(task: Task, write_result: TaskWriteResult) -> CommandOutput {
+fn render(task: &Task, write_result: &TaskWriteResult) -> CommandOutput {
     let changed = write_result.event_id.is_some();
     let text = if changed {
         format!("{} -> {} (v{})", task.id, task.status, task.version.get())
@@ -67,7 +67,7 @@ fn render(task: Task, write_result: TaskWriteResult) -> CommandOutput {
             },
             "changed": changed,
             "write": {
-                "previous_version": write_result.previous_version.map(|v| v.get()),
+                "previous_version": write_result.previous_version.map(minerva_domain::TaskVersion::get),
                 "current_version": write_result.current_version.get(),
                 "event_id": write_result.event_id,
             }

@@ -32,7 +32,7 @@ impl TaskCompletionService {
             task_repo,
             root,
             &task,
-            StatusKey::new("completed").unwrap(),
+            &StatusKey::new("completed").unwrap(),
             request.allow_declaration_override,
         )?;
         Ok(TaskCompletionResult {

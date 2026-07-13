@@ -14,17 +14,17 @@ impl TaskTransitionService {
     pub fn apply(
         project: &Project,
         task: &Task,
-        to: StatusKey,
+        to: &StatusKey,
         at: SystemTime,
     ) -> Result<TaskTransitionOutcome, MinervaError> {
-        if task.status == to {
+        if task.status == *to {
             return Ok(TaskTransitionOutcome {
                 previous: task.clone(),
                 current: task.clone(),
                 changed: false,
             });
         }
-        if !project.can_transition(&task.status, &to) {
+        if !project.can_transition(&task.status, to) {
             return Err(MinervaError::InvalidStatusTransition {
                 from: task.status.to_string(),
                 to: to.to_string(),
@@ -33,7 +33,7 @@ impl TaskTransitionService {
         let current = Task::new(Task {
             status: to.clone(),
             updated_at: at,
-            completed_at: completed_at(task, &to, at),
+            completed_at: completed_at(task, to, at),
             version: task.version.next(),
             ..task.clone()
         })?;

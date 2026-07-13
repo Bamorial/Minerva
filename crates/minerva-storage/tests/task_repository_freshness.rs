@@ -22,7 +22,7 @@ fn instruction_updates_mark_declarations_stale() {
         "# Feature\n\nEdited.\n",
     )
     .unwrap();
-    let report = report(&repo, &root, task.id);
+    let report = report(repo, &root, task.id);
     assert_eq!(
         report.reasons,
         vec![DeclarationFreshnessReason::InstructionsUpdatedAfterDeclaration]
@@ -43,7 +43,7 @@ fn relationship_updates_mark_declarations_stale() {
         &relationship(left.id, right.id, RelationshipType::RelatedTo, None),
     )
     .unwrap();
-    let report = report(&repo, &root, left.id);
+    let report = report(repo, &root, left.id);
     assert_eq!(
         report.reasons,
         vec![DeclarationFreshnessReason::RelationshipsUpdatedAfterDeclaration]
@@ -60,7 +60,7 @@ fn task_metadata_updates_without_file_changes_mark_declarations_stale() {
     repo.create_task(&root, &record(parent.clone())).unwrap();
     sleep(Duration::from_millis(20));
     repo.move_task(&root, child.id, Some(parent.id), child.version).unwrap();
-    let report = report(&repo, &root, child.id);
+    let report = report(repo, &root, child.id);
     assert_eq!(
         report.reasons,
         vec![DeclarationFreshnessReason::TaskMetadataUpdatedAfterDeclaration]
@@ -76,7 +76,7 @@ fn record(task: minerva_domain::Task) -> TaskCreateRecord {
 }
 
 fn report(
-    repo: &FilesystemTaskRepository,
+    repo: FilesystemTaskRepository,
     root: &std::path::Path,
     task_id: minerva_domain::TaskId,
 ) -> minerva_domain::DeclarationFreshnessReport {

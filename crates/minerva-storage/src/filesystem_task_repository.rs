@@ -92,7 +92,7 @@ impl TaskRepository for FilesystemTaskRepository {
             root,
             task_id,
             version,
-            actor,
+            &actor,
             commit_hash,
             contents,
         )

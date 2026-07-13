@@ -10,6 +10,7 @@ use minerva_domain::{
 };
 use minerva_storage::FilesystemTaskRepository;
 use std::{
+    collections::BTreeSet,
     fs,
     os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
@@ -34,7 +35,7 @@ pub fn temp_dir(name: &str) -> PathBuf {
 }
 
 #[allow(dead_code)]
-pub fn write_editor(root: &PathBuf, name: &str, body: &str) -> PathBuf {
+pub fn write_editor(root: &Path, name: &str, body: &str) -> PathBuf {
     let path = root.join(name);
     fs::write(&path, format!("#!/bin/sh\nset -eu\n{body}")).unwrap();
     let mut perms = fs::metadata(&path).unwrap().permissions();
@@ -76,7 +77,7 @@ pub fn task(sequence: u32, title: &str) -> Task {
         status: StatusKey::new("backlog").unwrap(),
         parent_id: None,
         priority: TaskPriority::Medium,
-        tags: Default::default(),
+        tags: BTreeSet::default(),
         created_at: UNIX_EPOCH,
         updated_at: UNIX_EPOCH,
         completed_at: None,

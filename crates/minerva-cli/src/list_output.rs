@@ -4,8 +4,8 @@ use minerva_domain::{ArchiveState, TaskPriority};
 use serde_json::json;
 use std::fmt::Write;
 
-pub fn render(result: TaskListResult) -> CommandOutput {
-    CommandOutput::with_json(text(&result), json(&result))
+pub fn render(result: &TaskListResult) -> CommandOutput {
+    CommandOutput::with_json(text(result), json(result))
 }
 
 fn text(result: &TaskListResult) -> String {
@@ -60,7 +60,7 @@ fn task(value: &TaskListItem) -> serde_json::Value {
         "priority": priority(value.task.priority),
         "archive_state": archive(value.task.archive_state),
         "parent": value.parent.as_ref().map(|parent| json!({"id": &parent.id, "title": &parent.title})),
-        "tags": value.task.tags.iter().map(|value| value.as_str()).collect::<Vec<_>>(),
+        "tags": value.task.tags.iter().map(minerva_domain::TaskTag::as_str).collect::<Vec<_>>(),
         "timestamps": {
             "created_at": humantime::format_rfc3339(value.task.created_at).to_string(),
             "updated_at": humantime::format_rfc3339(value.task.updated_at).to_string(),
@@ -70,7 +70,13 @@ fn task(value: &TaskListItem) -> serde_json::Value {
 }
 
 fn tags(value: &TaskListItem) -> String {
-    value.task.tags.iter().map(|value| value.as_str()).collect::<Vec<_>>().join(",")
+    value
+        .task
+        .tags
+        .iter()
+        .map(minerva_domain::TaskTag::as_str)
+        .collect::<Vec<_>>()
+        .join(",")
 }
 const fn sort(value: TaskListSort) -> &'static str {
     match value {

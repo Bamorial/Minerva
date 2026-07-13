@@ -1,7 +1,7 @@
 use crate::{EditorCommand, EditorSource, editor_parser::parse_editor};
 use minerva_domain::MinervaError;
 
-/// Resolution order: MINERVA_EDITOR, VISUAL, EDITOR, configured editor,
+/// Resolution order: `MINERVA_EDITOR`, `VISUAL`, `EDITOR`, configured editor,
 /// then a platform fallback. Unix-like targets default to `nvim`; Windows
 /// defaults to `notepad`. GUI editors should include their own wait flag.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]

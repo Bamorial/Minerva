@@ -10,7 +10,7 @@ fn reapplying_same_status_is_a_noop() {
     let outcome = TaskTransitionService::apply(
         &task_transition_support::project(),
         &task,
-        StatusKey::new("in-progress").unwrap(),
+        &StatusKey::new("in-progress").unwrap(),
         UNIX_EPOCH + Duration::from_secs(10),
     )
     .unwrap();
@@ -23,7 +23,7 @@ fn completion_metadata_is_set_and_cleared_by_reopen() {
     let completed = TaskTransitionService::apply(
         &task_transition_support::project(),
         &task_transition_support::task("review", None),
-        StatusKey::new("completed").unwrap(),
+        &StatusKey::new("completed").unwrap(),
         UNIX_EPOCH + Duration::from_secs(10),
     )
     .unwrap();
@@ -34,7 +34,7 @@ fn completion_metadata_is_set_and_cleared_by_reopen() {
     let reopened = TaskTransitionService::apply(
         &task_transition_support::project(),
         &completed.current,
-        StatusKey::new("in-progress").unwrap(),
+        &StatusKey::new("in-progress").unwrap(),
         UNIX_EPOCH + Duration::from_secs(20),
     )
     .unwrap();
