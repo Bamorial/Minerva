@@ -45,7 +45,18 @@ pub fn default_config() -> ProjectConfig {
 }
 
 pub const fn agents_md() -> &'static str {
-    "# Minerva Project\n\nThis repository uses Minerva for task management.\n"
+    "# Minerva Project\n\n\
+This repository uses Minerva for task and context management.\n\n\
+Before starting work:\n\n\
+1. Read `.minerva/instructions.md` for project-specific rules.\n\
+2. Read the current task's `task.md`, `instructions.md`, and `declaration.md`.\n\
+3. Prefer Minerva CLI or MCP operations over manual edits to task metadata.\n\
+4. Update `declaration.md` after meaningful progress, decisions, or blockers.\n\
+5. Validate task state before marking work complete.\n\n\
+Preferred operations:\n\n\
+- Create and update tasks through Minerva tools.\n\
+- Change status and dependencies through Minerva tools.\n\
+- Keep detailed project guidance in `.minerva/instructions.md`.\n"
 }
 
 pub const fn instructions_md() -> &'static str {

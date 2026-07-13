@@ -39,6 +39,7 @@ fn init_command_allows_preexisting_agents_file() {
     let output = run(&root, &["init"]);
     assert!(output.status.success(), "{output:?}");
     assert!(root.join(".minerva/project.yaml").is_file());
+    assert_eq!(fs::read_to_string(root.join("AGENTS.md")).unwrap(), "old contents\n");
     fs::remove_dir_all(root).unwrap();
 }
 

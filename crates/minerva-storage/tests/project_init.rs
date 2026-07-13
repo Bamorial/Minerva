@@ -9,6 +9,8 @@ use minerva_storage::{
 use std::fs;
 use support::temp_repo;
 
+const AGENTS_SNAPSHOT: &str = include_str!("fixtures/agents.md");
+
 #[test]
 fn init_creates_expected_layout_and_loadable_project_files() {
     let root = temp_repo("project-init");
@@ -25,7 +27,7 @@ fn init_creates_expected_layout_and_loadable_project_files() {
     assert_eq!(repo.load_project_config(&root).unwrap(), default_config());
     assert_eq!(read_project_config(&layout).unwrap(), default_config());
     assert_eq!(repo.read_project_instructions(&root).unwrap(), instructions_md());
-    assert_eq!(fs::read_to_string(root.join("AGENTS.md")).unwrap(), agents_md());
+    assert_eq!(fs::read_to_string(root.join("AGENTS.md")).unwrap(), AGENTS_SNAPSHOT);
     assert_eq!(
         fs::read_to_string(layout.schema_version_file()).unwrap(),
         SCHEMA_VERSION
@@ -51,7 +53,12 @@ fn init_allows_preexisting_agents_file_before_project_is_initialized() {
     fs::write(root.join("AGENTS.md"), "old contents\n").unwrap();
     repo.initialize_project(&root, false).unwrap();
     assert_eq!(repo.load_project_config(&root).unwrap(), default_config());
-    assert_eq!(fs::read_to_string(root.join("AGENTS.md")).unwrap(), agents_md());
+    assert_eq!(fs::read_to_string(root.join("AGENTS.md")).unwrap(), "old contents\n");
+}
+
+#[test]
+fn agents_md_matches_snapshot() {
+    assert_eq!(agents_md(), AGENTS_SNAPSHOT);
 }
 
 fn dirs(layout: &MinervaLayout) -> [std::path::PathBuf; 6] {

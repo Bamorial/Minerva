@@ -17,7 +17,7 @@ pub fn initialize_project(root: &Path, force: bool) -> Result<Project, MinervaEr
     write_project_config(&layout, &default_config())?;
     write_project_instructions(&layout, instructions_md())?;
     write_file(&layout.schema_version_file(), crate::SCHEMA_VERSION)?;
-    write_file(&root.join("AGENTS.md"), agents_md())?;
+    write_agents_file(root)?;
     for (name, contents) in TASK_TYPES {
         write_file(&layout.task_types_dir().join(name), contents)?;
     }
@@ -40,6 +40,14 @@ fn create_dirs(layout: &MinervaLayout) -> Result<(), MinervaError> {
 
 fn write_file(path: &Path, contents: &str) -> Result<(), MinervaError> {
     atomic_replace(path, contents.as_bytes()).map_err(|err| schema(path, err))
+}
+
+fn write_agents_file(root: &Path) -> Result<(), MinervaError> {
+    let path = root.join("AGENTS.md");
+    if path.exists() {
+        return Ok(());
+    }
+    write_file(&path, agents_md())
 }
 
 fn schema(path: &Path, err: impl std::fmt::Display) -> MinervaError {
