@@ -3,8 +3,8 @@ use crate::{
     TaskRepository, task_slug_builder::build_slug,
 };
 use minerva_domain::{
-    ArchiveState, DeclarationActor, DeclarationMetadata, MinervaError, Task,
-    TaskVersion,
+    ArchiveState, DeclarationActor, DeclarationDocument, DeclarationMetadata,
+    MinervaError, Task, TaskVersion,
 };
 use std::{path::Path, time::SystemTime};
 
@@ -55,15 +55,11 @@ impl TaskCreationService {
         let record = TaskCreateRecord {
             task: task.clone(),
             instructions: definition.instruction_template,
-            declaration: declaration_template(),
+            declaration: DeclarationDocument::template(),
         };
         let write_result = task_repo.create_task(root, &record)?;
         Ok(TaskCreationResult { task, write_result })
     }
-}
-
-fn declaration_template() -> String {
-    "# Declaration\n\nStatus:\n\nUnderstanding:\n\nCompleted:\n\nFiles:\n\nDecisions:\n\nRemaining:\n\nNext agent:\n".into()
 }
 
 fn unknown_type(value: &str) -> MinervaError {

@@ -4,7 +4,7 @@ use crate::{
     task_markdown::{read_optional_markdown, read_required_markdown, write_markdown},
     yaml_codec::{read_yaml, write_yaml},
 };
-use minerva_domain::{MinervaError, Task, TaskId};
+use minerva_domain::{DeclarationDocument, MinervaError, Task, TaskId};
 
 pub fn read_task(
     layout: &MinervaLayout,
@@ -51,7 +51,10 @@ pub fn read_task_declaration(
     layout: &MinervaLayout,
     task_id: TaskId,
 ) -> Result<String, MinervaError> {
-    read_required_markdown(&layout.declaration_file(task_id))
+    let path = layout.declaration_file(task_id);
+    let contents = read_required_markdown(&path)?;
+    DeclarationDocument::parse(&contents).map_err(|err| schema(&path, err))?;
+    Ok(contents)
 }
 
 pub fn write_task_declaration(
@@ -59,7 +62,9 @@ pub fn write_task_declaration(
     task_id: TaskId,
     contents: &str,
 ) -> Result<(), MinervaError> {
-    write_markdown(&layout.declaration_file(task_id), contents)
+    let path = layout.declaration_file(task_id);
+    DeclarationDocument::parse(contents).map_err(|err| schema(&path, err))?;
+    write_markdown(&path, contents)
 }
 
 pub fn read_task_notes(

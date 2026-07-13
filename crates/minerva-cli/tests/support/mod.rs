@@ -1,7 +1,7 @@
 use minerva_application::{TaskCreateRecord, TaskRepository};
 use minerva_domain::{
-    ArchiveState, DeclarationActor, DeclarationMetadata, StatusKey, Task,
-    TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
+    ArchiveState, DeclarationActor, DeclarationDocument, DeclarationMetadata,
+    StatusKey, Task, TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
 };
 use minerva_storage::FilesystemTaskRepository;
 use std::{
@@ -54,7 +54,7 @@ pub fn create_task(root: &Path, task: Task) {
             &TaskCreateRecord {
                 task,
                 instructions: "# Feature\n".into(),
-                declaration: "# Declaration\n".into(),
+                declaration: DeclarationDocument::template(),
             },
         )
         .unwrap();

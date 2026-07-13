@@ -1,7 +1,7 @@
 mod support;
 
 use minerva_application::{TaskCreateRecord, TaskRepository, TaskWriteResult};
-use minerva_domain::{ArchiveState, MinervaError};
+use minerva_domain::{ArchiveState, DeclarationDocument, MinervaError};
 use minerva_storage::{FilesystemTaskRepository, MinervaLayout};
 use std::fs;
 use support::{task, temp_repo};
@@ -14,7 +14,7 @@ fn repository_creates_updates_and_archives_tasks() {
     let record = TaskCreateRecord {
         task: created.clone(),
         instructions: "# Feature\n".into(),
-        declaration: "# Declaration\n".into(),
+        declaration: DeclarationDocument::template(),
     };
     let result = repo.create_task(&root, &record).unwrap();
     assert_eq!(result.previous_version, None);
@@ -26,7 +26,7 @@ fn repository_creates_updates_and_archives_tasks() {
     );
     assert_eq!(
         fs::read_to_string(task_dir.join("declaration.md")).unwrap(),
-        "# Declaration\n"
+        DeclarationDocument::template()
     );
     assert!(
         fs::read_to_string(task_dir.join("events.jsonl"))
@@ -63,7 +63,7 @@ fn stale_task_updates_report_version_conflicts() {
         &TaskCreateRecord {
             task: task.clone(),
             instructions: "# Feature\n".into(),
-            declaration: "# Declaration\n".into(),
+            declaration: DeclarationDocument::template(),
         },
     )
     .unwrap();

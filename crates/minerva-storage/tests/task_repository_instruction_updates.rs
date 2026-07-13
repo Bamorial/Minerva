@@ -1,6 +1,7 @@
 mod support;
 
 use minerva_application::{TaskCreateRecord, TaskRepository};
+use minerva_domain::DeclarationDocument;
 use minerva_storage::FilesystemTaskRepository;
 use std::time::UNIX_EPOCH;
 use support::{task, temp_repo};
@@ -15,7 +16,7 @@ fn repository_updates_task_metadata_and_records_instruction_events() {
         &TaskCreateRecord {
             task: task.clone(),
             instructions: "# Feature\n".into(),
-            declaration: "# Declaration\n".into(),
+            declaration: DeclarationDocument::template(),
         },
     )
     .unwrap();

@@ -8,10 +8,10 @@ use std::{
 
 use minerva_application::TaskCreateRecord;
 use minerva_domain::{
-    ArchiveState, ContextPolicy, DeclarationActor, DeclarationMetadata, Project,
-    ProjectId, Relationship, RelationshipId, RelationshipType, StatusDefinition,
-    StatusKey, StatusTransition, Task, TaskIdAllocator, TaskPriority, TaskSlug,
-    TaskTypeKey, TaskVersion,
+    ArchiveState, ContextPolicy, DeclarationActor, DeclarationDocument,
+    DeclarationMetadata, Project, ProjectId, Relationship, RelationshipId,
+    RelationshipType, StatusDefinition, StatusKey, StatusTransition, Task,
+    TaskIdAllocator, TaskPriority, TaskSlug, TaskTypeKey, TaskVersion,
 };
 
 pub fn fixture(name: &str) -> PathBuf {
@@ -33,7 +33,7 @@ pub fn create_record(task: Task) -> TaskCreateRecord {
     TaskCreateRecord {
         task,
         instructions: "# Feature\n".into(),
-        declaration: "# Declaration\n".into(),
+        declaration: DeclarationDocument::template(),
     }
 }
 

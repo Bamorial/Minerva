@@ -1,5 +1,6 @@
 mod support;
 
+use minerva_domain::DeclarationDocument;
 use minerva_domain::MinervaError;
 use minerva_storage::{
     MinervaLayout, read_task, read_task_declaration, read_task_instructions,
@@ -16,11 +17,12 @@ fn task_storage_round_trips_yaml_and_markdown() {
     let task = sample_task();
     write_task(&layout, &task).unwrap();
     write_task_instructions(&layout, task.id, "# Instructions\n").unwrap();
-    write_task_declaration(&layout, task.id, "# Declaration\n").unwrap();
+    let declaration = DeclarationDocument::template();
+    write_task_declaration(&layout, task.id, &declaration).unwrap();
     write_task_notes(&layout, task.id, "# Notes\n").unwrap();
     assert_eq!(read_task(&layout, task.id).unwrap(), task);
     assert_eq!(read_task_instructions(&layout, task.id).unwrap(), "# Instructions\n");
-    assert_eq!(read_task_declaration(&layout, task.id).unwrap(), "# Declaration\n");
+    assert_eq!(read_task_declaration(&layout, task.id).unwrap(), declaration);
     assert_eq!(read_task_notes(&layout, task.id).unwrap(), "# Notes\n");
 }
 

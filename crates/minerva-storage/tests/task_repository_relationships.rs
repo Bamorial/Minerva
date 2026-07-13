@@ -1,7 +1,7 @@
 mod support;
 
 use minerva_application::{TaskCreateRecord, TaskRepository};
-use minerva_domain::{MinervaError, RelationshipType};
+use minerva_domain::{DeclarationDocument, MinervaError, RelationshipType};
 use minerva_storage::FilesystemTaskRepository;
 use support::{relationship, task, temp_repo};
 
@@ -18,7 +18,7 @@ fn repository_manages_relationships_and_queries_by_source_and_target() {
             &TaskCreateRecord {
                 task: task.clone(),
                 instructions: "# Feature\n".into(),
-                declaration: "# Declaration\n".into(),
+                declaration: DeclarationDocument::template(),
             },
         )
         .unwrap();
