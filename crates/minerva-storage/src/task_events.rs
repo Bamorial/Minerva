@@ -1,5 +1,5 @@
 use crate::{MinervaLayout, atomic_replace, task_event_record::TaskEventRecord};
-use minerva_domain::{EventId, MinervaError, Task, TaskId};
+use minerva_domain::{EventId, MinervaError, StatusKey, Task, TaskId};
 use std::fs;
 
 pub fn append_created_event(
@@ -29,6 +29,19 @@ pub fn append_declaration_updated_event(
     task: &Task,
 ) -> Result<EventId, MinervaError> {
     append_event(layout, task, TaskEventRecord::declaration_updated(task))
+}
+
+pub fn append_status_updated_event(
+    layout: &MinervaLayout,
+    task: &Task,
+    from_status: StatusKey,
+    completion_override: bool,
+) -> Result<EventId, MinervaError> {
+    append_event(
+        layout,
+        task,
+        TaskEventRecord::status_updated(task, from_status, completion_override),
+    )
 }
 
 fn append_event(

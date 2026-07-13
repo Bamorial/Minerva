@@ -1,6 +1,6 @@
 use crate::{
     MinervaLayout, TaskLock, append_created_event, append_declaration_updated_event,
-    append_instructions_updated_event, append_moved_event,
+    append_instructions_updated_event, append_moved_event, append_status_updated_event,
     create_relationship as persist_relationship,
     remove_relationship as delete_relationship, task_hierarchy,
     task_repository_support, write_task as persist_task, write_task_declaration,
@@ -45,6 +45,30 @@ pub fn update_task(root: &Path, task: &Task) -> Result<TaskWriteResult, MinervaE
         previous_version: Some(previous.version),
         current_version: task.version,
         event_id: None,
+    })
+}
+
+pub fn transition_task(
+    root: &Path,
+    task: &Task,
+    completion_override: bool,
+) -> Result<TaskWriteResult, MinervaError> {
+    let layout = MinervaLayout::new(root);
+    let _lock = TaskLock::acquire(&layout, task.id)?;
+    let previous = task_repository_support::read_existing(&layout, task.id)?;
+    task.validate_successor(&previous)?;
+    task_hierarchy::validate_write(&layout, task)?;
+    persist_task(&layout, task)?;
+    let event_id = append_status_updated_event(
+        &layout,
+        task,
+        previous.status,
+        completion_override,
+    )?;
+    Ok(TaskWriteResult {
+        previous_version: Some(previous.version),
+        current_version: task.version,
+        event_id: Some(event_id),
     })
 }
 

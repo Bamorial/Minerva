@@ -64,14 +64,31 @@ impl ProjectRepository for FakeProjectRepo {
 pub struct FakeTaskRepo {
     pub next_id: TaskId,
     pub tasks: Vec<Task>,
+    pub declaration: String,
     pub created: RefCell<Option<TaskCreateRecord>>,
     pub moved: RefCell<Option<MoveTaskRequest>>,
+    pub transitioned: RefCell<Option<(Task, bool)>>,
 }
 
 impl FakeTaskRepo {
     pub fn new(last_id: u32, tasks: Vec<Task>) -> Self {
+        Self::with_declaration(last_id, tasks, DeclarationDocument::template())
+    }
+
+    pub fn with_declaration(
+        last_id: u32,
+        tasks: Vec<Task>,
+        declaration: String,
+    ) -> Self {
         let next_id = TaskIdAllocator::new(last_id).next_id();
-        Self { next_id, tasks, created: RefCell::new(None), moved: RefCell::new(None) }
+        Self {
+            next_id,
+            tasks,
+            declaration,
+            created: RefCell::new(None),
+            moved: RefCell::new(None),
+            transitioned: RefCell::new(None),
+        }
     }
 }
 
@@ -110,7 +127,7 @@ impl TaskRepository for FakeTaskRepo {
         _: &Path,
         _: TaskId,
     ) -> Result<String, MinervaError> {
-        Ok(DeclarationDocument::template())
+        Ok(self.declaration.clone())
     }
     fn read_declaration_freshness(
         &self,
@@ -129,6 +146,19 @@ impl TaskRepository for FakeTaskRepo {
     }
     fn update_task(&self, _: &Path, _: &Task) -> Result<TaskWriteResult, MinervaError> {
         unreachable!()
+    }
+    fn transition_task(
+        &self,
+        _: &Path,
+        task: &Task,
+        completion_override: bool,
+    ) -> Result<TaskWriteResult, MinervaError> {
+        self.transitioned.replace(Some((task.clone(), completion_override)));
+        Ok(TaskWriteResult {
+            previous_version: Some(TaskVersion::new(task.version.get() - 1).unwrap()),
+            current_version: task.version,
+            event_id: Some(EventId::new()),
+        })
     }
     fn update_task_instructions(
         &self,

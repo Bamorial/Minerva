@@ -7,4 +7,5 @@ pub enum TaskEventKind {
     TaskDeclarationUpdated,
     TaskInstructionsUpdated,
     TaskMoved,
+    TaskStatusUpdated,
 }

@@ -40,6 +40,12 @@ pub trait TaskRepository {
         root: &Path,
         task: &Task,
     ) -> Result<TaskWriteResult, MinervaError>;
+    fn transition_task(
+        &self,
+        root: &Path,
+        task: &Task,
+        completion_override: bool,
+    ) -> Result<TaskWriteResult, MinervaError>;
     fn update_task_instructions(
         &self,
         root: &Path,

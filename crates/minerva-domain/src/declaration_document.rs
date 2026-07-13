@@ -41,6 +41,28 @@ impl DeclarationDocument {
         Ok(Self)
     }
 
+    pub fn validate_completion(contents: &str) -> Result<(), MinervaError> {
+        Self::parse(contents)?;
+        let mut missing = Vec::new();
+        if !(has_content(contents, "Current State")
+            || has_content(contents, "Final State"))
+        {
+            missing.push("Current State or Final State");
+        }
+        for section in ["Completed Work", "Verification"] {
+            if !has_content(contents, section) {
+                missing.push(section);
+            }
+        }
+        if missing.is_empty() {
+            return Ok(());
+        }
+        invalid(
+            "declaration.completion",
+            &format!("missing content for {}", missing.join(", ")),
+        )
+    }
+
     #[must_use]
     pub fn content_hash(contents: &str) -> String {
         let mut hash = 0xcbf2_9ce4_8422_2325_u64;
@@ -50,6 +72,18 @@ impl DeclarationDocument {
         }
         format!("{hash:016x}")
     }
+}
+
+fn has_content(contents: &str, section: &str) -> bool {
+    section_body(contents, section).is_some_and(|body| !body.trim().is_empty())
+}
+
+fn section_body<'a>(contents: &'a str, section: &str) -> Option<&'a str> {
+    let heading = format!("## {section}");
+    let start = contents.find(&heading)?;
+    let body = &contents[start + heading.len()..];
+    let end = body.find("\n## ").unwrap_or(body.len());
+    Some(&body[..end])
 }
 
 fn invalid<T>(key: &str, reason: &str) -> Result<T, MinervaError> {

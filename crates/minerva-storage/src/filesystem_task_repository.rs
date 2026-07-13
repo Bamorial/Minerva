@@ -54,6 +54,18 @@ impl TaskRepository for FilesystemTaskRepository {
     ) -> Result<TaskWriteResult, MinervaError> {
         crate::task_repository_mutations::update_task(root, task)
     }
+    fn transition_task(
+        &self,
+        root: &Path,
+        task: &Task,
+        completion_override: bool,
+    ) -> Result<TaskWriteResult, MinervaError> {
+        crate::task_repository_mutations::transition_task(
+            root,
+            task,
+            completion_override,
+        )
+    }
     fn update_task_instructions(
         &self,
         root: &Path,
