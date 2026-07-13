@@ -119,7 +119,8 @@ name = "minerva-cli"
 version = "0.1.0"
 dependencies = [
  "minerva-application",
- "minerva-context",
+ "minerva-domain",
+ "minerva-storage",
 ]
 
 [[package]]

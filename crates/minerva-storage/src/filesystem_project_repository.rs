@@ -1,9 +1,9 @@
 use crate::{
-    MinervaLayout, read_project, read_project_instructions, write_project,
-    write_project_instructions,
+    MinervaLayout, initialize_project, read_project, read_project_config,
+    read_project_instructions, write_project, write_project_instructions,
 };
 use minerva_application::ProjectRepository;
-use minerva_domain::{MinervaError, Project};
+use minerva_domain::{MinervaError, Project, ProjectConfig};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -22,8 +22,20 @@ impl ProjectRepository for FilesystemProjectRepository {
         MinervaLayout::new(root).project_file().is_file()
     }
 
+    fn initialize_project(
+        &self,
+        root: &Path,
+        force: bool,
+    ) -> Result<Project, MinervaError> {
+        initialize_project(root, force)
+    }
+
     fn load_project(&self, root: &Path) -> Result<Project, MinervaError> {
         read_project(&MinervaLayout::new(root))
+    }
+
+    fn load_project_config(&self, root: &Path) -> Result<ProjectConfig, MinervaError> {
+        read_project_config(&MinervaLayout::new(root))
     }
 
     fn save_project(&self, root: &Path, project: &Project) -> Result<(), MinervaError> {

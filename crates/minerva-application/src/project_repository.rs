@@ -1,4 +1,4 @@
-use minerva_domain::{MinervaError, Project};
+use minerva_domain::{MinervaError, Project, ProjectConfig};
 use std::path::{Path, PathBuf};
 
 pub trait ProjectRepository {
@@ -6,7 +6,15 @@ pub trait ProjectRepository {
 
     fn is_initialized(&self, root: &Path) -> bool;
 
+    fn initialize_project(
+        &self,
+        root: &Path,
+        force: bool,
+    ) -> Result<Project, MinervaError>;
+
     fn load_project(&self, root: &Path) -> Result<Project, MinervaError>;
+
+    fn load_project_config(&self, root: &Path) -> Result<ProjectConfig, MinervaError>;
 
     fn save_project(&self, root: &Path, project: &Project) -> Result<(), MinervaError>;
 

@@ -17,6 +17,10 @@ impl MinervaLayout {
         self.root.join(".minerva")
     }
     #[must_use]
+    pub fn root(&self) -> &Path {
+        &self.root
+    }
+    #[must_use]
     pub fn project_file(&self) -> PathBuf {
         self.minerva_dir().join("project.yaml")
     }

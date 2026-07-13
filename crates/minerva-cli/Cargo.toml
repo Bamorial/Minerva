@@ -6,7 +6,8 @@ rust-version.workspace = true
 
 [dependencies]
 minerva-application.workspace = true
-minerva-context.workspace = true
+minerva-domain.workspace = true
+minerva-storage.workspace = true
 
 [lints]
 workspace = true

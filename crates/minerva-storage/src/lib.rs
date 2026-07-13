@@ -9,8 +9,10 @@ mod minerva_layout;
 mod project_document;
 mod project_document_parts;
 mod project_files;
+mod project_init;
 mod project_instructions;
 mod project_lock;
+mod project_scaffold;
 mod task_catalog;
 mod task_document;
 mod task_document_parts;
@@ -29,8 +31,13 @@ pub use minerva_layout::MinervaLayout;
 pub use project_files::{
     read_project, read_project_config, write_project, write_project_config,
 };
+pub use project_init::initialize_project;
 pub use project_instructions::{read_project_instructions, write_project_instructions};
 pub use project_lock::ProjectLock;
+pub use project_scaffold::{
+    SCHEMA_VERSION, TASK_TYPES, agents_md, default_config, default_project,
+    instructions_md,
+};
 pub use task_files::{
     read_task, read_task_declaration, read_task_instructions, read_task_notes,
     write_task, write_task_declaration, write_task_instructions, write_task_notes,
