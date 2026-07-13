@@ -33,6 +33,8 @@ mod task_show_result;
 mod task_show_service;
 mod task_slug_builder;
 mod task_status_service;
+mod task_tree_result;
+mod task_tree_service;
 
 pub use bootstrap_service::{BootstrapService, InterfaceDescription};
 pub use editor_command::{EditorCommand, EditorSource};
@@ -71,3 +73,5 @@ pub use task_show_result::{
 };
 pub use task_show_service::TaskShowService;
 pub use task_status_service::TaskStatusService;
+pub use task_tree_result::{TaskTreeNode, TaskTreeOptions, TaskTreeResult};
+pub use task_tree_service::TaskTreeService;

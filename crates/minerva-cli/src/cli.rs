@@ -1,4 +1,5 @@
 use crate::list_args::ListArgs;
+use crate::tree_args::TreeArgs;
 use clap::{ArgAction, Args, Parser, Subcommand};
 use std::path::PathBuf;
 
@@ -28,6 +29,7 @@ pub enum Command {
     },
     New(NewArgs),
     List(ListArgs),
+    Tree(TreeArgs),
     Show(ShowArgs),
     Instruction {
         task_ref: Option<String>,
@@ -72,6 +74,7 @@ impl Command {
             Self::Init { .. } => "init",
             Self::New(_) => "new",
             Self::List(_) => "list",
+            Self::Tree(_) => "tree",
             Self::Show(_) => "show",
             Self::Instruction { .. } => "instruction",
             Self::Declaration { .. } => "declaration",
