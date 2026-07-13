@@ -9,6 +9,9 @@ mod error_tui;
 mod git_support;
 mod project_instruction_service;
 mod project_repository;
+mod project_validation_finding;
+mod project_validation_result;
+mod project_validation_service;
 mod rebuild_action;
 mod rebuild_result;
 mod rebuild_service;
@@ -51,6 +54,11 @@ pub use error_mcp::{McpErrorData, McpErrorResponse, render_mcp};
 pub use error_tui::{TuiErrorMessage, render_tui};
 pub use project_instruction_service::ProjectInstructionService;
 pub use project_repository::ProjectRepository;
+pub use project_validation_finding::{ProjectValidationFinding, ValidationSeverity};
+pub use project_validation_result::{
+    ProjectValidationResult, ProjectValidationSummary,
+};
+pub use project_validation_service::ProjectValidationService;
 pub use rebuild_action::RebuildAction;
 pub use rebuild_result::{RebuildResult, RebuildTaskError};
 pub use rebuild_service::RebuildService;

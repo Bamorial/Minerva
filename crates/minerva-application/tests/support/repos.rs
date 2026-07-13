@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
 use minerva_application::{
-    MoveTaskRequest, ProjectRepository, RebuildAction, RebuildResult, TaskCreateRecord,
-    TaskLogReadResult, TaskRepository, TaskWriteResult,
+    MoveTaskRequest, ProjectRepository, ProjectValidationResult, RebuildAction,
+    RebuildResult, TaskCreateRecord, TaskLogReadResult, TaskRepository,
+    TaskWriteResult,
 };
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationDocument, DeclarationFreshnessProbe,
@@ -283,6 +284,12 @@ impl TaskRepository for FakeTaskRepo {
             index_action: RebuildAction::NoChange,
             task_errors: Vec::new(),
         })
+    }
+    fn validate_project_state(
+        &self,
+        _: &Path,
+    ) -> Result<ProjectValidationResult, MinervaError> {
+        Ok(ProjectValidationResult { findings: Vec::new() })
     }
 }
 

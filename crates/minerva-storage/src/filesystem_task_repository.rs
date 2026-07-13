@@ -1,7 +1,7 @@
 use crate::MinervaLayout;
 use minerva_application::{
-    RebuildResult, TaskCreateRecord, TaskLogEvent, TaskLogIssue, TaskLogReadResult,
-    TaskRepository, TaskWriteResult,
+    ProjectValidationResult, RebuildResult, TaskCreateRecord, TaskLogEvent,
+    TaskLogIssue, TaskLogReadResult, TaskRepository, TaskWriteResult,
 };
 use minerva_domain::{
     DeclarationActor, DeclarationFreshnessProbe, MinervaError, Relationship,
@@ -201,6 +201,12 @@ impl TaskRepository for FilesystemTaskRepository {
             &MinervaLayout::new(root),
             dry_run,
         )
+    }
+    fn validate_project_state(
+        &self,
+        root: &Path,
+    ) -> Result<ProjectValidationResult, MinervaError> {
+        crate::project_validation::validate_project_state(root)
     }
 }
 
