@@ -1,3 +1,7 @@
+mod editor_command;
+mod editor_environment;
+mod editor_launcher;
+mod editor_parser;
 mod error_cli;
 mod error_mcp;
 mod error_tui;
@@ -15,6 +19,9 @@ mod task_slug_builder;
 pub use error_cli::{CliErrorReport, render_cli};
 pub use error_mcp::{McpErrorData, McpErrorResponse, render_mcp};
 pub use error_tui::{TuiErrorMessage, render_tui};
+pub use editor_command::{EditorCommand, EditorSource};
+pub use editor_environment::EditorEnvironment;
+pub use editor_launcher::EditorLauncher;
 pub use project_repository::ProjectRepository;
 pub use task_create_record::TaskCreateRecord;
 pub use task_creation_request::CreateTaskRequest;
