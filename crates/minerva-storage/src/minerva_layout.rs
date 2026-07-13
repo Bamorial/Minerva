@@ -48,6 +48,10 @@ impl MinervaLayout {
         self.minerva_dir().join("indexes")
     }
     #[must_use]
+    pub fn task_index_file(&self) -> PathBuf {
+        self.indexes_dir().join("tasks.json")
+    }
+    #[must_use]
     pub fn contexts_dir(&self) -> PathBuf {
         self.minerva_dir().join("contexts")
     }

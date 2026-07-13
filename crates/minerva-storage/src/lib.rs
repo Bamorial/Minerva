@@ -28,11 +28,14 @@ mod task_events;
 mod task_files;
 mod task_freshness;
 mod task_hierarchy;
+mod task_index;
+mod task_index_document;
 mod task_lock;
 mod task_markdown;
 mod task_repository_mutations;
 mod task_repository_queries;
 mod task_repository_support;
+mod task_scan;
 mod task_type_document;
 mod task_type_files;
 mod yaml_codec;
@@ -70,6 +73,8 @@ pub use task_files::{
     read_task, read_task_declaration, read_task_instructions, read_task_notes,
     write_task, write_task_declaration, write_task_instructions, write_task_notes,
 };
+pub use task_index::{TaskIndexStatus, refresh_task_index, task_index_status};
+pub(crate) use task_index_document::TaskIndexDocument;
 pub use task_lock::{TaskLock, TaskLocks};
 pub use task_type_files::read_task_types;
 

@@ -2,7 +2,7 @@ use crate::{
     MinervaLayout, TaskLock, append_archived_event, append_created_event,
     append_declaration_updated_event, append_instructions_updated_event,
     append_parent_changed_event, append_status_changed_event,
-    create_relationship as persist_relationship,
+    create_relationship as persist_relationship, refresh_task_index,
     remove_relationship as delete_relationship, task_hierarchy,
     task_repository_support, write_task as persist_task, write_task_declaration,
     write_task_instructions, write_task_notes,
@@ -28,6 +28,7 @@ pub fn create_task(
     write_task_instructions(&layout, record.task.id, &record.instructions)?;
     write_task_declaration(&layout, record.task.id, &record.declaration)?;
     write_task_notes(&layout, record.task.id, "")?;
+    refresh_task_index(&layout)?;
     let event_id = append_created_event(&layout, &record.task)?;
     Ok(TaskWriteResult {
         previous_version: None,
@@ -42,6 +43,7 @@ pub fn update_task(root: &Path, task: &Task) -> Result<TaskWriteResult, MinervaE
     let previous = task_repository_support::read_existing(&layout, task.id)?;
     task_hierarchy::validate_write(&layout, task)?;
     persist_task(&layout, task)?;
+    refresh_task_index(&layout)?;
     Ok(TaskWriteResult {
         previous_version: Some(previous.version),
         current_version: task.version,
@@ -60,6 +62,7 @@ pub fn transition_task(
     task.validate_successor(&previous)?;
     task_hierarchy::validate_write(&layout, task)?;
     persist_task(&layout, task)?;
+    refresh_task_index(&layout)?;
     let event_id = append_status_changed_event(
         &layout,
         task,
@@ -128,6 +131,7 @@ pub fn update_task_instructions(
     };
     write_task_instructions(&layout, task_id, contents)?;
     persist_task(&layout, &updated)?;
+    refresh_task_index(&layout)?;
     let event_id = append_instructions_updated_event(&layout, &updated)?;
     Ok(TaskWriteResult {
         previous_version: Some(previous.version),
@@ -168,6 +172,7 @@ pub fn update_task_declaration(
     };
     write_task_declaration(&layout, task_id, contents)?;
     persist_task(&layout, &updated)?;
+    refresh_task_index(&layout)?;
     let event_id = append_declaration_updated_event(&layout, &updated, actor.clone())?;
     Ok(TaskWriteResult {
         previous_version: Some(previous.version),
@@ -187,6 +192,7 @@ pub fn archive_task(
     let archived =
         task_repository_support::archive(previous.clone(), &layout, version)?;
     persist_task(&layout, &archived)?;
+    refresh_task_index(&layout)?;
     let event_id = append_archived_event(&layout, &archived, previous.archive_state)?;
     Ok(TaskWriteResult {
         previous_version: Some(previous.version),
@@ -222,6 +228,7 @@ pub fn move_task(
     };
     task_hierarchy::validate_write(&layout, &moved)?;
     persist_task(&layout, &moved)?;
+    refresh_task_index(&layout)?;
     let event_id = append_parent_changed_event(&layout, &moved, previous.parent_id)?;
     let result = TaskWriteResult {
         previous_version: Some(previous.version),
