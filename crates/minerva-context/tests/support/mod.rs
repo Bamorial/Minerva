@@ -1,41 +1,13 @@
-use minerva_domain::{
-    ArchiveState, DeclarationActor, DeclarationMetadata, StatusKey, Task, TaskFacts,
-    TaskIdAllocator, TaskPriority, TaskResources, TaskTypeKey, TaskVersion,
-};
-use std::collections::BTreeSet;
-use std::time::UNIX_EPOCH;
+#![allow(unused_imports)]
 
-#[must_use]
-pub fn task() -> Task {
-    Task::new(Task {
-        schema_version: 1,
-        id: TaskIdAllocator::new(0).next_id(),
-        title: "Define task facts".into(),
-        slug: None,
-        task_type: TaskTypeKey::new("feature").unwrap(),
-        status: StatusKey::new("backlog").unwrap(),
-        parent_id: None,
-        priority: TaskPriority::Medium,
-        tags: BTreeSet::default(),
-        created_at: UNIX_EPOCH,
-        updated_at: UNIX_EPOCH,
-        completed_at: None,
-        version: TaskVersion::initial(),
-        declaration: DeclarationMetadata {
-            version: 1,
-            updated_at: UNIX_EPOCH,
-            updated_by: DeclarationActor::Human,
-            commit_hash: None,
-        },
-        facts: TaskFacts {
-            modules: vec!["minerva-domain".into()],
-            files: vec!["crates/minerva-domain/src/task_facts.rs".into()],
-            migrations_required: true,
-            feature_flags: vec!["task-facts".into()],
-            acceptance_checks: vec!["round-trip persistence".into()],
-            resources: TaskResources::default(),
-        },
-        archive_state: ArchiveState::Active,
-    })
-    .unwrap()
-}
+mod context_graph;
+mod repo_ops;
+mod sample_task;
+mod task_repo;
+
+pub use context_graph::realistic_graph;
+pub use repo_ops::{
+    refresh_declaration, relate, repo, stale_task, write_project_instructions,
+};
+pub use sample_task::task;
+pub use task_repo::persist_task;

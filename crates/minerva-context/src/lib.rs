@@ -1,8 +1,18 @@
 mod context_budget;
 mod context_budget_error;
 mod context_budget_report;
+mod context_compilation_collections;
+mod context_compilation_error;
+mod context_compilation_freshness;
+mod context_compilation_render;
+mod context_compilation_request;
+mod context_compilation_result;
+mod context_compilation_sections;
+mod context_compilation_service;
+mod context_compilation_task_sections;
 mod context_document;
 mod context_exclusion_reason;
+mod context_execution_contract;
 mod context_graph_selection;
 mod context_graph_selector;
 mod context_inclusion_reason;
@@ -16,8 +26,13 @@ mod token_estimator;
 
 pub use context_budget_error::ContextBudgetError;
 pub use context_budget_report::ContextBudgetReport;
+pub use context_compilation_error::ContextCompilationError;
+pub use context_compilation_request::ContextCompilationRequest;
+pub use context_compilation_result::ContextCompilationResult;
+pub use context_compilation_service::ContextCompilationService;
 pub use context_document::ContextDocument;
 pub use context_exclusion_reason::ContextExclusionReason;
+pub use context_execution_contract::MINERVA_EXECUTION_CONTRACT;
 pub use context_graph_selection::ContextGraphSelection;
 pub use context_graph_selector::ContextGraphSelector;
 pub use context_inclusion_reason::{
