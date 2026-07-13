@@ -4,4 +4,5 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "kebab-case")]
 pub enum TaskEventKind {
     TaskCreated,
+    TaskMoved,
 }

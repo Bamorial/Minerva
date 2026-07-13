@@ -31,6 +31,13 @@ pub trait TaskRepository {
         task_id: TaskId,
         version: TaskVersion,
     ) -> Result<TaskWriteResult, MinervaError>;
+    fn move_task(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+        new_parent_id: Option<TaskId>,
+        version: TaskVersion,
+    ) -> Result<(Task, TaskWriteResult), MinervaError>;
     fn create_relationship(
         &self,
         root: &Path,

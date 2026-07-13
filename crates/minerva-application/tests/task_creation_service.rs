@@ -74,10 +74,3 @@ fn creation_rejects_unknown_task_types_and_missing_parents() {
     .unwrap_err();
     assert!(matches!(missing_parent, MinervaError::TaskNotFound { .. }));
 }
-
-impl FakeTaskRepo {
-    fn new(last_id: u32, tasks: Vec<minerva_domain::Task>) -> Self {
-        let next_id = minerva_domain::TaskIdAllocator::new(last_id).next_id();
-        Self { next_id, tasks, created: std::cell::RefCell::new(None) }
-    }
-}

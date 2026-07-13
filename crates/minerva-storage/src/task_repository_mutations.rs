@@ -1,5 +1,5 @@
 use crate::{
-    MinervaLayout, TaskLock, append_created_event,
+    MinervaLayout, TaskLock, append_created_event, append_moved_event,
     create_relationship as persist_relationship,
     remove_relationship as delete_relationship, task_hierarchy,
     task_repository_support, write_task as persist_task, write_task_declaration,
@@ -9,7 +9,7 @@ use minerva_application::{TaskCreateRecord, TaskWriteResult};
 use minerva_domain::{
     MinervaError, Relationship, RelationshipId, Task, TaskId, TaskVersion,
 };
-use std::path::Path;
+use std::{path::Path, time::SystemTime};
 
 pub fn create_task(
     root: &Path,
@@ -59,6 +59,42 @@ pub fn archive_task(
         current_version: archived.version,
         event_id: None,
     })
+}
+
+pub fn move_task(
+    root: &Path,
+    task_id: TaskId,
+    new_parent_id: Option<TaskId>,
+    version: TaskVersion,
+) -> Result<(Task, TaskWriteResult), MinervaError> {
+    let layout = MinervaLayout::new(root);
+    let _lock = TaskLock::acquire(&layout, task_id)?;
+    if let Some(parent_id) = new_parent_id {
+        task_repository_support::read_existing(&layout, parent_id)?;
+    }
+    let previous = task_repository_support::read_existing(&layout, task_id)?;
+    if previous.version != version {
+        return Err(MinervaError::VersionConflict {
+            path: layout.task_file(task_id).display().to_string(),
+            expected: previous.version.get().to_string(),
+            actual: version.get().to_string(),
+        });
+    }
+    let moved = Task {
+        parent_id: new_parent_id,
+        updated_at: SystemTime::now(),
+        version: previous.version.next(),
+        ..previous.clone()
+    };
+    task_hierarchy::validate_write(&layout, &moved)?;
+    persist_task(&layout, &moved)?;
+    let event_id = append_moved_event(&layout, &moved, previous.parent_id)?;
+    let result = TaskWriteResult {
+        previous_version: Some(previous.version),
+        current_version: moved.version,
+        event_id: Some(event_id),
+    };
+    Ok((moved, result))
 }
 
 pub fn create_relationship(

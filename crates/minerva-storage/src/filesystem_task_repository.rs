@@ -39,6 +39,20 @@ impl TaskRepository for FilesystemTaskRepository {
     ) -> Result<TaskWriteResult, MinervaError> {
         crate::task_repository_mutations::archive_task(root, task_id, version)
     }
+    fn move_task(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+        new_parent_id: Option<TaskId>,
+        version: TaskVersion,
+    ) -> Result<(Task, TaskWriteResult), MinervaError> {
+        crate::task_repository_mutations::move_task(
+            root,
+            task_id,
+            new_parent_id,
+            version,
+        )
+    }
     fn create_relationship(
         &self,
         root: &Path,

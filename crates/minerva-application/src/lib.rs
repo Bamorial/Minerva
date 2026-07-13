@@ -6,6 +6,9 @@ mod task_create_record;
 mod task_creation_request;
 mod task_creation_result;
 mod task_creation_service;
+mod task_move_request;
+mod task_move_result;
+mod task_movement_service;
 mod task_repository;
 mod task_slug_builder;
 
@@ -17,6 +20,9 @@ pub use task_create_record::TaskCreateRecord;
 pub use task_creation_request::CreateTaskRequest;
 pub use task_creation_result::TaskCreationResult;
 pub use task_creation_service::TaskCreationService;
+pub use task_move_request::MoveTaskRequest;
+pub use task_move_result::TaskMoveResult;
+pub use task_movement_service::TaskMovementService;
 pub use task_repository::{TaskRepository, TaskWriteResult};
 
 use minerva_domain::{InterfaceKind, WorkspaceBlueprint};

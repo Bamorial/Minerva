@@ -1,6 +1,8 @@
+#![allow(dead_code, unused_imports)]
+
 mod repos;
 
-pub use repos::{FakeProjectRepo, FakeTaskRepo};
+pub use repos::{FakeProjectRepo, FakeTaskRepo, task};
 
 use minerva_domain::{
     ContextPolicy, Project, ProjectConfig, ProjectId, StatusDefinition, StatusKey,

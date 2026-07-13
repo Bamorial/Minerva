@@ -1,12 +1,19 @@
+#![allow(dead_code)]
+
 use minerva_application::{
-    ProjectRepository, TaskCreateRecord, TaskRepository, TaskWriteResult,
+    MoveTaskRequest, ProjectRepository, TaskCreateRecord, TaskRepository,
+    TaskWriteResult,
 };
 use minerva_domain::{
-    EventId, MinervaError, Project, ProjectConfig, Task, TaskId, TaskTypeDefinition,
+    ArchiveState, DeclarationActor, DeclarationMetadata, EventId, MinervaError,
+    Project, ProjectConfig, Relationship, RelationshipId, Task, TaskId,
+    TaskIdAllocator, TaskPriority, TaskSlug, TaskTypeDefinition, TaskTypeKey,
     TaskVersion,
 };
 use std::cell::RefCell;
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
+use std::time::UNIX_EPOCH;
 
 pub struct FakeProjectRepo {
     pub project: Project,
@@ -55,6 +62,14 @@ pub struct FakeTaskRepo {
     pub next_id: TaskId,
     pub tasks: Vec<Task>,
     pub created: RefCell<Option<TaskCreateRecord>>,
+    pub moved: RefCell<Option<MoveTaskRequest>>,
+}
+
+impl FakeTaskRepo {
+    pub fn new(last_id: u32, tasks: Vec<Task>) -> Self {
+        let next_id = TaskIdAllocator::new(last_id).next_id();
+        Self { next_id, tasks, created: RefCell::new(None), moved: RefCell::new(None) }
+    }
 }
 
 impl TaskRepository for FakeTaskRepo {
@@ -94,10 +109,88 @@ impl TaskRepository for FakeTaskRepo {
     ) -> Result<TaskWriteResult, MinervaError> {
         unreachable!()
     }
+    fn move_task(
+        &self,
+        _: &Path,
+        task_id: TaskId,
+        new_parent_id: Option<TaskId>,
+        version: TaskVersion,
+    ) -> Result<(Task, TaskWriteResult), MinervaError> {
+        self.moved.replace(Some(MoveTaskRequest { task_id, new_parent_id, version }));
+        let mut task = self.read_task(Path::new("."), task_id)?;
+        task.parent_id = new_parent_id;
+        task.version = task.version.next();
+        Ok((
+            task.clone(),
+            TaskWriteResult {
+                previous_version: Some(version),
+                current_version: task.version,
+                event_id: Some(EventId::new()),
+            },
+        ))
+    }
+    fn create_relationship(
+        &self,
+        _: &Path,
+        _: &Relationship,
+    ) -> Result<Relationship, MinervaError> {
+        unreachable!()
+    }
+    fn remove_relationship(
+        &self,
+        _: &Path,
+        _: RelationshipId,
+    ) -> Result<Relationship, MinervaError> {
+        unreachable!()
+    }
+    fn list_relationships(&self, _: &Path) -> Result<Vec<Relationship>, MinervaError> {
+        Ok(Vec::new())
+    }
+    fn list_relationships_from(
+        &self,
+        _: &Path,
+        _: TaskId,
+    ) -> Result<Vec<Relationship>, MinervaError> {
+        Ok(Vec::new())
+    }
+    fn list_relationships_to(
+        &self,
+        _: &Path,
+        _: TaskId,
+    ) -> Result<Vec<Relationship>, MinervaError> {
+        Ok(Vec::new())
+    }
     fn resolve_task(&self, _: &Path, _: &str) -> Result<Task, MinervaError> {
         unreachable!()
     }
     fn search_tasks(&self, _: &Path, _: &str) -> Result<Vec<Task>, MinervaError> {
         Ok(Vec::new())
     }
+}
+
+pub fn task(sequence: u32, title: &str) -> Task {
+    let allocator = TaskIdAllocator::new(sequence - 1);
+    Task::new(Task {
+        schema_version: 1,
+        id: allocator.next_id(),
+        title: title.into(),
+        slug: Some(TaskSlug::new(title.to_lowercase().replace(' ', "-")).unwrap()),
+        task_type: TaskTypeKey::new("feature").unwrap(),
+        status: minerva_domain::StatusKey::new("backlog").unwrap(),
+        parent_id: None,
+        priority: TaskPriority::Medium,
+        tags: BTreeSet::new(),
+        created_at: UNIX_EPOCH,
+        updated_at: UNIX_EPOCH,
+        completed_at: None,
+        version: TaskVersion::initial(),
+        declaration: DeclarationMetadata {
+            version: 1,
+            updated_at: UNIX_EPOCH,
+            updated_by: DeclarationActor::Human,
+            commit_hash: Some("abc123".into()),
+        },
+        archive_state: ArchiveState::Active,
+    })
+    .unwrap()
 }
