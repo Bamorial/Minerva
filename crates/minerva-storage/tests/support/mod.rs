@@ -10,7 +10,7 @@ use minerva_application::TaskCreateRecord;
 use minerva_domain::{
     ArchiveState, ContextPolicy, DeclarationActor, DeclarationDocument,
     DeclarationMetadata, Project, ProjectId, Relationship, RelationshipId,
-    RelationshipType, StatusDefinition, StatusKey, StatusTransition, Task,
+    RelationshipType, StatusDefinition, StatusKey, StatusTransition, Task, TaskFacts,
     TaskIdAllocator, TaskPriority, TaskSlug, TaskTypeKey, TaskVersion,
 };
 
@@ -59,6 +59,7 @@ pub fn task(sequence: u32, title: &str) -> Task {
             updated_by: DeclarationActor::Human,
             commit_hash: Some("abc123".into()),
         },
+        facts: TaskFacts::default(),
         archive_state: ArchiveState::Active,
     })
     .unwrap()

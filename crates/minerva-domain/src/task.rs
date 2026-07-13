@@ -1,6 +1,6 @@
 use crate::{
-    ArchiveState, DeclarationMetadata, MinervaError, StatusKey, TaskId, TaskPriority,
-    TaskSlug, TaskTag, TaskTypeKey, TaskVersion,
+    ArchiveState, DeclarationMetadata, MinervaError, StatusKey, TaskFacts, TaskId,
+    TaskPriority, TaskSlug, TaskTag, TaskTypeKey, TaskVersion,
 };
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, time::SystemTime};
@@ -21,6 +21,7 @@ pub struct Task {
     pub completed_at: Option<SystemTime>,
     pub version: TaskVersion,
     pub declaration: DeclarationMetadata,
+    pub facts: TaskFacts,
     pub archive_state: ArchiveState,
 }
 
@@ -41,6 +42,7 @@ impl Task {
             return invalid("parent_id", "task cannot be its own parent");
         }
         self.declaration.validate()?;
+        self.facts.validate()?;
         if self.status.as_str() == "completed" && self.completed_at.is_none() {
             return invalid("completed_at", "is required when status is completed");
         }

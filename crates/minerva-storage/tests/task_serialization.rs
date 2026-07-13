@@ -1,7 +1,6 @@
 mod support;
 
-use minerva_domain::DeclarationDocument;
-use minerva_domain::MinervaError;
+use minerva_domain::{DeclarationDocument, MinervaError};
 use minerva_storage::{
     MinervaLayout, read_task, read_task_declaration, read_task_instructions,
     read_task_notes, write_task, write_task_declaration, write_task_instructions,
@@ -14,7 +13,14 @@ use support::{sample_task, temp_repo};
 fn task_storage_round_trips_yaml_and_markdown() {
     let root = temp_repo("task-round-trip");
     let layout = MinervaLayout::new(&root);
-    let task = sample_task();
+    let mut task = sample_task();
+    task.facts.modules = vec!["minerva-storage".into()];
+    task.facts.files = vec!["crates/minerva-storage/src/task_document.rs".into()];
+    task.facts.migrations_required = true;
+    task.facts.feature_flags = vec!["task-facts".into()];
+    task.facts.acceptance_checks = vec!["round-trip persistence".into()];
+    task.facts.resources.reads = vec!["task.yaml".into()];
+    task.facts.resources.writes = vec!["task.yaml".into(), "declaration.md".into()];
     write_task(&layout, &task).unwrap();
     write_task_instructions(&layout, task.id, "# Instructions\n").unwrap();
     let declaration = DeclarationDocument::template();

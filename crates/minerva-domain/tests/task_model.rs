@@ -1,5 +1,5 @@
 use minerva_domain::{
-    ArchiveState, DeclarationActor, DeclarationMetadata, StatusKey, Task,
+    ArchiveState, DeclarationActor, DeclarationMetadata, StatusKey, Task, TaskFacts,
     TaskIdAllocator, TaskPriority, TaskTag, TaskTypeKey, TaskVersion,
 };
 use std::{collections::BTreeSet, time::UNIX_EPOCH};
@@ -21,6 +21,7 @@ fn task_accepts_valid_domain_metadata() {
         completed_at: None,
         version: TaskVersion::initial(),
         declaration: declaration(3),
+        facts: TaskFacts::default(),
         archive_state: ArchiveState::Active,
     })
     .unwrap();

@@ -1,7 +1,8 @@
 use minerva_application::{TaskCreateRecord, TaskRepository};
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationDocument, DeclarationMetadata,
-    StatusKey, Task, TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
+    StatusKey, Task, TaskFacts, TaskIdAllocator, TaskPriority, TaskTypeKey,
+    TaskVersion,
 };
 use minerva_storage::FilesystemTaskRepository;
 use std::{
@@ -82,6 +83,7 @@ pub fn task(sequence: u32, title: &str) -> Task {
             updated_by: DeclarationActor::Human,
             commit_hash: None,
         },
+        facts: TaskFacts::default(),
         archive_state: ArchiveState::Active,
     })
     .unwrap()

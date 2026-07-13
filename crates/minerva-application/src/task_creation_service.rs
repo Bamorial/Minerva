@@ -4,7 +4,7 @@ use crate::{
 };
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationDocument, DeclarationMetadata,
-    MinervaError, Task, TaskVersion,
+    MinervaError, Task, TaskFacts, TaskVersion,
 };
 use std::{path::Path, time::SystemTime};
 
@@ -50,6 +50,7 @@ impl TaskCreationService {
                 updated_by: DeclarationActor::System,
                 commit_hash: None,
             },
+            facts: TaskFacts::default(),
             archive_state: ArchiveState::Active,
         })?;
         let record = TaskCreateRecord {

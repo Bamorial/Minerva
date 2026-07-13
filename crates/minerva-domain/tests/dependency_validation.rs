@@ -1,7 +1,7 @@
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationMetadata, MinervaError, Relationship,
-    RelationshipId, RelationshipType, StatusKey, Task, TaskIdAllocator, TaskPriority,
-    TaskTypeKey, TaskVersion, validate_relationships,
+    RelationshipId, RelationshipType, StatusKey, Task, TaskFacts, TaskIdAllocator,
+    TaskPriority, TaskTypeKey, TaskVersion, validate_relationships,
 };
 use std::{collections::BTreeSet, time::UNIX_EPOCH};
 
@@ -100,6 +100,7 @@ fn task(id: minerva_domain::TaskId) -> Task {
             updated_by: DeclarationActor::Human,
             commit_hash: None,
         },
+        facts: TaskFacts::default(),
         archive_state: ArchiveState::Active,
     }
 }

@@ -1,4 +1,6 @@
-use crate::{ProjectRepository, TaskRepository, git_support::git_head};
+use crate::{
+    ProjectRepository, TaskRepository, git_support::git_head, render_task_facts,
+};
 use minerva_domain::{
     DeclarationFreshness, DeclarationFreshnessReason, DeclarationFreshnessReport,
     MinervaError, Task,
@@ -32,6 +34,7 @@ fn render(task: &Task, freshness: &DeclarationFreshnessReport) -> String {
         format!("declaration version: {}", task.declaration.version),
         format!("declaration freshness: {}", status(freshness.status)),
         format!("freshness reasons: {reasons}"),
+        render_task_facts(task),
     ]
     .join("\n")
 }

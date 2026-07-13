@@ -1,6 +1,6 @@
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationMetadata, MinervaError, StatusKey, Task,
-    TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
+    TaskFacts, TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
 };
 use std::{collections::BTreeSet, time::UNIX_EPOCH};
 
@@ -41,6 +41,16 @@ fn task_successors_must_preserve_identity_and_increment_version() {
     );
 }
 
+#[test]
+fn task_rejects_blank_fact_values() {
+    let mut task = task("Ship feature", "in-progress", None, TaskVersion::initial());
+    task.facts.modules.push(" ".into());
+    let result = Task::new(task);
+    assert!(
+        matches!(result, Err(MinervaError::InvalidConfiguration { key, .. }) if key == "facts.modules")
+    );
+}
+
 fn task(
     title: &str,
     status: &str,
@@ -67,6 +77,7 @@ fn task(
             updated_by: DeclarationActor::Human,
             commit_hash: None,
         },
+        facts: TaskFacts::default(),
         archive_state: ArchiveState::Active,
     }
 }

@@ -1,7 +1,7 @@
 use minerva_domain::{
     ArchiveState, ContextPolicy, DeclarationActor, DeclarationMetadata, Project,
-    ProjectId, StatusDefinition, StatusKey, StatusTransition, Task, TaskIdAllocator,
-    TaskPriority, TaskTypeKey, TaskVersion,
+    ProjectId, StatusDefinition, StatusKey, StatusTransition, Task, TaskFacts,
+    TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
 };
 use std::{collections::BTreeSet, time::UNIX_EPOCH};
 
@@ -74,6 +74,7 @@ pub fn task(status: &str, completed_at: Option<std::time::SystemTime>) -> Task {
             updated_by: DeclarationActor::Human,
             commit_hash: None,
         },
+        facts: TaskFacts::default(),
         archive_state: ArchiveState::Active,
     })
     .unwrap()

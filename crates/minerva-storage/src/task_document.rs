@@ -1,4 +1,4 @@
-use crate::task_document_parts::DeclarationMetadataDocument;
+use crate::task_document_parts::{DeclarationMetadataDocument, TaskFactsDocument};
 use humantime::{format_rfc3339, parse_rfc3339};
 use minerva_domain::{MinervaError, Task};
 use serde::{Deserialize, Serialize};
@@ -23,6 +23,8 @@ pub struct TaskDocument {
     pub completed_at: Option<String>,
     pub version: minerva_domain::TaskVersion,
     pub declaration: DeclarationMetadataDocument,
+    #[serde(default)]
+    pub facts: TaskFactsDocument,
     pub archive_state: minerva_domain::ArchiveState,
 }
 
@@ -52,6 +54,7 @@ impl TryFrom<TaskDocument> for Task {
                 .map_err(|err| invalid(err.to_string()))?,
             version: doc.version,
             declaration: doc.declaration.try_into()?,
+            facts: doc.facts.try_into()?,
             archive_state: doc.archive_state,
         })
     }
@@ -76,6 +79,7 @@ impl From<&Task> for TaskDocument {
                 .map(|value| format_rfc3339(value).to_string()),
             version: task.version,
             declaration: (&task.declaration).into(),
+            facts: (&task.facts).into(),
             archive_state: task.archive_state,
         }
     }

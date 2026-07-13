@@ -1,6 +1,7 @@
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationMetadata, MinervaError, StatusKey, Task,
-    TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion, validate_task_hierarchy,
+    TaskFacts, TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
+    validate_task_hierarchy,
 };
 use std::{collections::BTreeSet, time::UNIX_EPOCH};
 
@@ -60,6 +61,7 @@ fn task(id: minerva_domain::TaskId, parent_id: Option<minerva_domain::TaskId>) -
             updated_by: DeclarationActor::Human,
             commit_hash: None,
         },
+        facts: TaskFacts::default(),
         archive_state: ArchiveState::Active,
     }
 }

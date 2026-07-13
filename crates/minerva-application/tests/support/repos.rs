@@ -7,7 +7,7 @@ use minerva_application::{
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationDocument, DeclarationFreshnessProbe,
     DeclarationMetadata, EventId, MinervaError, Project, ProjectConfig, Relationship,
-    RelationshipId, Task, TaskId, TaskIdAllocator, TaskPriority, TaskSlug,
+    RelationshipId, Task, TaskFacts, TaskId, TaskIdAllocator, TaskPriority, TaskSlug,
     TaskTypeDefinition, TaskTypeKey, TaskVersion,
 };
 use std::cell::RefCell;
@@ -286,6 +286,7 @@ pub fn task(sequence: u32, title: &str) -> Task {
             updated_by: DeclarationActor::Human,
             commit_hash: Some("abc123".into()),
         },
+        facts: TaskFacts::default(),
         archive_state: ArchiveState::Active,
     })
     .unwrap()
