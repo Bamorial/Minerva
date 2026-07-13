@@ -41,6 +41,23 @@ fn relationship_graph_rejects_duplicates_and_parent_records() {
     );
 }
 
+#[test]
+fn relationship_graph_rejects_reverse_semantic_duplicates() {
+    let ids = TaskIdAllocator::new(0);
+    let left = task(ids.next_id(), None);
+    let right = task(ids.next_id(), None);
+    let related = relationship(left.id, right.id, RelationshipType::RelatedTo);
+    let reverse_related = relationship(right.id, left.id, RelationshipType::RelatedTo);
+    let blocks = relationship(left.id, right.id, RelationshipType::Blocks);
+    let depends_on = relationship(right.id, left.id, RelationshipType::DependsOn);
+    assert!(
+        matches!(validate_relationships(&[left.clone(), right.clone()], &[related, reverse_related]), Err(MinervaError::InvalidConfiguration { key, .. }) if key == "relationships")
+    );
+    assert!(
+        matches!(validate_relationships(&[left, right], &[blocks, depends_on]), Err(MinervaError::InvalidConfiguration { key, .. }) if key == "relationships")
+    );
+}
+
 fn relationship(
     source: minerva_domain::TaskId,
     target: minerva_domain::TaskId,

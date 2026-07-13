@@ -13,7 +13,7 @@ const PROJECT_LAYOUT: [LayoutEntry; 10] = [
     LayoutEntry::new("locks/", LayoutClass::Operational, "runtime lock files"),
 ];
 
-const TASK_LAYOUT: [LayoutEntry; 5] = [
+const TASK_LAYOUT: [LayoutEntry; 6] = [
     LayoutEntry::new(
         "tasks/<task-id>/task.yaml",
         LayoutClass::Canonical,
@@ -30,6 +30,11 @@ const TASK_LAYOUT: [LayoutEntry; 5] = [
         "task handoff state",
     ),
     LayoutEntry::new("tasks/<task-id>/notes.md", LayoutClass::Canonical, "task notes"),
+    LayoutEntry::new(
+        "tasks/<task-id>/relationships.yaml",
+        LayoutClass::Canonical,
+        "task relationships",
+    ),
     LayoutEntry::new(
         "tasks/<task-id>/events.jsonl",
         LayoutClass::Canonical,

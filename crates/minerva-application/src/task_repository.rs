@@ -1,5 +1,7 @@
 use crate::TaskCreateRecord;
-use minerva_domain::{EventId, MinervaError, Task, TaskId, TaskVersion};
+use minerva_domain::{
+    EventId, MinervaError, Relationship, RelationshipId, Task, TaskId, TaskVersion,
+};
 use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,6 +31,30 @@ pub trait TaskRepository {
         task_id: TaskId,
         version: TaskVersion,
     ) -> Result<TaskWriteResult, MinervaError>;
+    fn create_relationship(
+        &self,
+        root: &Path,
+        relationship: &Relationship,
+    ) -> Result<Relationship, MinervaError>;
+    fn remove_relationship(
+        &self,
+        root: &Path,
+        relationship_id: RelationshipId,
+    ) -> Result<Relationship, MinervaError>;
+    fn list_relationships(
+        &self,
+        root: &Path,
+    ) -> Result<Vec<Relationship>, MinervaError>;
+    fn list_relationships_from(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<Vec<Relationship>, MinervaError>;
+    fn list_relationships_to(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<Vec<Relationship>, MinervaError>;
     fn resolve_task(&self, root: &Path, task_ref: &str) -> Result<Task, MinervaError>;
     fn search_tasks(&self, root: &Path, query: &str)
     -> Result<Vec<Task>, MinervaError>;

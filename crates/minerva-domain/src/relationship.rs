@@ -36,6 +36,11 @@ impl Relationship {
         }
         Ok(())
     }
+
+    #[must_use]
+    pub fn semantic_key(&self) -> (TaskId, TaskId, RelationshipType) {
+        self.relationship_type.semantic_key(self.source_task, self.target_task)
+    }
 }
 
 fn invalid<T>(key: &str, reason: &str) -> Result<T, MinervaError> {

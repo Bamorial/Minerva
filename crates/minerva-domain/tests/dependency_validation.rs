@@ -48,6 +48,21 @@ fn dependencies_reject_direct_and_indirect_cycles() {
     ));
 }
 
+#[test]
+fn blocks_relationships_participate_in_dependency_cycles() {
+    let ids = TaskIdAllocator::new(0);
+    let a = task(ids.next_id());
+    let b = task(ids.next_id());
+    let cycle = [
+        relationship(a.id, b.id, RelationshipType::Blocks),
+        relationship(b.id, a.id, RelationshipType::Blocks),
+    ];
+    assert!(matches!(
+        validate_relationships(&[a, b], &cycle),
+        Err(MinervaError::DependencyCycle { .. })
+    ));
+}
+
 fn relationship(
     source: minerva_domain::TaskId,
     target: minerva_domain::TaskId,

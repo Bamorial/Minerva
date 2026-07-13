@@ -13,6 +13,10 @@ mod project_init;
 mod project_instructions;
 mod project_lock;
 mod project_scaffold;
+mod relationship_catalog;
+mod relationship_document;
+mod relationship_files;
+mod relationship_mutations;
 mod task_catalog;
 mod task_document;
 mod task_document_parts;
@@ -22,6 +26,8 @@ mod task_files;
 mod task_hierarchy;
 mod task_lock;
 mod task_markdown;
+mod task_repository_mutations;
+mod task_repository_queries;
 mod task_repository_support;
 mod task_type_document;
 mod task_type_files;
@@ -44,6 +50,11 @@ pub use project_scaffold::{
     SCHEMA_VERSION, TASK_TYPES, agents_md, default_config, default_project,
     instructions_md,
 };
+pub use relationship_catalog::{
+    list_relationships, list_relationships_from, list_relationships_to,
+};
+pub use relationship_files::{read_relationships, write_relationships};
+pub use relationship_mutations::{create_relationship, remove_relationship};
 pub use task_events::append_created_event;
 pub use task_files::{
     read_task, read_task_declaration, read_task_instructions, read_task_notes,

@@ -22,19 +22,14 @@ pub fn validate_relationships(
         if !task_ids.contains(&relationship.target_task) {
             return invalid("target_task", "must reference an existing task");
         }
-        let key = (
-            relationship.source_task,
-            relationship.target_task,
-            relationship.relationship_type,
-        );
-        if !seen.insert(key) {
+        if !seen.insert(relationship.semantic_key()) {
             return invalid("relationships", "contains a duplicate relationship");
         }
-        if relationship.relationship_type == RelationshipType::DependsOn {
-            dependencies
-                .entry(relationship.source_task)
-                .or_insert_with(Vec::new)
-                .push(relationship.target_task);
+        if let Some((source, target)) = relationship
+            .relationship_type
+            .dependency_edge(relationship.source_task, relationship.target_task)
+        {
+            dependencies.entry(source).or_insert_with(Vec::new).push(target);
         }
     }
     for task in dependencies.keys() {

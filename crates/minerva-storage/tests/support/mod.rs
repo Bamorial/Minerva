@@ -9,8 +9,9 @@ use std::{
 use minerva_application::TaskCreateRecord;
 use minerva_domain::{
     ArchiveState, ContextPolicy, DeclarationActor, DeclarationMetadata, Project,
-    ProjectId, StatusDefinition, StatusKey, StatusTransition, Task, TaskIdAllocator,
-    TaskPriority, TaskSlug, TaskTypeKey, TaskVersion,
+    ProjectId, Relationship, RelationshipId, RelationshipType, StatusDefinition,
+    StatusKey, StatusTransition, Task, TaskIdAllocator, TaskPriority, TaskSlug,
+    TaskTypeKey, TaskVersion,
 };
 
 pub fn fixture(name: &str) -> PathBuf {
@@ -80,6 +81,24 @@ pub fn sample_project() -> Project {
             StatusKey::new("done").unwrap(),
         )],
         context_policy: ContextPolicy::new(12, 2, 24).unwrap(),
+    })
+    .unwrap()
+}
+
+pub fn relationship(
+    source: minerva_domain::TaskId,
+    target: minerva_domain::TaskId,
+    relationship_type: RelationshipType,
+    reason: Option<&str>,
+) -> Relationship {
+    Relationship::new(Relationship {
+        schema_version: 1,
+        id: RelationshipId::new(),
+        source_task: source,
+        target_task: target,
+        relationship_type,
+        reason: reason.map(str::to_string),
+        created_at: UNIX_EPOCH,
     })
     .unwrap()
 }

@@ -11,7 +11,6 @@ impl MinervaLayout {
     pub fn new(root: impl AsRef<Path>) -> Self {
         Self { root: root.as_ref().to_path_buf() }
     }
-
     #[must_use]
     pub fn minerva_dir(&self) -> PathBuf {
         self.root.join(".minerva")
@@ -83,6 +82,10 @@ impl MinervaLayout {
     #[must_use]
     pub fn notes_file(&self, task_id: TaskId) -> PathBuf {
         self.task_dir(task_id).join("notes.md")
+    }
+    #[must_use]
+    pub fn relationships_file(&self, task_id: TaskId) -> PathBuf {
+        self.task_dir(task_id).join("relationships.yaml")
     }
     #[must_use]
     pub fn events_file(&self, task_id: TaskId) -> PathBuf {
