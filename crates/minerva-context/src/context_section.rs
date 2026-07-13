@@ -1,4 +1,5 @@
 use crate::{ApproximateTokenEstimator, ContextSectionId, TokenEstimator};
+use sha2::{Digest, Sha256};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ContextSection {
@@ -6,6 +7,7 @@ pub struct ContextSection {
     body: String,
     estimated_tokens: usize,
     estimation_method: &'static str,
+    input_hash: String,
 }
 
 impl ContextSection {
@@ -25,6 +27,7 @@ impl ContextSection {
             id,
             estimated_tokens: estimator.estimate(&rendered(id, &body)),
             estimation_method: estimator.method(),
+            input_hash: hash_input(&body),
             body,
         })
     }
@@ -45,6 +48,11 @@ impl ContextSection {
     }
 
     #[must_use]
+    pub fn input_hash(&self) -> &str {
+        &self.input_hash
+    }
+
+    #[must_use]
     pub fn render(&self) -> String {
         rendered(self.id, &self.body)
     }
@@ -52,4 +60,10 @@ impl ContextSection {
 
 fn rendered(id: ContextSectionId, body: &str) -> String {
     format!("## {}\n\n{body}", id.heading())
+}
+
+fn hash_input(body: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(body.as_bytes());
+    format!("{:x}", hasher.finalize())
 }

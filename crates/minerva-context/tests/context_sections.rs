@@ -1,7 +1,7 @@
 mod support;
 
 use minerva_context::{
-    ContextDocument, ContextSection, ContextSectionId, TokenEstimator,
+    ContextDocument, ContextManifest, ContextSection, ContextSectionId, TokenEstimator,
     compile_task_context, compile_workspace_context,
 };
 use support::task;
@@ -9,8 +9,8 @@ use support::task;
 #[test]
 fn workspace_context_compilation_is_deterministic() {
     let context = compile_workspace_context();
-    assert!(context.contains("minerva-domain"));
-    assert!(context.contains("minerva-mcp"));
+    assert!(context.contains("Workspace crates: minerva-domain"));
+    assert!(context.contains("## Context Manifest Summary"));
 }
 
 #[test]
@@ -21,6 +21,7 @@ fn task_context_includes_structured_facts_under_stable_heading() {
     assert!(context.contains("facts.migrations_required: true"));
     assert!(context.contains("## Context Manifest Summary"));
     assert!(context.contains("total_estimated_tokens:"));
+    assert!(context.contains("policy: section_order_v1"));
 }
 
 #[test]
@@ -78,8 +79,9 @@ fn context_document_reports_estimates_for_markdown_sections() {
     assert_eq!(document.sections()[0].estimated_tokens(), 10);
     assert_eq!(document.sections()[1].estimated_tokens(), 13);
     assert_eq!(document.total_estimated_tokens(), 23);
-    assert!(document.render_with_manifest().contains("- Project Instructions: 10"));
-    assert!(document.render_with_manifest().contains("- Target Declaration: 13"));
+    let manifest = document.manifest().render_yaml();
+    assert!(manifest.contains("source: project_instructions"));
+    assert!(manifest.contains("source: target_declaration"));
 }
 
 #[test]
@@ -105,6 +107,26 @@ fn context_sections_allow_replacing_the_estimator() {
     assert_eq!(document.sections()[0].estimated_tokens(), 41);
     assert_eq!(document.total_estimated_tokens(), 41);
     assert_eq!(document.estimation_method(), "fixed estimator");
+}
+
+#[test]
+fn manifests_are_machine_readable_and_complete() {
+    let document = ContextDocument::new(
+        [
+            section(ContextSectionId::ProjectInstructions, "Use Rust."),
+            section(ContextSectionId::TargetDeclaration, "Implementation note."),
+        ]
+        .into_iter()
+        .flatten()
+        .collect(),
+    );
+    let manifest =
+        serde_yaml::from_str::<ContextManifest>(&document.manifest().render_yaml())
+            .unwrap();
+    assert_eq!(manifest.policy, "section_order_v1");
+    assert_eq!(manifest.included.len(), 2);
+    assert!(manifest.excluded.is_empty());
+    assert_eq!(manifest.input_hashes.len(), 2);
 }
 
 fn section(id: ContextSectionId, body: &str) -> Option<ContextSection> {

@@ -1,6 +1,6 @@
 use crate::{
-    ApproximateTokenEstimator, ContextSection, ContextSectionId,
-    MIXED_TOKEN_ESTIMATION_METHOD, render_context_manifest,
+    ApproximateTokenEstimator, ContextManifest, ContextSection, ContextSectionId,
+    MIXED_TOKEN_ESTIMATION_METHOD,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -11,6 +11,8 @@ pub struct ContextDocument {
 }
 
 impl ContextDocument {
+    pub const DEFAULT_POLICY: &str = "section_order_v1";
+
     #[must_use]
     pub fn new(mut sections: Vec<ContextSection>) -> Self {
         sections.sort_unstable_by_key(ContextSection::id);
@@ -36,19 +38,25 @@ impl ContextDocument {
     #[must_use]
     pub fn render_with_manifest(&self) -> String {
         let body = self.render();
-        let manifest = render_context_manifest(
-            &self.sections,
-            self.estimation_method,
-            self.total_estimated_tokens,
-            None,
-            &[],
-        );
+        let manifest = self.manifest().render_yaml();
         let heading = ContextSectionId::ContextManifestSummary.heading();
         if body.is_empty() {
             format!("## {heading}\n\n{manifest}")
         } else {
             format!("{body}\n\n## {heading}\n\n{manifest}")
         }
+    }
+
+    #[must_use]
+    pub fn manifest(&self) -> ContextManifest {
+        ContextManifest::build(
+            &self.sections,
+            Self::DEFAULT_POLICY,
+            self.estimation_method,
+            self.total_estimated_tokens,
+            None,
+            &[],
+        )
     }
 
     #[must_use]

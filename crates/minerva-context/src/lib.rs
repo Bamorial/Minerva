@@ -23,7 +23,7 @@ pub use context_graph_selector::ContextGraphSelector;
 pub use context_inclusion_reason::{
     ContextInclusionReason, ContextRelationshipDirection,
 };
-pub use context_manifest::render_context_manifest;
+pub use context_manifest::{ContextInputHash, ContextManifest, ContextManifestEntry};
 pub use context_section::ContextSection;
 pub use context_section_exclusion::ContextSectionExclusion;
 pub use context_section_id::ContextSectionId;
@@ -42,7 +42,14 @@ pub fn compile_workspace_context() -> String {
     let interfaces = BootstrapService::interface_descriptions()
         .map(|item| item.crate_name)
         .join(", ");
-    format!("Workspace crates: {crates}\nInterfaces: {interfaces}")
+    ContextDocument::new(vec![
+        ContextSection::new(
+            ContextSectionId::ProjectInstructions,
+            format!("Workspace crates: {crates}\nInterfaces: {interfaces}"),
+        )
+        .unwrap(),
+    ])
+    .render_with_manifest()
 }
 
 #[must_use]

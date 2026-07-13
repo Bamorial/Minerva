@@ -42,6 +42,7 @@ impl ContextDocument {
                 section.id(),
                 section.estimated_tokens(),
                 ContextExclusionReason::ExcludedToFitBudget,
+                section.input_hash().to_owned(),
             ));
         }
         let excluded_ids = excluded

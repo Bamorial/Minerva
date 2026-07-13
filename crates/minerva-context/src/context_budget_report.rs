@@ -1,4 +1,4 @@
-use crate::{ContextDocument, ContextSectionExclusion, render_context_manifest};
+use crate::{ContextDocument, ContextManifest, ContextSectionExclusion};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ContextBudgetReport {
@@ -28,15 +28,21 @@ impl ContextBudgetReport {
     }
 
     #[must_use]
-    pub fn render_with_manifest(&self) -> String {
-        let body = self.document.render();
-        let manifest = render_context_manifest(
+    pub fn manifest(&self) -> ContextManifest {
+        ContextManifest::build(
             self.document.sections(),
+            ContextDocument::DEFAULT_POLICY,
             self.document.estimation_method(),
             self.document.total_estimated_tokens(),
             Some(self.budget),
             &self.excluded_sections,
-        );
+        )
+    }
+
+    #[must_use]
+    pub fn render_with_manifest(&self) -> String {
+        let body = self.document.render();
+        let manifest = self.manifest().render_yaml();
         let heading = "## Context Manifest Summary\n\n";
         if body.is_empty() {
             format!("{heading}{manifest}")

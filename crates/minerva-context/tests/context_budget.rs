@@ -27,7 +27,10 @@ fn optional_sections_are_excluded_from_lowest_to_highest_priority() {
     assert_eq!(excluded.len(), 2);
     assert_eq!(excluded[0].id(), ContextSectionId::RelatedTaskSummaries);
     assert_eq!(excluded[1].id(), ContextSectionId::AncestorDeclarations);
-    assert!(report.render_with_manifest().contains("excluded_to_fit_budget"));
+    let manifest = report.manifest();
+    assert_eq!(manifest.budget, Some(10));
+    assert_eq!(manifest.excluded[0].reason, "excluded_to_fit_budget");
+    assert_eq!(manifest.input_hashes.len(), 5);
 }
 
 #[test]

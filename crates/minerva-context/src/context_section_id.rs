@@ -32,6 +32,41 @@ impl ContextSectionId {
     }
 
     #[must_use]
+    pub const fn source_key(self) -> &'static str {
+        match self {
+            Self::MinervaExecutionContract => "minerva_execution_contract",
+            Self::ProjectInstructions => "project_instructions",
+            Self::TargetMetadataAndFacts => "target_metadata_and_facts",
+            Self::AncestorInstructions => "ancestor_instructions",
+            Self::AncestorDeclarations => "ancestor_declarations",
+            Self::TargetInstructions => "target_instructions",
+            Self::TargetDeclaration => "target_declaration",
+            Self::DependencyDeclarations => "dependency_declarations",
+            Self::RelatedTaskSummaries => "related_task_summaries",
+            Self::OutputRequirements => "output_requirements",
+            Self::ContextManifestSummary => "context_manifest_summary",
+        }
+    }
+
+    #[must_use]
+    pub const fn inclusion_reason(self) -> &'static str {
+        match self {
+            Self::MinervaExecutionContract
+            | Self::ProjectInstructions
+            | Self::OutputRequirements => "always_required",
+            Self::TargetMetadataAndFacts
+            | Self::TargetInstructions
+            | Self::TargetDeclaration => "target_task",
+            Self::AncestorInstructions | Self::AncestorDeclarations => {
+                "ancestor_context"
+            }
+            Self::DependencyDeclarations => "dependency_context",
+            Self::RelatedTaskSummaries => "related_task_context",
+            Self::ContextManifestSummary => "manifest_output",
+        }
+    }
+
+    #[must_use]
     pub const fn budget_priority(self) -> u8 {
         match self {
             Self::ContextManifestSummary => 0,
