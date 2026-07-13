@@ -1,20 +1,20 @@
 use crate::{ContextPolicy, ContextRelationPolicy, MinervaError};
 
 pub fn validate(policy: &ContextPolicy) -> Result<(), MinervaError> {
-    validate_relation(&policy.ancestors, "ancestors")?;
-    validate_relation(&policy.dependencies, "dependencies")?;
-    validate_relation(&policy.related_tasks, "related_tasks")?;
-    validate_relation(&policy.children, "children")?;
-    validate_relation(&policy.siblings, "siblings")?;
+    validate_relation(policy.ancestors.as_ref(), "ancestors")?;
+    validate_relation(policy.dependencies.as_ref(), "dependencies")?;
+    validate_relation(policy.related_tasks.as_ref(), "related_tasks")?;
+    validate_relation(policy.children.as_ref(), "children")?;
+    validate_relation(policy.siblings.as_ref(), "siblings")?;
     validate_sources(policy)?;
     validate_filters(policy)
 }
 
 fn validate_relation(
-    policy: &Option<ContextRelationPolicy>,
+    policy: Option<&ContextRelationPolicy>,
     key: &str,
 ) -> Result<(), MinervaError> {
-    policy.as_ref().map_or(Ok(()), |value| value.validate(key))
+    policy.map_or(Ok(()), |value| value.validate(key))
 }
 
 fn validate_sources(policy: &ContextPolicy) -> Result<(), MinervaError> {

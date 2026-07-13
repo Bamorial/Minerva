@@ -94,27 +94,27 @@ impl LogArgs {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum LogKindArg {
-    TaskCreated,
-    TaskDeclarationUpdated,
-    TaskInstructionsUpdated,
-    TaskParentChanged,
-    TaskStatusChanged,
-    TaskRelationshipAdded,
-    TaskRelationshipRemoved,
-    TaskArchived,
+    Created,
+    DeclarationUpdated,
+    InstructionsUpdated,
+    ParentChanged,
+    StatusChanged,
+    RelationshipAdded,
+    RelationshipRemoved,
+    Archived,
 }
 
 impl From<LogKindArg> for minerva_domain::TaskEventKind {
     fn from(value: LogKindArg) -> Self {
         match value {
-            LogKindArg::TaskCreated => Self::TaskCreated,
-            LogKindArg::TaskDeclarationUpdated => Self::TaskDeclarationUpdated,
-            LogKindArg::TaskInstructionsUpdated => Self::TaskInstructionsUpdated,
-            LogKindArg::TaskParentChanged => Self::TaskParentChanged,
-            LogKindArg::TaskStatusChanged => Self::TaskStatusChanged,
-            LogKindArg::TaskRelationshipAdded => Self::TaskRelationshipAdded,
-            LogKindArg::TaskRelationshipRemoved => Self::TaskRelationshipRemoved,
-            LogKindArg::TaskArchived => Self::TaskArchived,
+            LogKindArg::Created => Self::TaskCreated,
+            LogKindArg::DeclarationUpdated => Self::TaskDeclarationUpdated,
+            LogKindArg::InstructionsUpdated => Self::TaskInstructionsUpdated,
+            LogKindArg::ParentChanged => Self::TaskParentChanged,
+            LogKindArg::StatusChanged => Self::TaskStatusChanged,
+            LogKindArg::RelationshipAdded => Self::TaskRelationshipAdded,
+            LogKindArg::RelationshipRemoved => Self::TaskRelationshipRemoved,
+            LogKindArg::Archived => Self::TaskArchived,
         }
     }
 }

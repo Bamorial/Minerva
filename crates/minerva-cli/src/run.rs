@@ -31,106 +31,133 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
         || env::current_dir().map_err(|err| Failure::Internal(err.to_string())),
         Ok,
     )?;
+    dispatch_command(cli, &root)
+}
+
+fn dispatch_command(
+    cli: &Cli,
+    root: &std::path::Path,
+) -> Result<CommandOutput, Failure> {
     let project_repo = FilesystemProjectRepository;
     let task_repo = FilesystemTaskRepository;
     match &cli.command {
-        Command::Init { force } => {
-            let project = project_repo
-                .initialize_project(&root, *force)
-                .map_err(Failure::Domain)?;
-            Ok(CommandOutput::text(format!("initialized Minerva in {}", project.name)))
-        }
+        Command::Init { force } => init(project_repo, root, *force),
         Command::New(args) => {
-            new_command::execute(&project_repo, &task_repo, &root, args)
+            new_command::execute(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::List(args) => {
-            list_command::execute(&project_repo, &task_repo, &root, args)
+            list_command::execute(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::Tree(args) => {
-            tree_command::execute(&project_repo, &task_repo, &root, args)
+            tree_command::execute(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::Show(args) => {
-            show(&project_repo, task_repo, &root, args).map_err(Failure::Domain)
+            show(&project_repo, task_repo, root, args).map_err(Failure::Domain)
         }
         Command::Log(args) => {
-            log_command::execute(&project_repo, &task_repo, &root, args)
+            log_command::execute(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::Status(args) => {
-            status_command::set(&project_repo, &task_repo, &root, args)
+            status_command::set(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::Complete(args) => {
-            status_command::complete(&project_repo, &task_repo, &root, &args.task_ref)
+            status_command::complete(&project_repo, &task_repo, root, &args.task_ref)
                 .map_err(Failure::Domain)
         }
         Command::Reopen(args) => {
-            status_command::reopen(&project_repo, &task_repo, &root, &args.task_ref)
+            status_command::reopen(&project_repo, &task_repo, root, &args.task_ref)
                 .map_err(Failure::Domain)
         }
         Command::Move(args) => {
-            move_command::execute(&project_repo, &task_repo, &root, args)
+            move_command::execute(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::Depend(args) => {
-            relationship_command::depend(&project_repo, &task_repo, &root, args)
+            relationship_command::depend(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::Undepend(args) => {
-            relationship_command::undepend(&project_repo, &task_repo, &root, args)
+            relationship_command::undepend(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::Relate(args) => {
-            relationship_command::relate(&project_repo, &task_repo, &root, args)
+            relationship_command::relate(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
         Command::Unrelate(args) => {
-            relationship_command::unrelate(&project_repo, &task_repo, &root, args)
+            relationship_command::unrelate(&project_repo, &task_repo, root, args)
                 .map_err(Failure::Domain)
         }
-        Command::Children(args) => hierarchy_command::children(
-            &project_repo,
-            &task_repo,
-            &root,
-            &args.task_ref,
-        )
-        .map_err(Failure::Domain),
+        Command::Children(args) => {
+            hierarchy_command::children(&project_repo, &task_repo, root, &args.task_ref)
+                .map_err(Failure::Domain)
+        }
         Command::Ancestors(args) => hierarchy_command::ancestors(
             &project_repo,
             &task_repo,
-            &root,
+            root,
             &args.task_ref,
         )
         .map_err(Failure::Domain),
         Command::Instruction { task_ref: None } => {
-            ProjectInstructionService::edit(&project_repo, &root)
-                .map(|path| CommandOutput::text(format!("opened {}", path.display())))
-                .map_err(Failure::Domain)
+            open_project_instruction(project_repo, root).map_err(Failure::Domain)
         }
         Command::Instruction { task_ref: Some(task_ref) } => {
-            TaskInstructionService::edit(&project_repo, &task_repo, &root, task_ref)
-                .map(|path| CommandOutput::text(format!("opened {}", path.display())))
+            TaskInstructionService::edit(&project_repo, &task_repo, root, task_ref)
+                .map(|path| opened(path.as_path()))
                 .map_err(Failure::Domain)
         }
         Command::Declaration { task_ref } => {
-            TaskDeclarationService::edit(&project_repo, &task_repo, &root, task_ref)
-                .map(|path| CommandOutput::text(format!("opened {}", path.display())))
+            TaskDeclarationService::edit(&project_repo, &task_repo, root, task_ref)
+                .map(|path| opened(path.as_path()))
                 .map_err(Failure::Domain)
         }
         Command::Rebuild { dry_run } => {
-            let result =
-                RebuildService::run(&project_repo, &task_repo, &root, *dry_run)
-                    .map_err(Failure::Domain)?;
-            if result.has_errors() {
-                Err(Failure::Rebuild(result, *dry_run))
-            } else {
-                Ok(CommandOutput::text(render_rebuild(&result, *dry_run)))
-            }
+            rebuild(project_repo, task_repo, root, *dry_run)
         }
     }
+}
+
+fn init(
+    project_repo: FilesystemProjectRepository,
+    root: &std::path::Path,
+    force: bool,
+) -> Result<CommandOutput, Failure> {
+    let project =
+        project_repo.initialize_project(root, force).map_err(Failure::Domain)?;
+    Ok(CommandOutput::text(format!("initialized Minerva in {}", project.name)))
+}
+
+fn open_project_instruction(
+    project_repo: FilesystemProjectRepository,
+    root: &std::path::Path,
+) -> Result<CommandOutput, minerva_domain::MinervaError> {
+    ProjectInstructionService::edit(&project_repo, root)
+        .map(|path| opened(path.as_path()))
+}
+
+fn rebuild(
+    project_repo: FilesystemProjectRepository,
+    task_repo: FilesystemTaskRepository,
+    root: &std::path::Path,
+    dry_run: bool,
+) -> Result<CommandOutput, Failure> {
+    let result = RebuildService::run(&project_repo, &task_repo, root, dry_run)
+        .map_err(Failure::Domain)?;
+    if result.has_errors() {
+        Err(Failure::Rebuild(result, dry_run))
+    } else {
+        Ok(CommandOutput::text(render_rebuild(&result, dry_run)))
+    }
+}
+
+fn opened(path: &std::path::Path) -> CommandOutput {
+    CommandOutput::text(format!("opened {}", path.display()))
 }
 
 fn show(
