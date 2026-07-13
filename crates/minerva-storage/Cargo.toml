@@ -1,0 +1,11 @@
+[package]
+name = "minerva-storage"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+minerva-application.workspace = true
+
+[lints]
+workspace = true

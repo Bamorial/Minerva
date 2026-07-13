@@ -1,0 +1,44 @@
+# -----------------------------------------------------------------------------
+# Rust
+# -----------------------------------------------------------------------------
+/target/
+
+# Keep Cargo.lock tracked for applications and binaries.
+# If this repo ever becomes library-only, revisit this choice explicitly.
+# /Cargo.lock
+
+# Rustfmt / rustc transient backups
+**/*.rs.bk
+
+# -----------------------------------------------------------------------------
+# Cargo / tooling local state
+# -----------------------------------------------------------------------------
+.cargo/
+
+# Tasker workspace state
+.tasker/current/
+
+# -----------------------------------------------------------------------------
+# macOS
+# -----------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# -----------------------------------------------------------------------------
+# Editors
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+.tasker/
+.minerva/
+initial_plan.md
+minerva_tasks.md

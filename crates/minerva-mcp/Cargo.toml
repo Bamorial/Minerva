@@ -1,0 +1,12 @@
+[package]
+name = "minerva-mcp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+minerva-application.workspace = true
+minerva-context.workspace = true
+
+[lints]
+workspace = true
