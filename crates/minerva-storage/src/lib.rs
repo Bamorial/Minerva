@@ -8,7 +8,11 @@ mod project_document;
 mod project_document_parts;
 mod project_files;
 mod project_lock;
+mod task_document;
+mod task_document_parts;
+mod task_files;
 mod task_lock;
+mod task_markdown;
 mod yaml_codec;
 
 pub use atomic_write::atomic_replace;
@@ -20,6 +24,10 @@ pub use project_files::{
     read_project, read_project_config, write_project, write_project_config,
 };
 pub use project_lock::ProjectLock;
+pub use task_files::{
+    read_task, read_task_declaration, read_task_instructions, read_task_notes,
+    write_task, write_task_declaration, write_task_instructions, write_task_notes,
+};
 pub use task_lock::{TaskLock, TaskLocks};
 
 #[cfg(test)]

@@ -21,6 +21,11 @@ impl TaskVersion {
     }
 
     #[must_use]
+    pub const fn get(self) -> u32 {
+        self.0.get()
+    }
+
+    #[must_use]
     pub fn next(self) -> Self {
         Self(self.0.checked_add(1).expect("task version overflowed"))
     }
