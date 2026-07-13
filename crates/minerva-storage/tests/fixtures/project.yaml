@@ -1,0 +1,26 @@
+schema_version: 1
+id: PRJ-01ARZ3NDEKTSV4RRFFQ69G5FAV
+name: Minerva
+created_at: 2026-07-13T09:00:00Z
+default_task_type: feature
+default_status: backlog
+statuses:
+  - key: backlog
+    terminal: false
+  - key: ready
+    terminal: false
+  - key: in-progress
+    terminal: false
+  - key: completed
+    terminal: true
+transitions:
+  - from: backlog
+    to: ready
+  - from: ready
+    to: in-progress
+  - from: in-progress
+    to: completed
+context_policy:
+  max_items: 12
+  max_dependency_hops: 2
+  stale_after_hours: 24

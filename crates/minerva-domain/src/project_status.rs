@@ -17,6 +17,14 @@ impl StatusKey {
     }
 }
 
+impl std::str::FromStr for StatusKey {
+    type Err = MinervaError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Self::new(value)
+    }
+}
+
 impl std::fmt::Display for StatusKey {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)

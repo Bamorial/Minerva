@@ -5,7 +5,10 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+humantime = "2.3.0"
 minerva-domain.workspace = true
+serde = { version = "1.0.228", features = ["derive"] }
+serde_yaml = "0.9.34"
 
 [lints]
 workspace = true
