@@ -1,4 +1,4 @@
-use clap::{ArgAction, Parser, Subcommand};
+use clap::{ArgAction, Args, Parser, Subcommand};
 use std::path::PathBuf;
 
 const HELP: &str = "Exit codes:\n  0 success\n  1 internal failure\n  2 command usage error\n  10 project not initialized\n  11 project already initialized\n  12 task not found\n  13 ambiguous task reference\n  14 invalid status transition\n  15 hierarchy cycle\n  16 dependency cycle\n  17 schema error\n  18 version conflict\n  19 lock conflict\n  20 invalid configuration\n  21 editor launch failure\n  22 rebuild validation failure";
@@ -25,6 +25,7 @@ pub enum Command {
         #[arg(long)]
         force: bool,
     },
+    New(NewArgs),
     Instruction {
         task_ref: Option<String>,
     },
@@ -40,10 +41,26 @@ pub enum Command {
     },
 }
 
+#[derive(Debug, Clone, Args)]
+pub struct NewArgs {
+    pub title: Option<String>,
+    #[arg(long = "type", value_name = "TASK_TYPE")]
+    pub task_type: Option<String>,
+    #[arg(long, value_name = "TASK_REF")]
+    pub parent: Option<String>,
+    #[arg(long, value_name = "PRIORITY")]
+    pub priority: Option<String>,
+    #[arg(long, value_name = "TAG", value_delimiter = ',')]
+    pub tags: Vec<String>,
+    #[arg(long)]
+    pub no_edit: bool,
+}
+
 impl Command {
     pub const fn name(&self) -> &'static str {
         match self {
             Self::Init { .. } => "init",
+            Self::New(_) => "new",
             Self::Instruction { .. } => "instruction",
             Self::Declaration { .. } => "declaration",
             Self::Status { .. } => "status",

@@ -1,3 +1,7 @@
+#![allow(dead_code)]
+
+pub mod interactive;
+
 use minerva_application::{TaskCreateRecord, TaskRepository};
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationDocument, DeclarationMetadata,

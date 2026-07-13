@@ -1,6 +1,7 @@
 use crate::{
     cli::{Cli, Command},
-    output,
+    new_command, output,
+    response::CommandOutput,
 };
 use minerva_application::{
     ProjectInstructionService, ProjectRepository, RebuildAction, RebuildResult,
@@ -8,11 +9,11 @@ use minerva_application::{
     render_cli,
 };
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
-use std::{env, path::PathBuf, process::ExitCode};
+use std::{env, process::ExitCode};
 
 pub fn run(cli: Cli) -> ExitCode {
     match execute(&cli) {
-        Ok(output_text) => output::success(&cli, &output_text),
+        Ok(output_text) => output::success(&cli, output_text),
         Err(Failure::Domain(error)) => {
             output::domain(&cli, render_cli(&error), error.code())
         }
@@ -23,8 +24,11 @@ pub fn run(cli: Cli) -> ExitCode {
     }
 }
 
-fn execute(cli: &Cli) -> Result<String, Failure> {
-    let root = root(cli)?;
+fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
+    let root = cli.root.clone().map_or_else(
+        || env::current_dir().map_err(|err| Failure::Internal(err.to_string())),
+        Ok,
+    )?;
     let project_repo = FilesystemProjectRepository;
     let task_repo = FilesystemTaskRepository;
     match &cli.command {
@@ -32,25 +36,30 @@ fn execute(cli: &Cli) -> Result<String, Failure> {
             let project = project_repo
                 .initialize_project(&root, *force)
                 .map_err(Failure::Domain)?;
-            Ok(format!("initialized Minerva in {}", project.name))
+            Ok(CommandOutput::text(format!("initialized Minerva in {}", project.name)))
+        }
+        Command::New(args) => {
+            new_command::execute(&project_repo, &task_repo, &root, args)
+                .map_err(Failure::Domain)
         }
         Command::Instruction { task_ref: None } => {
             ProjectInstructionService::edit(&project_repo, &root)
-                .map(|path| format!("opened {}", path.display()))
+                .map(|path| CommandOutput::text(format!("opened {}", path.display())))
                 .map_err(Failure::Domain)
         }
         Command::Instruction { task_ref: Some(task_ref) } => {
             TaskInstructionService::edit(&project_repo, &task_repo, &root, task_ref)
-                .map(|path| format!("opened {}", path.display()))
+                .map(|path| CommandOutput::text(format!("opened {}", path.display())))
                 .map_err(Failure::Domain)
         }
         Command::Declaration { task_ref } => {
             TaskDeclarationService::edit(&project_repo, &task_repo, &root, task_ref)
-                .map(|path| format!("opened {}", path.display()))
+                .map(|path| CommandOutput::text(format!("opened {}", path.display())))
                 .map_err(Failure::Domain)
         }
         Command::Status { task_ref } => {
             TaskStatusService::show(&project_repo, &task_repo, &root, task_ref)
+                .map(CommandOutput::text)
                 .map_err(Failure::Domain)
         }
         Command::Rebuild { dry_run } => {
@@ -60,17 +69,10 @@ fn execute(cli: &Cli) -> Result<String, Failure> {
             if result.has_errors() {
                 Err(Failure::Rebuild(result, *dry_run))
             } else {
-                Ok(render_rebuild(&result, *dry_run))
+                Ok(CommandOutput::text(render_rebuild(&result, *dry_run)))
             }
         }
     }
-}
-
-fn root(cli: &Cli) -> Result<PathBuf, Failure> {
-    cli.root.clone().map_or_else(
-        || env::current_dir().map_err(|err| Failure::Internal(err.to_string())),
-        Ok,
-    )
 }
 
 enum Failure {

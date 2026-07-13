@@ -1,6 +1,10 @@
 mod cli;
 mod exit_code;
+mod new_command;
+mod new_prompt;
+mod new_resolve;
 mod output;
+mod response;
 mod run;
 
 use clap::Parser;
