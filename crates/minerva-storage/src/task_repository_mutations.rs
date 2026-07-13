@@ -1,13 +1,15 @@
 use crate::{
-    MinervaLayout, TaskLock, append_created_event, append_instructions_updated_event,
-    append_moved_event, create_relationship as persist_relationship,
+    MinervaLayout, TaskLock, append_created_event, append_declaration_updated_event,
+    append_instructions_updated_event, append_moved_event,
+    create_relationship as persist_relationship,
     remove_relationship as delete_relationship, task_hierarchy,
     task_repository_support, write_task as persist_task, write_task_declaration,
     write_task_instructions, write_task_notes,
 };
 use minerva_application::{TaskCreateRecord, TaskWriteResult};
 use minerva_domain::{
-    MinervaError, Relationship, RelationshipId, Task, TaskId, TaskVersion,
+    DeclarationActor, DeclarationMetadata, MinervaError, Relationship, RelationshipId,
+    Task, TaskId, TaskVersion,
 };
 use std::{
     path::{Path, PathBuf},
@@ -60,6 +62,24 @@ pub fn prepare_task_instructions(
     Ok(path)
 }
 
+pub fn prepare_task_declaration(
+    root: &Path,
+    task_id: TaskId,
+) -> Result<PathBuf, MinervaError> {
+    let layout = MinervaLayout::new(root);
+    let _lock = TaskLock::acquire(&layout, task_id)?;
+    task_repository_support::read_existing(&layout, task_id)?;
+    let path = layout.declaration_file(task_id);
+    if !path.is_file() {
+        write_task_declaration(
+            &layout,
+            task_id,
+            &minerva_domain::DeclarationDocument::template(),
+        )?;
+    }
+    Ok(path)
+}
+
 pub fn update_task_instructions(
     root: &Path,
     task_id: TaskId,
@@ -84,6 +104,46 @@ pub fn update_task_instructions(
     write_task_instructions(&layout, task_id, contents)?;
     persist_task(&layout, &updated)?;
     let event_id = append_instructions_updated_event(&layout, &updated)?;
+    Ok(TaskWriteResult {
+        previous_version: Some(previous.version),
+        current_version: updated.version,
+        event_id: Some(event_id),
+    })
+}
+
+pub fn update_task_declaration(
+    root: &Path,
+    task_id: TaskId,
+    version: TaskVersion,
+    actor: DeclarationActor,
+    commit_hash: Option<String>,
+    contents: &str,
+) -> Result<TaskWriteResult, MinervaError> {
+    let layout = MinervaLayout::new(root);
+    let _lock = TaskLock::acquire(&layout, task_id)?;
+    let previous = task_repository_support::read_existing(&layout, task_id)?;
+    if previous.version != version {
+        return Err(MinervaError::VersionConflict {
+            path: layout.task_file(task_id).display().to_string(),
+            expected: previous.version.get().to_string(),
+            actual: version.get().to_string(),
+        });
+    }
+    let updated_at = SystemTime::now();
+    let updated = Task {
+        updated_at,
+        version: previous.version.next(),
+        declaration: DeclarationMetadata {
+            version: previous.declaration.version + 1,
+            updated_at,
+            updated_by: actor,
+            commit_hash,
+        },
+        ..previous.clone()
+    };
+    write_task_declaration(&layout, task_id, contents)?;
+    persist_task(&layout, &updated)?;
+    let event_id = append_declaration_updated_event(&layout, &updated)?;
     Ok(TaskWriteResult {
         previous_version: Some(previous.version),
         current_version: updated.version,

@@ -24,6 +24,13 @@ pub fn append_instructions_updated_event(
     append_event(layout, task, TaskEventRecord::instructions_updated(task))
 }
 
+pub fn append_declaration_updated_event(
+    layout: &MinervaLayout,
+    task: &Task,
+) -> Result<EventId, MinervaError> {
+    append_event(layout, task, TaskEventRecord::declaration_updated(task))
+}
+
 fn append_event(
     layout: &MinervaLayout,
     task: &Task,

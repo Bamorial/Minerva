@@ -1,6 +1,7 @@
 use crate::TaskCreateRecord;
 use minerva_domain::{
-    EventId, MinervaError, Relationship, RelationshipId, Task, TaskId, TaskVersion,
+    DeclarationActor, EventId, MinervaError, Relationship, RelationshipId, Task,
+    TaskId, TaskVersion,
 };
 use std::path::Path;
 
@@ -24,6 +25,11 @@ pub trait TaskRepository {
         root: &Path,
         task_id: TaskId,
     ) -> Result<String, MinervaError>;
+    fn read_task_declaration(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<String, MinervaError>;
     fn update_task(
         &self,
         root: &Path,
@@ -34,6 +40,15 @@ pub trait TaskRepository {
         root: &Path,
         task_id: TaskId,
         version: TaskVersion,
+        contents: &str,
+    ) -> Result<TaskWriteResult, MinervaError>;
+    fn update_task_declaration(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+        version: TaskVersion,
+        actor: DeclarationActor,
+        commit_hash: Option<String>,
         contents: &str,
     ) -> Result<TaskWriteResult, MinervaError>;
     fn list_tasks(&self, root: &Path) -> Result<Vec<Task>, MinervaError>;
@@ -76,6 +91,11 @@ pub trait TaskRepository {
     ) -> Result<Vec<Relationship>, MinervaError>;
     fn resolve_task(&self, root: &Path, task_ref: &str) -> Result<Task, MinervaError>;
     fn prepare_task_instructions(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<std::path::PathBuf, MinervaError>;
+    fn prepare_task_declaration(
         &self,
         root: &Path,
         task_id: TaskId,

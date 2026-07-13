@@ -1,5 +1,6 @@
 use minerva_application::{
-    ProjectInstructionService, ProjectRepository, TaskInstructionService, render_cli,
+    ProjectInstructionService, ProjectRepository, TaskDeclarationService,
+    TaskInstructionService, render_cli,
 };
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::{env, process::ExitCode};
@@ -51,6 +52,16 @@ fn run(args: Vec<String>) -> Result<String, Failure> {
             .map_err(Failure::Domain)?;
             Ok(format!("opened {}", path.display()))
         }
+        Command::Declaration { task_ref } => {
+            let path = TaskDeclarationService::edit(
+                &project_repo,
+                &task_repo,
+                &root,
+                &task_ref,
+            )
+            .map_err(Failure::Domain)?;
+            Ok(format!("opened {}", path.display()))
+        }
     }
 }
 
@@ -66,8 +77,11 @@ fn parse_command(args: Vec<String>) -> Result<Command, Failure> {
         [command, task_ref] if command == "instruction" => {
             Ok(Command::Instruction { task_ref: Some(task_ref.clone()) })
         }
+        [command, task_ref] if command == "declaration" => {
+            Ok(Command::Declaration { task_ref: task_ref.clone() })
+        }
         _ => Err(Failure::Usage(
-            "usage: minerva-cli init [--force]\n       minerva-cli instruction [<task>]".into(),
+            "usage: minerva-cli init [--force]\n       minerva-cli instruction [<task>]\n       minerva-cli declaration <task>".into(),
         )),
     }
 }
@@ -75,6 +89,7 @@ fn parse_command(args: Vec<String>) -> Result<Command, Failure> {
 enum Command {
     Init { force: bool },
     Instruction { task_ref: Option<String> },
+    Declaration { task_ref: String },
 }
 
 enum Failure {

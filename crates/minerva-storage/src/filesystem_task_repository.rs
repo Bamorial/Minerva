@@ -1,6 +1,7 @@
 use minerva_application::{TaskCreateRecord, TaskRepository, TaskWriteResult};
 use minerva_domain::{
-    MinervaError, Relationship, RelationshipId, Task, TaskId, TaskVersion,
+    DeclarationActor, MinervaError, Relationship, RelationshipId, Task, TaskId,
+    TaskVersion,
 };
 use std::path::{Path, PathBuf};
 
@@ -28,6 +29,13 @@ impl TaskRepository for FilesystemTaskRepository {
     ) -> Result<String, MinervaError> {
         crate::task_repository_queries::read_task_instructions(root, task_id)
     }
+    fn read_task_declaration(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<String, MinervaError> {
+        crate::task_repository_queries::read_task_declaration(root, task_id)
+    }
     fn update_task(
         &self,
         root: &Path,
@@ -44,6 +52,24 @@ impl TaskRepository for FilesystemTaskRepository {
     ) -> Result<TaskWriteResult, MinervaError> {
         crate::task_repository_mutations::update_task_instructions(
             root, task_id, version, contents,
+        )
+    }
+    fn update_task_declaration(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+        version: TaskVersion,
+        actor: DeclarationActor,
+        commit_hash: Option<String>,
+        contents: &str,
+    ) -> Result<TaskWriteResult, MinervaError> {
+        crate::task_repository_mutations::update_task_declaration(
+            root,
+            task_id,
+            version,
+            actor,
+            commit_hash,
+            contents,
         )
     }
     fn list_tasks(&self, root: &Path) -> Result<Vec<Task>, MinervaError> {
@@ -114,6 +140,13 @@ impl TaskRepository for FilesystemTaskRepository {
         task_id: TaskId,
     ) -> Result<PathBuf, MinervaError> {
         crate::task_repository_mutations::prepare_task_instructions(root, task_id)
+    }
+    fn prepare_task_declaration(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<PathBuf, MinervaError> {
+        crate::task_repository_mutations::prepare_task_declaration(root, task_id)
     }
     fn search_tasks(
         &self,

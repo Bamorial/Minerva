@@ -20,3 +20,12 @@ fn parser_rejects_missing_required_heading() {
                 && reason.contains("## Remaining Work")
     ));
 }
+
+#[test]
+fn content_hash_is_stable_for_identical_contents() {
+    let declaration = DeclarationDocument::template();
+    assert_eq!(
+        DeclarationDocument::content_hash(&declaration),
+        DeclarationDocument::content_hash(&declaration)
+    );
+}

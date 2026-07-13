@@ -2,6 +2,7 @@ use crate::{
     MinervaLayout, list_relationships as load_relationships,
     list_relationships_from as load_relationships_from,
     list_relationships_to as load_relationships_to,
+    read_task_declaration as load_task_declaration,
     read_task_instructions as load_task_instructions, task_repository_support,
 };
 use minerva_domain::{MinervaError, Relationship, Task, TaskId, TaskIdAllocator};
@@ -21,6 +22,13 @@ pub fn read_task_instructions(
     task_id: TaskId,
 ) -> Result<String, MinervaError> {
     load_task_instructions(&MinervaLayout::new(root), task_id)
+}
+
+pub fn read_task_declaration(
+    root: &Path,
+    task_id: TaskId,
+) -> Result<String, MinervaError> {
+    load_task_declaration(&MinervaLayout::new(root), task_id)
 }
 
 pub fn list_tasks(root: &Path) -> Result<Vec<Task>, MinervaError> {

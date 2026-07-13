@@ -5,8 +5,8 @@ use minerva_application::{
     TaskWriteResult,
 };
 use minerva_domain::{
-    ArchiveState, DeclarationActor, DeclarationMetadata, EventId, MinervaError,
-    Project, ProjectConfig, Relationship, RelationshipId, Task, TaskId,
+    ArchiveState, DeclarationActor, DeclarationDocument, DeclarationMetadata, EventId,
+    MinervaError, Project, ProjectConfig, Relationship, RelationshipId, Task, TaskId,
     TaskIdAllocator, TaskPriority, TaskSlug, TaskTypeDefinition, TaskTypeKey,
     TaskVersion,
 };
@@ -105,6 +105,13 @@ impl TaskRepository for FakeTaskRepo {
     ) -> Result<String, MinervaError> {
         unreachable!()
     }
+    fn read_task_declaration(
+        &self,
+        _: &Path,
+        _: TaskId,
+    ) -> Result<String, MinervaError> {
+        Ok(DeclarationDocument::template())
+    }
     fn update_task(&self, _: &Path, _: &Task) -> Result<TaskWriteResult, MinervaError> {
         unreachable!()
     }
@@ -113,6 +120,17 @@ impl TaskRepository for FakeTaskRepo {
         _: &Path,
         _: TaskId,
         _: TaskVersion,
+        _: &str,
+    ) -> Result<TaskWriteResult, MinervaError> {
+        unreachable!()
+    }
+    fn update_task_declaration(
+        &self,
+        _: &Path,
+        _: TaskId,
+        _: TaskVersion,
+        _: DeclarationActor,
+        _: Option<String>,
         _: &str,
     ) -> Result<TaskWriteResult, MinervaError> {
         unreachable!()
@@ -183,6 +201,13 @@ impl TaskRepository for FakeTaskRepo {
         unreachable!()
     }
     fn prepare_task_instructions(
+        &self,
+        _: &Path,
+        _: TaskId,
+    ) -> Result<PathBuf, MinervaError> {
+        unreachable!()
+    }
+    fn prepare_task_declaration(
         &self,
         _: &Path,
         _: TaskId,
