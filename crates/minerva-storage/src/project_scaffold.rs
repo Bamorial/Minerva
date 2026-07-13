@@ -5,12 +5,13 @@ use minerva_domain::{
 use std::{path::Path, time::SystemTime};
 
 pub const SCHEMA_VERSION: &str = "1\n";
-const FEATURE_TASK_TYPE: &str = "---\nname: feature\ndisplay_name: Feature\ndescription: User-facing capability or workflow change.\n---\n# Feature\n\nDescribe the user-facing capability.\n";
-const BUG_TASK_TYPE: &str = "---\nname: bug\ndisplay_name: Bug\ndescription: Incorrect behavior that should be fixed.\n---\n# Bug\n\nDescribe the defect and expected behavior.\n";
-const RESEARCH_TASK_TYPE: &str = "---\nname: research\ndisplay_name: Research\ndescription: Investigation that produces findings or recommendations.\n---\n# Research\n\nCapture the question and findings.\n";
-const REFACTOR_TASK_TYPE: &str = "---\nname: refactor\ndisplay_name: Refactor\ndescription: Internal code change that preserves behavior.\n---\n# Refactor\n\nDescribe the code change and constraints.\n";
-const DOCUMENTATION_TASK_TYPE: &str = "---\nname: documentation\ndisplay_name: Documentation\ndescription: Docs-only change for users or maintainers.\n---\n# Documentation\n\nDescribe the docs update.\n";
-const CHORE_TASK_TYPE: &str = "---\nname: chore\ndisplay_name: Chore\ndescription: Maintenance work with limited product impact.\n---\n# Chore\n\nDescribe the maintenance task.\n";
+const FEATURE_TASK_TYPE: &str = include_str!("task_type_templates/feature.md");
+const BUG_TASK_TYPE: &str = include_str!("task_type_templates/bug.md");
+const RESEARCH_TASK_TYPE: &str = include_str!("task_type_templates/research.md");
+const REFACTOR_TASK_TYPE: &str = include_str!("task_type_templates/refactor.md");
+const DOCUMENTATION_TASK_TYPE: &str =
+    include_str!("task_type_templates/documentation.md");
+const CHORE_TASK_TYPE: &str = include_str!("task_type_templates/chore.md");
 
 pub const TASK_TYPES: [(&str, &str); 6] = [
     ("feature.md", FEATURE_TASK_TYPE),
