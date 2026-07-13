@@ -1,140 +1,18 @@
-use minerva_application::{
-    ProjectInstructionService, ProjectRepository, RebuildAction, RebuildResult,
-    RebuildService, TaskDeclarationService, TaskInstructionService, TaskStatusService,
-    render_cli,
-};
-use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
-use std::{env, process::ExitCode};
+mod cli;
+mod exit_code;
+mod output;
+mod run;
+
+use clap::Parser;
+use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    match run(env::args().skip(1).collect()) {
-        Ok(message) => {
-            println!("{message}");
-            ExitCode::SUCCESS
-        }
-        Err(Failure::Usage(message)) => {
-            eprintln!("{message}");
-            ExitCode::from(2)
-        }
-        Err(Failure::Domain(error)) => {
-            let report = render_cli(&error);
-            eprintln!("{} [{}]", report.message, report.code);
-            for detail in report.details {
-                eprintln!("{detail}");
-            }
-            ExitCode::from(1)
-        }
-        Err(Failure::Rebuild(result, dry_run)) => {
-            eprintln!("{}", render_rebuild(&result, dry_run));
-            ExitCode::from(1)
+    match cli::Cli::try_parse() {
+        Ok(cli) => run::run(cli),
+        Err(error) => {
+            let code = error.exit_code();
+            error.print().expect("failed to write clap output");
+            ExitCode::from(code as u8)
         }
     }
-}
-
-fn run(args: Vec<String>) -> Result<String, Failure> {
-    let root = env::current_dir().map_err(|err| Failure::Usage(err.to_string()))?;
-    let project_repo = FilesystemProjectRepository;
-    let task_repo = FilesystemTaskRepository;
-    match parse_command(args)? {
-        Command::Init { force } => {
-            let project = project_repo
-                .initialize_project(&root, force)
-                .map_err(Failure::Domain)?;
-            Ok(format!("initialized Minerva in {}", project.name))
-        }
-        Command::Instruction { task_ref: None } => {
-            let path = ProjectInstructionService::edit(&project_repo, &root)
-                .map_err(Failure::Domain)?;
-            Ok(format!("opened {}", path.display()))
-        }
-        Command::Instruction { task_ref: Some(task_ref) } => {
-            let path = TaskInstructionService::edit(
-                &project_repo,
-                &task_repo,
-                &root,
-                &task_ref,
-            )
-            .map_err(Failure::Domain)?;
-            Ok(format!("opened {}", path.display()))
-        }
-        Command::Declaration { task_ref } => {
-            let path = TaskDeclarationService::edit(
-                &project_repo,
-                &task_repo,
-                &root,
-                &task_ref,
-            )
-            .map_err(Failure::Domain)?;
-            Ok(format!("opened {}", path.display()))
-        }
-        Command::Status { task_ref } => {
-            TaskStatusService::show(&project_repo, &task_repo, &root, &task_ref)
-                .map_err(Failure::Domain)
-        }
-        Command::Rebuild { dry_run } => {
-            let result = RebuildService::run(&project_repo, &task_repo, &root, dry_run)
-                .map_err(Failure::Domain)?;
-            if result.has_errors() {
-                Err(Failure::Rebuild(result, dry_run))
-            } else {
-                Ok(render_rebuild(&result, dry_run))
-            }
-        }
-    }
-}
-
-fn parse_command(args: Vec<String>) -> Result<Command, Failure> {
-    match args.as_slice() {
-        [command] if command == "init" => Ok(Command::Init { force: false }),
-        [command, flag] if command == "init" && flag == "--force" => {
-            Ok(Command::Init { force: true })
-        }
-        [command] if command == "instruction" => {
-            Ok(Command::Instruction { task_ref: None })
-        }
-        [command, task_ref] if command == "instruction" => {
-            Ok(Command::Instruction { task_ref: Some(task_ref.clone()) })
-        }
-        [command, task_ref] if command == "declaration" => {
-            Ok(Command::Declaration { task_ref: task_ref.clone() })
-        }
-        [command, task_ref] if command == "status" => {
-            Ok(Command::Status { task_ref: task_ref.clone() })
-        }
-        [command] if command == "rebuild" => Ok(Command::Rebuild { dry_run: false }),
-        [command, flag] if command == "rebuild" && flag == "--dry-run" => {
-            Ok(Command::Rebuild { dry_run: true })
-        }
-        _ => Err(Failure::Usage(
-            "usage: minerva-cli init [--force]\n       minerva-cli instruction [<task>]\n       minerva-cli declaration <task>\n       minerva-cli status <task>\n       minerva-cli rebuild [--dry-run]".into(),
-        )),
-    }
-}
-
-enum Command {
-    Init { force: bool },
-    Instruction { task_ref: Option<String> },
-    Declaration { task_ref: String },
-    Status { task_ref: String },
-    Rebuild { dry_run: bool },
-}
-
-enum Failure {
-    Usage(String),
-    Domain(minerva_domain::MinervaError),
-    Rebuild(RebuildResult, bool),
-}
-
-fn render_rebuild(result: &RebuildResult, dry_run: bool) -> String {
-    let action = match (dry_run, result.index_action) {
-        (true, RebuildAction::Create | RebuildAction::Update) => "would write",
-        (false, RebuildAction::Create | RebuildAction::Update) => "wrote",
-        (true, RebuildAction::NoChange) => "would keep",
-        (false, RebuildAction::NoChange) => "kept",
-    };
-    let mut lines = vec![format!("rebuild: {action} {}", result.index_path)];
-    lines.extend(result.task_errors.iter().map(|error| {
-        format!("invalid task {} at {}: {}", error.task_ref, error.path, error.reason)
-    }));
-    lines.join("\n")
 }
