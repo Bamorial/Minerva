@@ -16,6 +16,7 @@ mod new_resolve;
 mod output;
 mod relationship_command;
 mod relationship_output;
+mod repair_output;
 mod response;
 mod run;
 mod show_output;
@@ -25,6 +26,8 @@ mod task_ref_arg;
 mod tree_args;
 mod tree_command;
 mod tree_output;
+mod validate_command;
+mod validate_output;
 
 use clap::Parser;
 use std::process::ExitCode;

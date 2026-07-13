@@ -1,14 +1,14 @@
 use crate::{
     cli::{Cli, Command, ShowArgs},
     context_command, hierarchy_command, list_command, log_command, move_command,
-    new_command, output, relationship_command,
+    new_command, output, relationship_command, repair_output,
     response::CommandOutput,
-    show_output, status_command, tree_command,
+    show_output, status_command, tree_command, validate_command,
 };
 use minerva_application::{
     ProjectInstructionService, ProjectRepository, RebuildAction, RebuildResult,
-    RebuildService, TaskDeclarationService, TaskInstructionService, TaskShowOptions,
-    TaskShowService, render_cli,
+    RebuildService, RepairService, TaskDeclarationService, TaskInstructionService,
+    TaskShowOptions, TaskShowService, render_cli,
 };
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::{env, process::ExitCode};
@@ -21,6 +21,9 @@ pub fn run(cli: &Cli) -> ExitCode {
         }
         Err(Failure::Rebuild(result, dry_run)) => {
             output::rebuild(cli, &render_rebuild(&result, dry_run), &result)
+        }
+        Err(Failure::Validation(output_text, exit_code, code)) => {
+            output::validation(cli, &output_text, exit_code, code)
         }
         Err(Failure::Internal(message)) => output::internal(&message),
     }
@@ -108,6 +111,9 @@ fn dispatch_command(
             &args.task_ref,
         )
         .map_err(Failure::Domain),
+        Command::Repair { dry_run } => {
+            repair(&project_repo, &task_repo, root, *dry_run).map_err(Failure::Domain)
+        }
         Command::Instruction { task_ref: None } => {
             open_project_instruction(project_repo, root).map_err(Failure::Domain)
         }
@@ -124,6 +130,7 @@ fn dispatch_command(
         Command::Rebuild { dry_run } => {
             rebuild(project_repo, task_repo, root, *dry_run)
         }
+        Command::Validate(args) => validate(&project_repo, &task_repo, root, args),
     }
 }
 
@@ -160,6 +167,16 @@ fn rebuild(
     }
 }
 
+fn repair(
+    project_repo: &impl ProjectRepository,
+    task_repo: &impl minerva_application::TaskRepository,
+    root: &std::path::Path,
+    dry_run: bool,
+) -> Result<CommandOutput, minerva_domain::MinervaError> {
+    RepairService::run(project_repo, task_repo, root, dry_run)
+        .map(|result| repair_output::render(&result, dry_run))
+}
+
 fn opened(path: &std::path::Path) -> CommandOutput {
     CommandOutput::text(format!("opened {}", path.display()))
 }
@@ -186,7 +203,33 @@ fn show(
 enum Failure {
     Domain(minerva_domain::MinervaError),
     Rebuild(RebuildResult, bool),
+    Validation(CommandOutput, u8, &'static str),
     Internal(String),
+}
+
+fn validate(
+    project_repo: &impl ProjectRepository,
+    task_repo: &impl minerva_application::TaskRepository,
+    root: &std::path::Path,
+    args: &crate::cli::ValidateArgs,
+) -> Result<CommandOutput, Failure> {
+    let validation = validate_command::execute(project_repo, task_repo, root, args)
+        .map_err(Failure::Domain)?;
+    if validation.result.has_errors() {
+        return Err(Failure::Validation(
+            validation.output,
+            crate::exit_code::VALIDATION_ERROR,
+            "validation_error",
+        ));
+    }
+    if validation.result.has_warnings() {
+        return Err(Failure::Validation(
+            validation.output,
+            crate::exit_code::VALIDATION_WARNING,
+            "validation_warning",
+        ));
+    }
+    Ok(validation.output)
 }
 
 fn render_rebuild(result: &RebuildResult, dry_run: bool) -> String {

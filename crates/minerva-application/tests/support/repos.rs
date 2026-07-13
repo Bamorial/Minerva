@@ -2,7 +2,7 @@
 
 use minerva_application::{
     MoveTaskRequest, ProjectRepository, ProjectValidationResult, RebuildAction,
-    RebuildResult, TaskCreateRecord, TaskLogReadResult, TaskRepository,
+    RebuildResult, RepairResult, TaskCreateRecord, TaskLogReadResult, TaskRepository,
     TaskWriteResult,
 };
 use minerva_domain::{
@@ -284,6 +284,13 @@ impl TaskRepository for FakeTaskRepo {
             index_action: RebuildAction::NoChange,
             task_errors: Vec::new(),
         })
+    }
+    fn repair_project_state(
+        &self,
+        _: &Path,
+        _: bool,
+    ) -> Result<RepairResult, MinervaError> {
+        Ok(RepairResult { operations: Vec::new(), issues: Vec::new() })
     }
     fn validate_project_state(
         &self,

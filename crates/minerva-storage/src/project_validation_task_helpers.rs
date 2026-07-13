@@ -14,7 +14,7 @@ pub fn task_error(
         classify(err, default_code),
         &path,
         Some(task_ref),
-        error_message(err.clone()),
+        error_message(err),
     )
 }
 
@@ -39,10 +39,10 @@ pub fn classify<'a>(err: &MinervaError, default_code: &'a str) -> &'a str {
     }
 }
 
-pub fn error_message(err: MinervaError) -> String {
+pub fn error_message(err: &MinervaError) -> String {
     match err {
         MinervaError::SchemaError { reason, .. }
-        | MinervaError::InvalidConfiguration { reason, .. } => reason,
+        | MinervaError::InvalidConfiguration { reason, .. } => reason.clone(),
         MinervaError::TaskNotFound { task_ref } => {
             format!("task `{task_ref}` was not found")
         }

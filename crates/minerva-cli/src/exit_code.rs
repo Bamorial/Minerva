@@ -3,6 +3,8 @@ use std::process::ExitCode;
 
 pub const INTERNAL_FAILURE: u8 = 1;
 pub const REBUILD_FAILURE: u8 = 22;
+pub const VALIDATION_WARNING: u8 = 23;
+pub const VALIDATION_ERROR: u8 = 24;
 
 pub const fn for_domain(code: ErrorCode) -> u8 {
     match code {

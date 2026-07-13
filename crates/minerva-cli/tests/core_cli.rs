@@ -17,7 +17,11 @@ fn help_includes_global_options_and_exit_codes() {
     assert!(stdout.contains("show"));
     assert!(stdout.contains("complete"));
     assert!(stdout.contains("reopen"));
+    assert!(stdout.contains("repair"));
+    assert!(stdout.contains("validate"));
     assert!(stdout.contains("Exit codes:"));
+    assert!(stdout.contains("23 validation warning"));
+    assert!(stdout.contains("24 validation error"));
     fs::remove_dir_all(root).unwrap();
 }
 

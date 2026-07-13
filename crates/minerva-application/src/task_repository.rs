@@ -1,5 +1,6 @@
 use crate::{
-    ProjectValidationResult, RebuildResult, TaskCreateRecord, TaskLogReadResult,
+    ProjectValidationResult, RebuildResult, RepairResult, TaskCreateRecord,
+    TaskLogReadResult,
 };
 use minerva_domain::{
     DeclarationActor, DeclarationFreshnessProbe, EventId, MinervaError, Relationship,
@@ -125,6 +126,11 @@ pub trait TaskRepository {
         root: &Path,
         dry_run: bool,
     ) -> Result<RebuildResult, MinervaError>;
+    fn repair_project_state(
+        &self,
+        root: &Path,
+        dry_run: bool,
+    ) -> Result<RepairResult, MinervaError>;
     fn validate_project_state(
         &self,
         root: &Path,

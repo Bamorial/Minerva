@@ -13,7 +13,7 @@ pub fn validate_index(
                 &path,
                 None,
                 "task index is current",
-            ))
+            ));
         }
         Ok(TaskIndexStatus::Missing) => {
             findings.push(crate::project_validation_finding::warning(
@@ -21,7 +21,7 @@ pub fn validate_index(
                 &path,
                 None,
                 "task index is missing",
-            ))
+            ));
         }
         Ok(TaskIndexStatus::Stale) => {
             findings.push(crate::project_validation_finding::warning(
@@ -29,13 +29,13 @@ pub fn validate_index(
                 &path,
                 None,
                 "task index is stale",
-            ))
+            ));
         }
         Err(err) => findings.push(crate::project_validation_finding::warning(
             "stale_index",
             &path,
             None,
-            crate::project_validation_task_helpers::error_message(err),
+            crate::project_validation_task_helpers::error_message(&err),
         )),
     }
 }

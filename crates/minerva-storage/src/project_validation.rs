@@ -1,11 +1,8 @@
 use crate::MinervaLayout;
 use minerva_application::ProjectValidationResult;
-use minerva_domain::MinervaError;
 use std::path::Path;
 
-pub fn validate_project_state(
-    root: &Path,
-) -> Result<ProjectValidationResult, MinervaError> {
+pub fn validate_project_state(root: &Path) -> ProjectValidationResult {
     let layout = MinervaLayout::new(root);
     let mut findings = Vec::new();
     let project = crate::project_validation_project::validate_project_files(
@@ -25,7 +22,7 @@ pub fn validate_project_state(
     );
     crate::project_validation_index::validate_index(&layout, &mut findings);
     findings.sort_by_key(sort_key);
-    Ok(ProjectValidationResult { findings })
+    ProjectValidationResult { findings }
 }
 
 fn sort_key(

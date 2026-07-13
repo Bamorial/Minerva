@@ -3,7 +3,7 @@ use crate::{list_args::ListArgs, status_args::StatusArgs, task_ref_arg::TaskRefA
 use clap::{ArgAction, Args, Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
-const HELP: &str = "Exit codes:\n  0 success\n  1 internal failure\n  2 command usage error\n  10 project not initialized\n  11 project already initialized\n  12 task not found\n  13 ambiguous task reference\n  14 invalid status transition\n  15 hierarchy cycle\n  16 dependency cycle\n  17 schema error\n  18 version conflict\n  19 lock conflict\n  20 invalid configuration\n  21 editor launch failure\n  22 rebuild validation failure";
+const HELP: &str = "Exit codes:\n  0 success\n  1 internal failure\n  2 command usage error\n  10 project not initialized\n  11 project already initialized\n  12 task not found\n  13 ambiguous task reference\n  14 invalid status transition\n  15 hierarchy cycle\n  16 dependency cycle\n  17 schema error\n  18 version conflict\n  19 lock conflict\n  20 invalid configuration\n  21 editor launch failure\n  22 rebuild validation failure\n  23 validation warning\n  24 validation error";
 
 #[derive(Debug, Parser)]
 #[command(name = "minerva", version, about = "Minerva command line interface")]
@@ -49,10 +49,15 @@ pub enum Command {
     Unrelate(UnrelateArgs),
     Children(TaskRefArg),
     Ancestors(TaskRefArg),
+    Repair {
+        #[arg(long)]
+        dry_run: bool,
+    },
     Rebuild {
         #[arg(long)]
         dry_run: bool,
     },
+    Validate(ValidateArgs),
 }
 
 #[derive(Debug, Clone, Args)]
@@ -180,6 +185,11 @@ pub struct UnrelateArgs {
     pub relationship_type: String,
 }
 
+#[derive(Debug, Clone, Args)]
+pub struct ValidateArgs {
+    pub task_ref: Option<String>,
+}
+
 impl Command {
     pub const fn name(&self) -> &'static str {
         match self {
@@ -202,7 +212,9 @@ impl Command {
             Self::Unrelate(_) => "unrelate",
             Self::Children(_) => "children",
             Self::Ancestors(_) => "ancestors",
+            Self::Repair { .. } => "repair",
             Self::Rebuild { .. } => "rebuild",
+            Self::Validate(_) => "validate",
         }
     }
 }

@@ -71,6 +71,25 @@ pub fn rebuild(cli: &Cli, output: &str, result: &RebuildResult) -> ExitCode {
     exit_code::code(exit_code::REBUILD_FAILURE)
 }
 
+pub fn validation(
+    cli: &Cli,
+    output: &CommandOutput,
+    exit_code_value: u8,
+    code: &str,
+) -> ExitCode {
+    if cli.json {
+        let result =
+            output.json.clone().unwrap_or_else(|| json!({ "output": output.text }));
+        print_ejson(&json!({
+            "ok": false, "code": code, "exit_code": exit_code_value,
+            "result": result,
+        }));
+    } else {
+        eprintln!("{}", output.text);
+    }
+    exit_code::code(exit_code_value)
+}
+
 pub fn internal(message: &str) -> ExitCode {
     eprintln!("{message}");
     exit_code::code(exit_code::INTERNAL_FAILURE)

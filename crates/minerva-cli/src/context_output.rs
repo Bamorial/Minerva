@@ -17,16 +17,18 @@ pub fn render(
     let text = match args.format {
         ContextFormatArg::Markdown => markdown(args, result),
         ContextFormatArg::Json => {
-            serde_json::to_string_pretty(&json).map_err(schema)?
+            serde_json::to_string_pretty(&json).map_err(|err| schema(&err))?
         }
     };
     Ok(RenderedContext { text, json })
 }
 
 fn markdown(args: &ContextArgs, result: &ContextCompilationResult) -> String {
-    (!args.explain).then(|| result.markdown.clone()).unwrap_or_else(|| {
+    if args.explain {
         format!("{}\n\n## Context Explain\n\n{}", result.markdown, explain(result))
-    })
+    } else {
+        result.markdown.clone()
+    }
 }
 
 fn json_value(args: &ContextArgs, result: &ContextCompilationResult) -> Value {
@@ -146,7 +148,7 @@ const fn relationship_name(value: minerva_domain::RelationshipType) -> &'static 
     }
 }
 
-fn schema(err: serde_json::Error) -> minerva_domain::MinervaError {
+fn schema(err: &serde_json::Error) -> minerva_domain::MinervaError {
     minerva_domain::MinervaError::SchemaError {
         path: "context-output".into(),
         reason: err.to_string(),

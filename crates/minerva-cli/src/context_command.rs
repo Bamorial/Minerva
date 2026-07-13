@@ -45,13 +45,18 @@ fn map_compile_error(error: ContextCompilationError) -> MinervaError {
         ContextCompilationError::StaleReference { task_ref, reasons } => {
             MinervaError::InvalidConfiguration {
                 key: format!("context.task.{task_ref}.declaration"),
-                reason: reasons.iter().map(reason).collect::<Vec<_>>().join(", "),
+                reason: reasons
+                    .iter()
+                    .copied()
+                    .map(reason)
+                    .collect::<Vec<_>>()
+                    .join(", "),
             }
         }
     }
 }
 
-fn reason(value: &DeclarationFreshnessReason) -> &'static str {
+fn reason(value: DeclarationFreshnessReason) -> &'static str {
     match value {
         DeclarationFreshnessReason::MissingCoveredCommit => "missing-covered-commit",
         DeclarationFreshnessReason::CoveredCommitUnavailable => {
