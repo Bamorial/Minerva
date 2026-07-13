@@ -56,6 +56,9 @@ impl ProjectRepository for FakeProjectRepo {
     ) -> Result<(), MinervaError> {
         unreachable!()
     }
+    fn prepare_project_instructions(&self, _: &Path) -> Result<PathBuf, MinervaError> {
+        unreachable!()
+    }
 }
 
 pub struct FakeTaskRepo {

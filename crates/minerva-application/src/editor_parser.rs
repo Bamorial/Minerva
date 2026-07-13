@@ -42,5 +42,8 @@ fn push_part(parts: &mut Vec<String>, current: &mut String) {
 }
 
 fn invalid<T>(editor: &str, reason: &str) -> Result<T, MinervaError> {
-    Err(MinervaError::EditorLaunchFailure { editor: editor.into(), reason: reason.into() })
+    Err(MinervaError::EditorLaunchFailure {
+        editor: editor.into(),
+        reason: reason.into(),
+    })
 }

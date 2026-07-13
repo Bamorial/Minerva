@@ -21,7 +21,10 @@ impl EditorEnvironment {
         }
     }
 
-    pub fn resolve(&self, configured: Option<&str>) -> Result<EditorCommand, MinervaError> {
+    pub fn resolve(
+        &self,
+        configured: Option<&str>,
+    ) -> Result<EditorCommand, MinervaError> {
         self.resolve_with_fallback(configured, platform_fallback())
     }
 

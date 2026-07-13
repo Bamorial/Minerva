@@ -1,12 +1,7 @@
-use std::{
-    fs,
-    path::PathBuf,
-    process::Command,
-    sync::atomic::{AtomicU64, Ordering},
-    time::{SystemTime, UNIX_EPOCH},
-};
+mod support;
 
-static NEXT_DIR_ID: AtomicU64 = AtomicU64::new(0);
+use std::fs;
+use support::{run, temp_dir};
 
 #[test]
 fn init_command_creates_minerva_project_structure() {
@@ -41,21 +36,4 @@ fn init_command_allows_preexisting_agents_file() {
     assert!(root.join(".minerva/project.yaml").is_file());
     assert_eq!(fs::read_to_string(root.join("AGENTS.md")).unwrap(), "old contents\n");
     fs::remove_dir_all(root).unwrap();
-}
-
-fn run(root: &PathBuf, args: &[&str]) -> std::process::Output {
-    Command::new(binary()).args(args).current_dir(root).output().unwrap()
-}
-
-fn binary() -> PathBuf {
-    std::env::var_os("CARGO_BIN_EXE_minerva-cli").unwrap().into()
-}
-
-fn temp_dir(name: &str) -> PathBuf {
-    let unique = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-    let sequence = NEXT_DIR_ID.fetch_add(1, Ordering::Relaxed);
-    let dir =
-        std::env::temp_dir().join(format!("minerva-cli-{name}-{unique}-{sequence}"));
-    fs::create_dir(&dir).unwrap();
-    dir
 }

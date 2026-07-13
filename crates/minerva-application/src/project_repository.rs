@@ -30,4 +30,9 @@ pub trait ProjectRepository {
         root: &Path,
         contents: &str,
     ) -> Result<(), MinervaError>;
+
+    fn prepare_project_instructions(
+        &self,
+        root: &Path,
+    ) -> Result<PathBuf, MinervaError>;
 }

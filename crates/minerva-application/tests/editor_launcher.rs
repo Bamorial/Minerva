@@ -9,12 +9,9 @@ fn launch_failure_is_structured_when_process_cannot_start() {
         visual: None,
         editor: None,
     };
-    let error = EditorLauncher::edit_path_with_environment(
-        Path::new("Cargo.toml"),
-        None,
-        &env,
-    )
-    .unwrap_err();
+    let error =
+        EditorLauncher::edit_path_with_environment(Path::new("Cargo.toml"), None, &env)
+            .unwrap_err();
     assert!(matches!(
         error,
         MinervaError::EditorLaunchFailure { editor, reason }

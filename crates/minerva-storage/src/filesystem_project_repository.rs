@@ -1,6 +1,6 @@
 use crate::{
-    MinervaLayout, initialize_project, read_project, read_project_config,
-    read_project_instructions, read_task_types, write_project,
+    MinervaLayout, initialize_project, instructions_md, read_project,
+    read_project_config, read_project_instructions, read_task_types, write_project,
     write_project_instructions,
 };
 use minerva_application::ProjectRepository;
@@ -60,5 +60,17 @@ impl ProjectRepository for FilesystemProjectRepository {
         contents: &str,
     ) -> Result<(), MinervaError> {
         write_project_instructions(&MinervaLayout::new(root), contents)
+    }
+
+    fn prepare_project_instructions(
+        &self,
+        root: &Path,
+    ) -> Result<PathBuf, MinervaError> {
+        let layout = MinervaLayout::new(root);
+        let path = layout.instructions_file();
+        if !path.is_file() {
+            write_project_instructions(&layout, instructions_md())?;
+        }
+        Ok(path)
     }
 }
