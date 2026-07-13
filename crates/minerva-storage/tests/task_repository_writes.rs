@@ -20,9 +20,19 @@ fn repository_creates_updates_and_archives_tasks() {
     assert_eq!(result.previous_version, None);
     assert!(result.event_id.is_some());
     let task_dir = MinervaLayout::new(&root).task_dir(created.id);
-    assert_eq!(fs::read_to_string(task_dir.join("instructions.md")).unwrap(), "# Feature\n");
-    assert_eq!(fs::read_to_string(task_dir.join("declaration.md")).unwrap(), "# Declaration\n");
-    assert!(fs::read_to_string(task_dir.join("events.jsonl")).unwrap().contains("task-created"));
+    assert_eq!(
+        fs::read_to_string(task_dir.join("instructions.md")).unwrap(),
+        "# Feature\n"
+    );
+    assert_eq!(
+        fs::read_to_string(task_dir.join("declaration.md")).unwrap(),
+        "# Declaration\n"
+    );
+    assert!(
+        fs::read_to_string(task_dir.join("events.jsonl"))
+            .unwrap()
+            .contains("task-created")
+    );
     let mut updated = created.clone();
     updated.title = "Implement shared task repo".into();
     updated.version = created.version.next();

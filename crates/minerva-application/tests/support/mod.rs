@@ -35,7 +35,9 @@ pub fn config() -> ProjectConfig {
         schema_version: 1,
         editor: None,
         default_priority: TaskPriority::High,
-        default_tags: BTreeSet::from([minerva_domain::TaskTag::new("release").unwrap()]),
+        default_tags: BTreeSet::from(
+            [minerva_domain::TaskTag::new("release").unwrap()],
+        ),
     })
     .unwrap()
 }

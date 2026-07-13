@@ -15,7 +15,9 @@ fn config_fixture_round_trips_through_yaml_storage() {
     assert_eq!(config.default_priority, minerva_domain::TaskPriority::High);
     assert_eq!(
         config.default_tags,
-        std::collections::BTreeSet::from([minerva_domain::TaskTag::new("release").unwrap()])
+        std::collections::BTreeSet::from([
+            minerva_domain::TaskTag::new("release").unwrap()
+        ])
     );
     write_project_config(&layout, &config).unwrap();
     assert_eq!(read_project_config(&layout).unwrap(), config);

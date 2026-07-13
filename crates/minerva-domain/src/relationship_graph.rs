@@ -1,5 +1,5 @@
-use crate::{MinervaError, Relationship, RelationshipType, Task};
-use std::collections::HashSet;
+use crate::{MinervaError, Relationship, RelationshipType, Task, TaskId};
+use std::collections::{HashMap, HashSet};
 
 pub fn validate_relationships(
     tasks: &[Task],
@@ -7,6 +7,7 @@ pub fn validate_relationships(
 ) -> Result<(), MinervaError> {
     let task_ids = tasks.iter().map(|task| task.id).collect::<HashSet<_>>();
     let mut seen = HashSet::new();
+    let mut dependencies = HashMap::new();
     for relationship in relationships {
         relationship.validate()?;
         if relationship.relationship_type == RelationshipType::Parent {
@@ -29,7 +30,43 @@ pub fn validate_relationships(
         if !seen.insert(key) {
             return invalid("relationships", "contains a duplicate relationship");
         }
+        if relationship.relationship_type == RelationshipType::DependsOn {
+            dependencies
+                .entry(relationship.source_task)
+                .or_insert_with(Vec::new)
+                .push(relationship.target_task);
+        }
     }
+    for task in dependencies.keys() {
+        let mut visiting = HashSet::new();
+        let mut visited = HashSet::new();
+        detect_cycle(*task, *task, &dependencies, &mut visiting, &mut visited)?;
+    }
+    Ok(())
+}
+
+fn detect_cycle(
+    root: TaskId,
+    current: TaskId,
+    dependencies: &HashMap<TaskId, Vec<TaskId>>,
+    visiting: &mut HashSet<TaskId>,
+    visited: &mut HashSet<TaskId>,
+) -> Result<(), MinervaError> {
+    if !visiting.insert(current) || !visited.insert(current) {
+        return Ok(());
+    }
+    if let Some(targets) = dependencies.get(&current) {
+        for target in targets {
+            if *target == root {
+                return Err(MinervaError::DependencyCycle {
+                    task: root.to_string(),
+                    depends_on: current.to_string(),
+                });
+            }
+            detect_cycle(root, *target, dependencies, visiting, visited)?;
+        }
+    }
+    visiting.remove(&current);
     Ok(())
 }
 
