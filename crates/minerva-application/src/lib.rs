@@ -1,3 +1,11 @@
+mod error_cli;
+mod error_mcp;
+mod error_tui;
+
+pub use error_cli::{CliErrorReport, render_cli};
+pub use error_mcp::{McpErrorData, McpErrorResponse, render_mcp};
+pub use error_tui::{TuiErrorMessage, render_tui};
+
 use minerva_domain::{InterfaceKind, WorkspaceBlueprint};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,7 +47,8 @@ impl BootstrapService {
 
 #[cfg(test)]
 mod tests {
-    use super::BootstrapService;
+    use super::{BootstrapService, render_cli, render_mcp, render_tui};
+    use minerva_domain::MinervaError;
 
     #[test]
     fn interfaces_are_reported_without_embedding_business_rules() {
@@ -50,5 +59,19 @@ mod tests {
             interfaces.map(|item| item.crate_name),
             ["minerva-cli", "minerva-tui", "minerva-mcp",]
         );
+    }
+
+    #[test]
+    fn interface_error_renderers_share_one_domain_error() {
+        let error = MinervaError::InvalidConfiguration {
+            key: "editor".into(),
+            reason: "empty".into(),
+        };
+        let cli = render_cli(&error);
+        let tui = render_tui(&error);
+        let mcp = render_mcp(&error);
+        assert_eq!(cli.code, "invalid_configuration");
+        assert_eq!(tui.title, "Invalid configuration");
+        assert_eq!(mcp.data.minerva_code, "invalid_configuration");
     }
 }

@@ -1,3 +1,12 @@
+mod error;
+mod error_code;
+mod error_detail;
+mod error_details;
+
+pub use error::MinervaError;
+pub use error_code::ErrorCode;
+pub use error_detail::{ErrorDetail, ErrorValue};
+
 pub const WORKSPACE_CRATES: [&str; 7] = [
     "minerva-domain",
     "minerva-application",
@@ -40,7 +49,8 @@ impl Default for WorkspaceBlueprint {
 
 #[cfg(test)]
 mod tests {
-    use super::{InterfaceKind, WORKSPACE_CRATES, WorkspaceBlueprint};
+    use super::WorkspaceBlueprint;
+    use super::{ErrorCode, ErrorValue, InterfaceKind, MinervaError, WORKSPACE_CRATES};
 
     #[test]
     fn blueprint_lists_all_workspace_crates() {
@@ -51,5 +61,21 @@ mod tests {
     #[test]
     fn interface_kinds_remain_transport_specific() {
         assert_ne!(InterfaceKind::Cli, InterfaceKind::Mcp);
+    }
+
+    #[test]
+    fn errors_expose_stable_codes_and_details() {
+        let error = MinervaError::AmbiguousTaskReference {
+            task_ref: "TSK-1".into(),
+            matches: vec!["TSK-10".into(), "TSK-11".into()],
+        };
+        let details = error.details();
+        assert_eq!(error.code(), ErrorCode::AmbiguousTaskReference);
+        assert_eq!(error.code().as_str(), "ambiguous_task_reference");
+        assert_eq!(details[0].key, "task_ref");
+        assert_eq!(
+            details[1].value,
+            ErrorValue::List(vec!["TSK-10".into(), "TSK-11".into()])
+        );
     }
 }
