@@ -2,7 +2,7 @@
 
 use minerva_application::{
     MoveTaskRequest, ProjectRepository, RebuildAction, RebuildResult, TaskCreateRecord,
-    TaskRepository, TaskWriteResult,
+    TaskLogReadResult, TaskRepository, TaskWriteResult,
 };
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationDocument, DeclarationFreshnessProbe,
@@ -143,6 +143,13 @@ impl TaskRepository for FakeTaskRepo {
             covered_commit_hash: task.declaration.commit_hash,
             current_commit_hash: None,
         })
+    }
+    fn read_task_log(
+        &self,
+        _: &Path,
+        _: TaskId,
+    ) -> Result<TaskLogReadResult, MinervaError> {
+        Ok(TaskLogReadResult { events: Vec::new(), issues: Vec::new() })
     }
     fn update_task(&self, _: &Path, _: &Task) -> Result<TaskWriteResult, MinervaError> {
         unreachable!()

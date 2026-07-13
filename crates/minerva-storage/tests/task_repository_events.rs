@@ -45,3 +45,19 @@ fn malformed_event_lines_surface_schema_errors() {
         matches!(error, MinervaError::SchemaError { reason, .. } if reason.contains("line 1"))
     );
 }
+
+#[test]
+fn lenient_log_reader_keeps_valid_entries_and_reports_invalid_lines() {
+    let root = temp_repo("task-repository-events-lenient");
+    let repo = FilesystemTaskRepository;
+    let task = task(1, "Read malformed history");
+    repo.create_task(&root, &create_record(task.clone())).unwrap();
+    let path = MinervaLayout::new(&root).events_file(task.id);
+    let current = fs::read_to_string(&path).unwrap();
+    fs::write(&path, format!("{current}{{bad json\n")).unwrap();
+    let log = repo.read_task_log(&root, task.id).unwrap();
+    assert_eq!(log.events.len(), 1);
+    assert_eq!(log.events[0].kind, TaskEventKind::TaskCreated);
+    assert_eq!(log.issues.len(), 1);
+    assert_eq!(log.issues[0].line, 2);
+}

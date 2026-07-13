@@ -1,4 +1,4 @@
-use crate::{RebuildResult, TaskCreateRecord};
+use crate::{RebuildResult, TaskCreateRecord, TaskLogReadResult};
 use minerva_domain::{
     DeclarationActor, DeclarationFreshnessProbe, EventId, MinervaError, Relationship,
     RelationshipId, Task, TaskId, TaskVersion,
@@ -35,6 +35,11 @@ pub trait TaskRepository {
         root: &Path,
         task_id: TaskId,
     ) -> Result<DeclarationFreshnessProbe, MinervaError>;
+    fn read_task_log(
+        &self,
+        root: &Path,
+        task_id: TaskId,
+    ) -> Result<TaskLogReadResult, MinervaError>;
     fn update_task(
         &self,
         root: &Path,

@@ -22,6 +22,7 @@ mod task_document;
 mod task_document_parts;
 mod task_event_actor;
 mod task_event_data;
+mod task_event_log;
 mod task_event_reader;
 mod task_event_record;
 mod task_events;
@@ -63,6 +64,7 @@ pub use relationship_catalog::{
 };
 pub use relationship_files::{read_relationships, write_relationships};
 pub use relationship_mutations::{create_relationship, remove_relationship};
+pub(crate) use task_event_log::read_task_event_log;
 pub use task_event_reader::read_task_events;
 pub use task_events::{
     append_archived_event, append_created_event, append_declaration_updated_event,

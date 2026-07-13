@@ -1,6 +1,6 @@
 use crate::tree_args::TreeArgs;
 use crate::{list_args::ListArgs, status_args::StatusArgs, task_ref_arg::TaskRefArg};
-use clap::{ArgAction, Args, Parser, Subcommand};
+use clap::{ArgAction, Args, Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
 const HELP: &str = "Exit codes:\n  0 success\n  1 internal failure\n  2 command usage error\n  10 project not initialized\n  11 project already initialized\n  12 task not found\n  13 ambiguous task reference\n  14 invalid status transition\n  15 hierarchy cycle\n  16 dependency cycle\n  17 schema error\n  18 version conflict\n  19 lock conflict\n  20 invalid configuration\n  21 editor launch failure\n  22 rebuild validation failure";
@@ -31,6 +31,7 @@ pub enum Command {
     List(ListArgs),
     Tree(TreeArgs),
     Show(ShowArgs),
+    Log(LogArgs),
     Instruction {
         task_ref: Option<String>,
     },
@@ -78,6 +79,47 @@ pub struct ShowArgs {
 }
 
 #[derive(Debug, Clone, Args)]
+pub struct LogArgs {
+    pub task_ref: String,
+    #[arg(long = "kind", value_name = "EVENT_KIND", value_delimiter = ',')]
+    pub kinds: Vec<LogKindArg>,
+}
+
+impl LogArgs {
+    #[must_use]
+    pub fn kinds(&self) -> Vec<minerva_domain::TaskEventKind> {
+        self.kinds.iter().copied().map(Into::into).collect()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub enum LogKindArg {
+    TaskCreated,
+    TaskDeclarationUpdated,
+    TaskInstructionsUpdated,
+    TaskParentChanged,
+    TaskStatusChanged,
+    TaskRelationshipAdded,
+    TaskRelationshipRemoved,
+    TaskArchived,
+}
+
+impl From<LogKindArg> for minerva_domain::TaskEventKind {
+    fn from(value: LogKindArg) -> Self {
+        match value {
+            LogKindArg::TaskCreated => Self::TaskCreated,
+            LogKindArg::TaskDeclarationUpdated => Self::TaskDeclarationUpdated,
+            LogKindArg::TaskInstructionsUpdated => Self::TaskInstructionsUpdated,
+            LogKindArg::TaskParentChanged => Self::TaskParentChanged,
+            LogKindArg::TaskStatusChanged => Self::TaskStatusChanged,
+            LogKindArg::TaskRelationshipAdded => Self::TaskRelationshipAdded,
+            LogKindArg::TaskRelationshipRemoved => Self::TaskRelationshipRemoved,
+            LogKindArg::TaskArchived => Self::TaskArchived,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Args)]
 pub struct MoveArgs {
     pub task_ref: String,
     #[arg(long, value_name = "TASK_REF", required_unless_present = "to_root")]
@@ -118,6 +160,7 @@ impl Command {
             Self::List(_) => "list",
             Self::Tree(_) => "tree",
             Self::Show(_) => "show",
+            Self::Log(_) => "log",
             Self::Instruction { .. } => "instruction",
             Self::Declaration { .. } => "declaration",
             Self::Status(_) => "status",

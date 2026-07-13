@@ -5,6 +5,8 @@ mod hierarchy_output;
 mod list_args;
 mod list_command;
 mod list_output;
+mod log_command;
+mod log_output;
 mod move_command;
 mod new_command;
 mod new_prompt;

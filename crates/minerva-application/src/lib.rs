@@ -26,6 +26,8 @@ mod task_hierarchy_query_service;
 mod task_instruction_service;
 mod task_list_result;
 mod task_list_service;
+mod task_log_result;
+mod task_log_service;
 mod task_move_request;
 mod task_move_result;
 mod task_movement_service;
@@ -69,6 +71,10 @@ pub use task_list_result::{
     TaskListResult, TaskListSort,
 };
 pub use task_list_service::TaskListService;
+pub use task_log_result::{
+    TaskLogEvent, TaskLogIssue, TaskLogReadResult, TaskLogResult,
+};
+pub use task_log_service::TaskLogService;
 pub use task_move_request::MoveTaskRequest;
 pub use task_move_result::TaskMoveResult;
 pub use task_movement_service::TaskMovementService;
