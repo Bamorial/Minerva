@@ -1,12 +1,13 @@
 use crate::{
-    cli::{Cli, Command},
+    cli::{Cli, Command, ShowArgs},
     new_command, output,
     response::CommandOutput,
+    show_output,
 };
 use minerva_application::{
     ProjectInstructionService, ProjectRepository, RebuildAction, RebuildResult,
-    RebuildService, TaskDeclarationService, TaskInstructionService, TaskStatusService,
-    render_cli,
+    RebuildService, TaskDeclarationService, TaskInstructionService, TaskShowOptions,
+    TaskShowService, render_cli,
 };
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::{env, process::ExitCode};
@@ -42,6 +43,9 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
             new_command::execute(&project_repo, &task_repo, &root, args)
                 .map_err(Failure::Domain)
         }
+        Command::Show(args) | Command::Status(args) => {
+            show(&project_repo, &task_repo, &root, args).map_err(Failure::Domain)
+        }
         Command::Instruction { task_ref: None } => {
             ProjectInstructionService::edit(&project_repo, &root)
                 .map(|path| CommandOutput::text(format!("opened {}", path.display())))
@@ -57,11 +61,6 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
                 .map(|path| CommandOutput::text(format!("opened {}", path.display())))
                 .map_err(Failure::Domain)
         }
-        Command::Status { task_ref } => {
-            TaskStatusService::show(&project_repo, &task_repo, &root, task_ref)
-                .map(CommandOutput::text)
-                .map_err(Failure::Domain)
-        }
         Command::Rebuild { dry_run } => {
             let result =
                 RebuildService::run(&project_repo, &task_repo, &root, *dry_run)
@@ -73,6 +72,25 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
             }
         }
     }
+}
+
+fn show(
+    project_repo: &impl ProjectRepository,
+    task_repo: &FilesystemTaskRepository,
+    root: &std::path::Path,
+    args: &ShowArgs,
+) -> Result<CommandOutput, minerva_domain::MinervaError> {
+    TaskShowService::show(
+        project_repo,
+        task_repo,
+        root,
+        &args.task_ref,
+        &TaskShowOptions {
+            include_instructions: args.instructions,
+            include_declaration: args.declaration,
+        },
+    )
+    .map(show_output::render)
 }
 
 enum Failure {

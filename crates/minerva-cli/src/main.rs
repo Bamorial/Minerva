@@ -6,6 +6,7 @@ mod new_resolve;
 mod output;
 mod response;
 mod run;
+mod show_output;
 
 use clap::Parser;
 use std::process::ExitCode;

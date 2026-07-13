@@ -26,15 +26,14 @@ pub enum Command {
         force: bool,
     },
     New(NewArgs),
+    Show(ShowArgs),
     Instruction {
         task_ref: Option<String>,
     },
     Declaration {
         task_ref: String,
     },
-    Status {
-        task_ref: String,
-    },
+    Status(ShowArgs),
     Rebuild {
         #[arg(long)]
         dry_run: bool,
@@ -56,14 +55,24 @@ pub struct NewArgs {
     pub no_edit: bool,
 }
 
+#[derive(Debug, Clone, Args)]
+pub struct ShowArgs {
+    pub task_ref: String,
+    #[arg(long)]
+    pub instructions: bool,
+    #[arg(long)]
+    pub declaration: bool,
+}
+
 impl Command {
     pub const fn name(&self) -> &'static str {
         match self {
             Self::Init { .. } => "init",
             Self::New(_) => "new",
+            Self::Show(_) => "show",
             Self::Instruction { .. } => "instruction",
             Self::Declaration { .. } => "declaration",
-            Self::Status { .. } => "status",
+            Self::Status(_) => "status",
             Self::Rebuild { .. } => "rebuild",
         }
     }

@@ -5,6 +5,7 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+humantime = "2.3.0"
 minerva-domain.workspace = true
 
 [lints]

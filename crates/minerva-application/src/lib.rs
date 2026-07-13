@@ -26,6 +26,9 @@ mod task_move_request;
 mod task_move_result;
 mod task_movement_service;
 mod task_repository;
+mod task_show_render;
+mod task_show_result;
+mod task_show_service;
 mod task_slug_builder;
 mod task_status_service;
 
@@ -55,4 +58,9 @@ pub use task_move_request::MoveTaskRequest;
 pub use task_move_result::TaskMoveResult;
 pub use task_movement_service::TaskMovementService;
 pub use task_repository::{TaskRepository, TaskWriteResult};
+pub use task_show_result::{
+    TaskShowFreshness, TaskShowLink, TaskShowOptions, TaskShowRelationship,
+    TaskShowResult, TaskShowTimestamps,
+};
+pub use task_show_service::TaskShowService;
 pub use task_status_service::TaskStatusService;

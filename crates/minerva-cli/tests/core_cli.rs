@@ -14,6 +14,7 @@ fn help_includes_global_options_and_exit_codes() {
     assert!(stdout.contains("--json"));
     assert!(stdout.contains("--quiet"));
     assert!(stdout.contains("--verbose"));
+    assert!(stdout.contains("show"));
     assert!(stdout.contains("Exit codes:"));
     fs::remove_dir_all(root).unwrap();
 }
