@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
 use minerva_application::{
-    MoveTaskRequest, ProjectRepository, TaskCreateRecord, TaskRepository,
-    TaskWriteResult,
+    MoveTaskRequest, ProjectRepository, RebuildAction, RebuildResult, TaskCreateRecord,
+    TaskRepository, TaskWriteResult,
 };
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationDocument, DeclarationFreshnessProbe,
@@ -261,6 +261,17 @@ impl TaskRepository for FakeTaskRepo {
     }
     fn search_tasks(&self, _: &Path, _: &str) -> Result<Vec<Task>, MinervaError> {
         Ok(Vec::new())
+    }
+    fn rebuild_derived_state(
+        &self,
+        _: &Path,
+        _: bool,
+    ) -> Result<RebuildResult, MinervaError> {
+        Ok(RebuildResult {
+            index_path: ".minerva/indexes/tasks.json".into(),
+            index_action: RebuildAction::NoChange,
+            task_errors: Vec::new(),
+        })
     }
 }
 

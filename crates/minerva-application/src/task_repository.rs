@@ -1,4 +1,4 @@
-use crate::TaskCreateRecord;
+use crate::{RebuildResult, TaskCreateRecord};
 use minerva_domain::{
     DeclarationActor, DeclarationFreshnessProbe, EventId, MinervaError, Relationship,
     RelationshipId, Task, TaskId, TaskVersion,
@@ -113,4 +113,9 @@ pub trait TaskRepository {
     ) -> Result<std::path::PathBuf, MinervaError>;
     fn search_tasks(&self, root: &Path, query: &str)
     -> Result<Vec<Task>, MinervaError>;
+    fn rebuild_derived_state(
+        &self,
+        root: &Path,
+        dry_run: bool,
+    ) -> Result<RebuildResult, MinervaError>;
 }

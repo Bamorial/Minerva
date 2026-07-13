@@ -1,5 +1,7 @@
 use crate::MinervaLayout;
-use minerva_application::{TaskCreateRecord, TaskRepository, TaskWriteResult};
+use minerva_application::{
+    RebuildResult, TaskCreateRecord, TaskRepository, TaskWriteResult,
+};
 use minerva_domain::{
     DeclarationActor, DeclarationFreshnessProbe, MinervaError, Relationship,
     RelationshipId, Task, TaskId, TaskVersion,
@@ -177,5 +179,15 @@ impl TaskRepository for FilesystemTaskRepository {
         query: &str,
     ) -> Result<Vec<Task>, MinervaError> {
         crate::task_repository_queries::search_tasks(root, query)
+    }
+    fn rebuild_derived_state(
+        &self,
+        root: &Path,
+        dry_run: bool,
+    ) -> Result<RebuildResult, MinervaError> {
+        crate::task_index_rebuild::rebuild_task_index(
+            &MinervaLayout::new(root),
+            dry_run,
+        )
     }
 }

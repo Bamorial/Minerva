@@ -30,6 +30,7 @@ mod task_freshness;
 mod task_hierarchy;
 mod task_index;
 mod task_index_document;
+mod task_index_rebuild;
 mod task_lock;
 mod task_markdown;
 mod task_repository_mutations;

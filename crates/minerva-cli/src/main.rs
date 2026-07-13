@@ -1,6 +1,7 @@
 use minerva_application::{
-    ProjectInstructionService, ProjectRepository, TaskDeclarationService,
-    TaskInstructionService, TaskStatusService, render_cli,
+    ProjectInstructionService, ProjectRepository, RebuildAction, RebuildResult,
+    RebuildService, TaskDeclarationService, TaskInstructionService, TaskStatusService,
+    render_cli,
 };
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::{env, process::ExitCode};
@@ -21,6 +22,10 @@ fn main() -> ExitCode {
             for detail in report.details {
                 eprintln!("{detail}");
             }
+            ExitCode::from(1)
+        }
+        Err(Failure::Rebuild(result, dry_run)) => {
+            eprintln!("{}", render_rebuild(&result, dry_run));
             ExitCode::from(1)
         }
     }
@@ -66,6 +71,15 @@ fn run(args: Vec<String>) -> Result<String, Failure> {
             TaskStatusService::show(&project_repo, &task_repo, &root, &task_ref)
                 .map_err(Failure::Domain)
         }
+        Command::Rebuild { dry_run } => {
+            let result = RebuildService::run(&project_repo, &task_repo, &root, dry_run)
+                .map_err(Failure::Domain)?;
+            if result.has_errors() {
+                Err(Failure::Rebuild(result, dry_run))
+            } else {
+                Ok(render_rebuild(&result, dry_run))
+            }
+        }
     }
 }
 
@@ -87,8 +101,12 @@ fn parse_command(args: Vec<String>) -> Result<Command, Failure> {
         [command, task_ref] if command == "status" => {
             Ok(Command::Status { task_ref: task_ref.clone() })
         }
+        [command] if command == "rebuild" => Ok(Command::Rebuild { dry_run: false }),
+        [command, flag] if command == "rebuild" && flag == "--dry-run" => {
+            Ok(Command::Rebuild { dry_run: true })
+        }
         _ => Err(Failure::Usage(
-            "usage: minerva-cli init [--force]\n       minerva-cli instruction [<task>]\n       minerva-cli declaration <task>\n       minerva-cli status <task>".into(),
+            "usage: minerva-cli init [--force]\n       minerva-cli instruction [<task>]\n       minerva-cli declaration <task>\n       minerva-cli status <task>\n       minerva-cli rebuild [--dry-run]".into(),
         )),
     }
 }
@@ -98,9 +116,25 @@ enum Command {
     Instruction { task_ref: Option<String> },
     Declaration { task_ref: String },
     Status { task_ref: String },
+    Rebuild { dry_run: bool },
 }
 
 enum Failure {
     Usage(String),
     Domain(minerva_domain::MinervaError),
+    Rebuild(RebuildResult, bool),
+}
+
+fn render_rebuild(result: &RebuildResult, dry_run: bool) -> String {
+    let action = match (dry_run, result.index_action) {
+        (true, RebuildAction::Create | RebuildAction::Update) => "would write",
+        (false, RebuildAction::Create | RebuildAction::Update) => "wrote",
+        (true, RebuildAction::NoChange) => "would keep",
+        (false, RebuildAction::NoChange) => "kept",
+    };
+    let mut lines = vec![format!("rebuild: {action} {}", result.index_path)];
+    lines.extend(result.task_errors.iter().map(|error| {
+        format!("invalid task {} at {}: {}", error.task_ref, error.path, error.reason)
+    }));
+    lines.join("\n")
 }
