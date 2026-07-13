@@ -21,4 +21,9 @@ impl TaskTag {
             reason: "must use lowercase letters, digits, or hyphens".into(),
         })
     }
+
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }

@@ -1,6 +1,6 @@
 use crate::{
     cli::{Cli, Command, ShowArgs},
-    new_command, output,
+    list_command, new_command, output,
     response::CommandOutput,
     show_output,
 };
@@ -41,6 +41,10 @@ fn execute(cli: &Cli) -> Result<CommandOutput, Failure> {
         }
         Command::New(args) => {
             new_command::execute(&project_repo, &task_repo, &root, args)
+                .map_err(Failure::Domain)
+        }
+        Command::List(args) => {
+            list_command::execute(&project_repo, &task_repo, &root, args)
                 .map_err(Failure::Domain)
         }
         Command::Show(args) | Command::Status(args) => {

@@ -1,3 +1,4 @@
+use crate::list_args::ListArgs;
 use clap::{ArgAction, Args, Parser, Subcommand};
 use std::path::PathBuf;
 
@@ -26,6 +27,7 @@ pub enum Command {
         force: bool,
     },
     New(NewArgs),
+    List(ListArgs),
     Show(ShowArgs),
     Instruction {
         task_ref: Option<String>,
@@ -69,6 +71,7 @@ impl Command {
         match self {
             Self::Init { .. } => "init",
             Self::New(_) => "new",
+            Self::List(_) => "list",
             Self::Show(_) => "show",
             Self::Instruction { .. } => "instruction",
             Self::Declaration { .. } => "declaration",

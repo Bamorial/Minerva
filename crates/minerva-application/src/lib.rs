@@ -22,6 +22,8 @@ mod task_creation_service;
 mod task_declaration_service;
 mod task_facts_render;
 mod task_instruction_service;
+mod task_list_result;
+mod task_list_service;
 mod task_move_request;
 mod task_move_result;
 mod task_movement_service;
@@ -54,6 +56,11 @@ pub use task_creation_service::TaskCreationService;
 pub use task_declaration_service::TaskDeclarationService;
 pub use task_facts_render::render_task_facts;
 pub use task_instruction_service::TaskInstructionService;
+pub use task_list_result::{
+    TaskListArchiveFilter, TaskListItem, TaskListOptions, TaskListParent,
+    TaskListResult, TaskListSort,
+};
+pub use task_list_service::TaskListService;
 pub use task_move_request::MoveTaskRequest;
 pub use task_move_result::TaskMoveResult;
 pub use task_movement_service::TaskMovementService;
