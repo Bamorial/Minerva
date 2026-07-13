@@ -152,6 +152,7 @@ name = "minerva-storage"
 version = "0.1.0"
 dependencies = [
  "humantime",
+ "minerva-application",
  "minerva-domain",
  "serde",
  "serde_yaml",

@@ -7,8 +7,9 @@ use std::{
 };
 
 use minerva_domain::{
-    ArchiveState, DeclarationActor, DeclarationMetadata, StatusKey, Task,
-    TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
+    ArchiveState, ContextPolicy, DeclarationActor, DeclarationMetadata, Project,
+    ProjectId, StatusDefinition, StatusKey, StatusTransition, Task, TaskIdAllocator,
+    TaskPriority, TaskTypeKey, TaskVersion,
 };
 
 pub fn fixture(name: &str) -> PathBuf {
@@ -44,6 +45,27 @@ pub fn sample_task() -> Task {
             commit_hash: Some("abc123".into()),
         },
         archive_state: ArchiveState::Active,
+    })
+    .unwrap()
+}
+
+pub fn sample_project() -> Project {
+    Project::new(Project {
+        schema_version: 1,
+        id: ProjectId::new(),
+        name: "Minerva".into(),
+        created_at: UNIX_EPOCH,
+        default_task_type: TaskTypeKey::new("feature").unwrap(),
+        default_status: StatusKey::new("backlog").unwrap(),
+        statuses: vec![
+            StatusDefinition::new(StatusKey::new("backlog").unwrap(), false),
+            StatusDefinition::new(StatusKey::new("done").unwrap(), true),
+        ],
+        transitions: vec![StatusTransition::new(
+            StatusKey::new("backlog").unwrap(),
+            StatusKey::new("done").unwrap(),
+        )],
+        context_policy: ContextPolicy::new(12, 2, 24).unwrap(),
     })
     .unwrap()
 }
