@@ -22,6 +22,7 @@ mod task_identity;
 mod task_priority;
 mod task_slug;
 mod task_tag;
+mod task_transition;
 mod task_version;
 
 pub use archive_state::ArchiveState;
@@ -47,6 +48,7 @@ pub use task_identity::TaskIdentity;
 pub use task_priority::TaskPriority;
 pub use task_slug::TaskSlug;
 pub use task_tag::TaskTag;
+pub use task_transition::{TaskTransitionOutcome, TaskTransitionService};
 pub use task_version::TaskVersion;
 
 pub const WORKSPACE_CRATES: [&str; 7] = [
