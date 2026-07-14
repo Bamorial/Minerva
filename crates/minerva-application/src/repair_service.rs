@@ -12,6 +12,9 @@ impl RepairService {
         dry_run: bool,
     ) -> Result<RepairResult, MinervaError> {
         let root = project_repo.locate_project_root(start)?;
-        task_repo.repair_project_state(&root, dry_run)
+        let mut result = task_repo.repair_project_state(&root, dry_run)?;
+        result.validation =
+            if dry_run { None } else { Some(task_repo.validate_project_state(&root)?) };
+        Ok(result)
     }
 }

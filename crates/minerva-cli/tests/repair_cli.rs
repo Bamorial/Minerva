@@ -37,6 +37,8 @@ fn repair_command_recreates_safe_state_and_reports_each_change() {
     );
     let json = json(&output.stdout);
     assert_eq!(json["result"]["operations"].as_array().unwrap().len(), 6);
+    assert!(json["result"]["validation"]["summary"]["errors"] == 0);
+    assert!(json["result"]["validation"]["summary"]["warnings"] == 0);
     fs::remove_dir_all(root).unwrap();
 }
 
@@ -86,13 +88,34 @@ fn repair_reports_invalid_tasks_as_issues() {
     .unwrap();
     fs::remove_file(root.join(".minerva/indexes/tasks.json")).unwrap();
     let output = run(&root, &["--json", "repair"]);
-    assert!(output.status.success(), "{output:?}");
-    let json = json(&output.stdout);
+    assert_eq!(output.status.code(), Some(24), "{output:?}");
+    let json = json(&output.stderr);
     assert_eq!(json["result"]["issues"][0]["code"], "invalid_task");
+    assert_eq!(json["result"]["validation"]["summary"]["errors"], 1);
     let contents =
         fs::read_to_string(root.join(".minerva/indexes/tasks.json")).unwrap();
     assert!(contents.contains(&valid.title));
     assert!(!contents.contains(&invalid.title));
+    fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn repair_is_idempotent_after_safe_repairs_are_applied() {
+    let root = temp_dir("cli-repair-idempotent");
+    assert!(run(&root, &["init"]).status.success());
+    let item = task(1, "Idempotent repair");
+    create_task(&root, item.clone());
+    fs::remove_dir_all(root.join(".minerva/contexts")).unwrap();
+    fs::remove_file(root.join(".minerva/indexes/tasks.json")).unwrap();
+    let first = run(&root, &["--json", "repair"]);
+    assert!(first.status.success(), "{first:?}");
+    let second = run(&root, &["--json", "repair"]);
+    assert!(second.status.success(), "{second:?}");
+    let json = json(&second.stdout);
+    assert_eq!(json["result"]["operations"].as_array().unwrap().len(), 0);
+    assert_eq!(json["result"]["issues"].as_array().unwrap().len(), 0);
+    assert_eq!(json["result"]["validation"]["summary"]["errors"], 0);
+    assert_eq!(json["result"]["validation"]["summary"]["warnings"], 0);
     fs::remove_dir_all(root).unwrap();
 }
 

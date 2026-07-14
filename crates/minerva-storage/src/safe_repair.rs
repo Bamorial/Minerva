@@ -12,5 +12,5 @@ pub fn repair_project_state(
     operations.extend(crate::safe_repair_temp_files::repair(&layout, dry_run)?);
     let (index, issues) = crate::safe_repair_task_index::repair(&layout, dry_run)?;
     operations.extend(index);
-    Ok(RepairResult { operations, issues })
+    Ok(RepairResult { operations, issues, validation: None })
 }

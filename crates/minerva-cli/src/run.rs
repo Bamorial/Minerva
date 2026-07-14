@@ -112,7 +112,7 @@ fn dispatch_command(
         )
         .map_err(Failure::Domain),
         Command::Repair { dry_run } => {
-            repair(&project_repo, &task_repo, root, *dry_run).map_err(Failure::Domain)
+            repair(&project_repo, &task_repo, root, *dry_run)
         }
         Command::Instruction { task_ref: None } => {
             open_project_instruction(project_repo, root).map_err(Failure::Domain)
@@ -172,9 +172,23 @@ fn repair(
     task_repo: &impl minerva_application::TaskRepository,
     root: &std::path::Path,
     dry_run: bool,
-) -> Result<CommandOutput, minerva_domain::MinervaError> {
-    RepairService::run(project_repo, task_repo, root, dry_run)
-        .map(|result| repair_output::render(&result, dry_run))
+) -> Result<CommandOutput, Failure> {
+    let result = RepairService::run(project_repo, task_repo, root, dry_run)
+        .map_err(Failure::Domain)?;
+    let output = repair_output::render(&result, dry_run);
+    match result.validation.as_ref() {
+        Some(validation) if validation.has_errors() => Err(Failure::Validation(
+            output,
+            crate::exit_code::VALIDATION_ERROR,
+            "validation_error",
+        )),
+        Some(validation) if validation.has_warnings() => Err(Failure::Validation(
+            output,
+            crate::exit_code::VALIDATION_WARNING,
+            "validation_warning",
+        )),
+        _ => Ok(output),
+    }
 }
 
 fn opened(path: &std::path::Path) -> CommandOutput {

@@ -1,9 +1,10 @@
-use crate::{RepairIssue, RepairOperation};
+use crate::{ProjectValidationResult, RepairIssue, RepairOperation};
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct RepairResult {
     pub operations: Vec<RepairOperation>,
     pub issues: Vec<RepairIssue>,
+    pub validation: Option<ProjectValidationResult>,
 }
 
 impl RepairResult {

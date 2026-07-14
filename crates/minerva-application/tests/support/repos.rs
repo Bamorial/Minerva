@@ -290,7 +290,11 @@ impl TaskRepository for FakeTaskRepo {
         _: &Path,
         _: bool,
     ) -> Result<RepairResult, MinervaError> {
-        Ok(RepairResult { operations: Vec::new(), issues: Vec::new() })
+        Ok(RepairResult {
+            operations: Vec::new(),
+            issues: Vec::new(),
+            validation: None,
+        })
     }
     fn validate_project_state(
         &self,
