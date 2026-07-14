@@ -53,6 +53,10 @@ pub enum Command {
         #[arg(long)]
         dry_run: bool,
     },
+    Migrate {
+        #[arg(long)]
+        dry_run: bool,
+    },
     Rebuild {
         #[arg(long)]
         dry_run: bool,
@@ -213,6 +217,7 @@ impl Command {
             Self::Children(_) => "children",
             Self::Ancestors(_) => "ancestors",
             Self::Repair { .. } => "repair",
+            Self::Migrate { .. } => "migrate",
             Self::Rebuild { .. } => "rebuild",
             Self::Validate(_) => "validate",
         }

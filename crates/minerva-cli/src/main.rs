@@ -9,6 +9,7 @@ mod list_command;
 mod list_output;
 mod log_command;
 mod log_output;
+mod migrate_output;
 mod move_command;
 mod new_command;
 mod new_prompt;

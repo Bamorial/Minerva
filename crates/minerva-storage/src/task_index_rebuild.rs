@@ -1,4 +1,7 @@
-use crate::{MinervaLayout, TaskIndexDocument, atomic_replace, read_task};
+use crate::{
+    MinervaLayout, TaskIndexDocument, TaskIndexStatus, atomic_replace, read_task,
+    task_index_status,
+};
 use minerva_application::{RebuildAction, RebuildResult, RebuildTaskError};
 use minerva_domain::{MinervaError, Task, TaskId};
 use std::{fs, path::Path};
@@ -11,7 +14,7 @@ pub fn rebuild_task_index(
     let path = layout.task_index_file();
     let bytes = serde_json::to_vec_pretty(&TaskIndexDocument::from_tasks(&tasks))
         .map_err(|err| schema(&path, err))?;
-    let index_action = compare(&path, &bytes)?;
+    let index_action = compare(layout, &path, &bytes)?;
     if !dry_run && index_action != RebuildAction::NoChange {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).map_err(|err| schema(&path, err))?;
@@ -64,15 +67,22 @@ fn scan_valid_tasks(
     Ok((tasks, task_errors))
 }
 
-fn compare(path: &Path, bytes: &[u8]) -> Result<RebuildAction, MinervaError> {
+fn compare(
+    layout: &MinervaLayout,
+    path: &Path,
+    bytes: &[u8],
+) -> Result<RebuildAction, MinervaError> {
     if !path.exists() {
         return Ok(RebuildAction::Create);
     }
-    Ok(if fs::read(path).map_err(|err| schema(path, err))? == bytes {
-        RebuildAction::NoChange
-    } else {
+    let action = if fs::read(path).map_err(|err| schema(path, err))? != bytes
+        || task_index_status(layout)? == TaskIndexStatus::Stale
+    {
         RebuildAction::Update
-    })
+    } else {
+        RebuildAction::NoChange
+    };
+    Ok(action)
 }
 
 fn task_error(

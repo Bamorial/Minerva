@@ -1,14 +1,15 @@
 use crate::{
     cli::{Cli, Command, ShowArgs},
-    context_command, hierarchy_command, list_command, log_command, move_command,
-    new_command, output, relationship_command, repair_output,
+    context_command, hierarchy_command, list_command, log_command, migrate_output,
+    move_command, new_command, output, relationship_command, repair_output,
     response::CommandOutput,
     show_output, status_command, tree_command, validate_command,
 };
 use minerva_application::{
-    ProjectInstructionService, ProjectRepository, RebuildAction, RebuildResult,
-    RebuildService, RepairService, TaskDeclarationService, TaskInstructionService,
-    TaskShowOptions, TaskShowService, render_cli,
+    ProjectInstructionService, ProjectMigrationService, ProjectRepository,
+    ProjectValidationService, RebuildAction, RebuildResult, RebuildService,
+    RepairService, TaskDeclarationService, TaskInstructionService, TaskShowOptions,
+    TaskShowService, render_cli,
 };
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::{env, process::ExitCode};
@@ -114,6 +115,9 @@ fn dispatch_command(
         Command::Repair { dry_run } => {
             repair(&project_repo, &task_repo, root, *dry_run)
         }
+        Command::Migrate { dry_run } => {
+            migrate(&project_repo, &task_repo, root, *dry_run)
+        }
         Command::Instruction { task_ref: None } => {
             open_project_instruction(project_repo, root).map_err(Failure::Domain)
         }
@@ -183,6 +187,54 @@ fn repair(
             "validation_error",
         )),
         Some(validation) if validation.has_warnings() => Err(Failure::Validation(
+            output,
+            crate::exit_code::VALIDATION_WARNING,
+            "validation_warning",
+        )),
+        _ => Ok(output),
+    }
+}
+
+fn migrate(
+    project_repo: &impl ProjectRepository,
+    task_repo: &impl minerva_application::TaskRepository,
+    root: &std::path::Path,
+    dry_run: bool,
+) -> Result<CommandOutput, Failure> {
+    let result = ProjectMigrationService::run(project_repo, root, dry_run)
+        .map_err(Failure::Domain)?;
+    let rebuild = if dry_run || result.is_current() {
+        None
+    } else {
+        let rebuilt = RebuildService::run(
+            &FilesystemProjectRepository,
+            &FilesystemTaskRepository,
+            root,
+            false,
+        )
+        .map_err(Failure::Domain)?;
+        if rebuilt.has_errors() {
+            return Err(Failure::Rebuild(rebuilt, false));
+        }
+        Some(rebuilt)
+    };
+    let validation = if dry_run || result.is_current() {
+        None
+    } else {
+        Some(
+            ProjectValidationService::run(project_repo, task_repo, root)
+                .map_err(Failure::Domain)?,
+        )
+    };
+    let output =
+        migrate_output::render(&result, rebuild.as_ref(), validation.as_ref(), dry_run);
+    match validation {
+        Some(result) if result.has_errors() => Err(Failure::Validation(
+            output,
+            crate::exit_code::VALIDATION_ERROR,
+            "validation_error",
+        )),
+        Some(result) if result.has_warnings() => Err(Failure::Validation(
             output,
             crate::exit_code::VALIDATION_WARNING,
             "validation_warning",

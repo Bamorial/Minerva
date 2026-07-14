@@ -18,6 +18,7 @@ fn help_includes_global_options_and_exit_codes() {
     assert!(stdout.contains("complete"));
     assert!(stdout.contains("reopen"));
     assert!(stdout.contains("repair"));
+    assert!(stdout.contains("migrate"));
     assert!(stdout.contains("validate"));
     assert!(stdout.contains("Exit codes:"));
     assert!(stdout.contains("23 validation warning"));
