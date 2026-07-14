@@ -1,9 +1,9 @@
 use crate::{
     MinervaLayout, initialize_project, instructions_md, read_project,
-    read_project_config, read_project_instructions, read_task_types, write_project,
-    write_project_instructions,
+    read_project_config, read_project_instructions, read_task_types, schema_migration,
+    write_project, write_project_instructions,
 };
-use minerva_application::ProjectRepository;
+use minerva_application::{ProjectMigrationResult, ProjectRepository};
 use minerva_domain::{MinervaError, Project, ProjectConfig, TaskTypeDefinition};
 use std::path::{Path, PathBuf};
 
@@ -72,5 +72,13 @@ impl ProjectRepository for FilesystemProjectRepository {
             write_project_instructions(&layout, instructions_md())?;
         }
         Ok(path)
+    }
+
+    fn migrate_project_state(
+        &self,
+        root: &Path,
+        dry_run: bool,
+    ) -> Result<ProjectMigrationResult, MinervaError> {
+        schema_migration::migrate_project_state(root, dry_run)
     }
 }

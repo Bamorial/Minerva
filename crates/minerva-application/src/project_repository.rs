@@ -1,3 +1,4 @@
+use crate::ProjectMigrationResult;
 use minerva_domain::{MinervaError, Project, ProjectConfig, TaskTypeDefinition};
 use std::path::{Path, PathBuf};
 
@@ -35,4 +36,10 @@ pub trait ProjectRepository {
         &self,
         root: &Path,
     ) -> Result<PathBuf, MinervaError>;
+
+    fn migrate_project_state(
+        &self,
+        root: &Path,
+        dry_run: bool,
+    ) -> Result<ProjectMigrationResult, MinervaError>;
 }

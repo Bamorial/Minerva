@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
 use minerva_application::{
-    MoveTaskRequest, ProjectRepository, ProjectValidationResult, RebuildAction,
-    RebuildResult, RepairResult, TaskCreateRecord, TaskLogReadResult, TaskRepository,
-    TaskWriteResult,
+    MoveTaskRequest, ProjectMigrationResult, ProjectRepository,
+    ProjectValidationResult, RebuildAction, RebuildResult, RepairResult,
+    TaskCreateRecord, TaskLogReadResult, TaskRepository, TaskWriteResult,
 };
 use minerva_domain::{
     ArchiveState, DeclarationActor, DeclarationDocument, DeclarationFreshnessProbe,
@@ -58,6 +58,13 @@ impl ProjectRepository for FakeProjectRepo {
         unreachable!()
     }
     fn prepare_project_instructions(&self, _: &Path) -> Result<PathBuf, MinervaError> {
+        unreachable!()
+    }
+    fn migrate_project_state(
+        &self,
+        _: &Path,
+        _: bool,
+    ) -> Result<ProjectMigrationResult, MinervaError> {
         unreachable!()
     }
 }
