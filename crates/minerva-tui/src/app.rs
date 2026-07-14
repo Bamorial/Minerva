@@ -26,6 +26,8 @@ pub fn run() -> Result<(), MinervaError> {
             AppEvent::ToggleArchived => {
                 update_detail(&mut state, AppState::toggle_archived)
             }
+            AppEvent::DetailDown => state.scroll_detail_down(),
+            AppEvent::DetailUp => state.scroll_detail_up(),
             AppEvent::BeginSearch => state.begin_search(),
             AppEvent::SearchChar(value) => {
                 search(&mut state, |state| state.append_search(value))
@@ -50,6 +52,7 @@ fn reload(state: &mut AppState) {
         Ok(result) => {
             state.error = None;
             state.set_tree(result.roots);
+            state.reset_detail_scroll();
             reload_detail(state);
         }
         Err(error) => state.error = Some(render_tui(&error)),

@@ -8,16 +8,19 @@ impl AppState {
     pub fn append_search(&mut self, value: char) {
         self.search.push(value);
         self.refresh_rows(self.selected_task_id());
+        self.reset_detail_scroll();
     }
 
     pub fn pop_search(&mut self) {
         self.search.pop();
         self.refresh_rows(self.selected_task_id());
+        self.reset_detail_scroll();
     }
 
     pub fn clear_search(&mut self) {
         self.search.clear();
         self.refresh_rows(self.selected_task_id());
+        self.reset_detail_scroll();
     }
 
     pub fn finish_search(&mut self) {

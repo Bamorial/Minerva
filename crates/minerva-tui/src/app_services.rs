@@ -21,7 +21,7 @@ pub fn load_task(start: &Path, task_ref: &str) -> Result<TaskShowResult, Minerva
         &FilesystemTaskRepository,
         start,
         task_ref,
-        &TaskShowOptions::default(),
+        &TaskShowOptions { include_instructions: false, include_declaration: true },
     )
 }
 

@@ -20,7 +20,7 @@ fn help(state: &AppState) -> String {
         return format!("/{}", state.search);
     }
     format!(
-        "j/k move  h/l fold  / search  c clear  a archived:{}  r reload  q quit",
+        "j/k move  h/l fold  ctrl-u/d detail  / search  c clear  a archived:{}  r reload  q quit",
         if state.show_archived { "on" } else { "off" }
     )
 }

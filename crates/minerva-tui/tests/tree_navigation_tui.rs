@@ -6,13 +6,17 @@ mod common;
 
 #[test]
 fn tree_navigation_supports_expand_search_and_archived_toggle() {
-    let root_task = common::sample_task("Root task", None, false);
+    let root_task = common::sample_state::sample_task("Root task", None, false);
     let child = TaskTreeNode {
-        task: common::sample_task("Child match", Some(root_task.id), false),
+        task: common::sample_state::sample_task(
+            "Child match",
+            Some(root_task.id),
+            false,
+        ),
         children: Vec::new(),
     };
     let archived = TaskTreeNode {
-        task: common::sample_task("Archived branch", None, true),
+        task: common::sample_state::sample_task("Archived branch", None, true),
         children: Vec::new(),
     };
     let root = TaskTreeNode { task: root_task, children: vec![child.clone()] };
