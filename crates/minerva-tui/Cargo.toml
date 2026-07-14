@@ -5,10 +5,12 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+crossterm = "0.28.1"
 minerva-application.workspace = true
 minerva-context.workspace = true
 minerva-domain.workspace = true
 minerva-storage.workspace = true
+ratatui = "0.29.0"
 
 [lints]
 workspace = true
