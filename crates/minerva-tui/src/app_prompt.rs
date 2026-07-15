@@ -1,8 +1,6 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PromptKind {
-    CreateTask,
     MoveTask,
-    AddDependency,
     RemoveDependency,
 }
 

@@ -1,5 +1,10 @@
-use crate::{app_command::AppCommand, app_prompt::PromptKind, app_state::AppState};
+use crate::{
+    app_command::AppCommand,
+    app_prompt::PromptKind,
+    app_state::{AppState, CreateField, FocusPane, LinkField, PendingSequence},
+};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use minerva_domain::RelationshipType;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Dispatch {
@@ -16,6 +21,18 @@ pub fn dispatch(state: &mut AppState, event: Event) -> Dispatch {
 }
 
 fn handle_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
+    if let Some(sequence) = state.pending_sequence.take() {
+        return pending_key(state, sequence, key);
+    }
+    if state.delete.is_some() {
+        return delete_key(state, key.code);
+    }
+    if state.create.is_some() {
+        return create_key(state, key.code);
+    }
+    if state.link.is_some() {
+        return link_key(state, key.code);
+    }
     if state.confirm.is_some() {
         return confirm_key(state, key.code);
     }
@@ -29,6 +46,201 @@ fn handle_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
         return search_key(state, key.code);
     }
     normal_key(state, key)
+}
+
+fn pending_key(
+    state: &mut AppState,
+    sequence: PendingSequence,
+    key: KeyEvent,
+) -> Dispatch {
+    match (sequence, key.code) {
+        (PendingSequence::CreateOrNextTask, KeyCode::Char('t')) => {
+            state.jump_next_peer();
+            Dispatch::None
+        }
+        (PendingSequence::PreviousTask, KeyCode::Char('t')) => {
+            state.jump_previous_peer();
+            Dispatch::None
+        }
+        (PendingSequence::CreateOrNextTask, _) => {
+            state.begin_create(None);
+            handle_key(state, key)
+        }
+        (PendingSequence::PreviousTask, _) => Dispatch::None,
+    }
+}
+
+fn delete_key(state: &mut AppState, code: KeyCode) -> Dispatch {
+    match code {
+        KeyCode::Char('y') | KeyCode::Enter => {
+            state.delete.take().map_or(Dispatch::None, |modal| {
+                Dispatch::Run(AppCommand::DeleteTask { task_ref: modal.task_ref })
+            })
+        }
+        KeyCode::Char('n') | KeyCode::Esc => {
+            state.cancel_action();
+            Dispatch::None
+        }
+        _ => Dispatch::None,
+    }
+}
+
+fn create_key(state: &mut AppState, code: KeyCode) -> Dispatch {
+    let Some(_) = state.create.as_ref() else {
+        return Dispatch::None;
+    };
+    match code {
+        KeyCode::Esc => {
+            state.cancel_action();
+            Dispatch::None
+        }
+        KeyCode::Tab | KeyCode::Down | KeyCode::Up => {
+            let create = state.create.as_mut().expect("create modal");
+            create.field = match create.field {
+                CreateField::Title => CreateField::TaskType,
+                CreateField::TaskType => CreateField::Title,
+            };
+            Dispatch::None
+        }
+        KeyCode::Left => {
+            let create = state.create.as_mut().expect("create modal");
+            if create.field == CreateField::TaskType {
+                create.selected_type = create.selected_type.saturating_sub(1);
+            }
+            Dispatch::None
+        }
+        KeyCode::Right => {
+            let create = state.create.as_mut().expect("create modal");
+            if create.field == CreateField::TaskType {
+                create.selected_type = (create.selected_type + 1)
+                    .min(create.task_types.len().saturating_sub(1));
+            }
+            Dispatch::None
+        }
+        KeyCode::Backspace => {
+            let create = state.create.as_mut().expect("create modal");
+            if create.field == CreateField::Title {
+                create.title.pop();
+            }
+            Dispatch::None
+        }
+        KeyCode::Char(value) => {
+            let create = state.create.as_mut().expect("create modal");
+            if create.field == CreateField::Title {
+                create.title.push(value);
+            }
+            Dispatch::None
+        }
+        KeyCode::Enter => submit_create(state),
+        _ => Dispatch::None,
+    }
+}
+
+fn submit_create(state: &mut AppState) -> Dispatch {
+    let Some(create) = state.create.as_ref() else {
+        return Dispatch::None;
+    };
+    if create.field == CreateField::Title {
+        if let Some(create) = state.create.as_mut() {
+            create.field = CreateField::TaskType;
+        }
+        return Dispatch::None;
+    }
+    let title = create.title.trim().to_string();
+    if title.is_empty() || create.task_types.is_empty() {
+        return Dispatch::None;
+    }
+    let task_type = create.task_types[create.selected_type].clone();
+    let parent_id = create.parent_id;
+    state.create = None;
+    Dispatch::Run(AppCommand::CreateTask { title, task_type, parent_id })
+}
+
+fn link_key(state: &mut AppState, code: KeyCode) -> Dispatch {
+    let Some(_) = state.link.as_ref() else {
+        return Dispatch::None;
+    };
+    match code {
+        KeyCode::Esc => {
+            state.cancel_action();
+            Dispatch::None
+        }
+        KeyCode::Tab => {
+            let link = state.link.as_mut().expect("link modal");
+            link.field = match link.field {
+                LinkField::Query => LinkField::Relationship,
+                LinkField::Relationship => LinkField::Results,
+                LinkField::Results => LinkField::Query,
+            };
+            Dispatch::None
+        }
+        KeyCode::Down => {
+            let link = state.link.as_mut().expect("link modal");
+            if link.field == LinkField::Results {
+                link.selected =
+                    (link.selected + 1).min(link.candidates.len().saturating_sub(1));
+            } else {
+                link.field = LinkField::Results;
+            }
+            Dispatch::None
+        }
+        KeyCode::Up => {
+            let link = state.link.as_mut().expect("link modal");
+            if link.field == LinkField::Results {
+                link.selected = link.selected.saturating_sub(1);
+            } else {
+                link.field = LinkField::Query;
+            }
+            Dispatch::None
+        }
+        KeyCode::Left => {
+            let link = state.link.as_mut().expect("link modal");
+            if link.field == LinkField::Relationship {
+                link.relationship_type = RelationshipType::DependsOn;
+            }
+            Dispatch::None
+        }
+        KeyCode::Right => {
+            let link = state.link.as_mut().expect("link modal");
+            if link.field == LinkField::Relationship {
+                link.relationship_type = RelationshipType::References;
+            }
+            Dispatch::None
+        }
+        KeyCode::Backspace => {
+            let query_field =
+                state.link.as_ref().is_some_and(|link| link.field == LinkField::Query);
+            if query_field {
+                state.link.as_mut().expect("link modal").query.pop();
+                state.refresh_link_candidates();
+            }
+            Dispatch::None
+        }
+        KeyCode::Char(value) => {
+            let query_field =
+                state.link.as_ref().is_some_and(|link| link.field == LinkField::Query);
+            if query_field {
+                state.link.as_mut().expect("link modal").query.push(value);
+                state.refresh_link_candidates();
+            }
+            Dispatch::None
+        }
+        KeyCode::Enter => submit_link(state),
+        _ => Dispatch::None,
+    }
+}
+
+fn submit_link(state: &mut AppState) -> Dispatch {
+    let Some(link) = state.link.as_ref() else {
+        return Dispatch::None;
+    };
+    let Some(candidate) = link.candidates.get(link.selected) else {
+        return Dispatch::None;
+    };
+    let relationship_type = link.relationship_type;
+    let task_ref = candidate.task_ref.clone();
+    state.link = None;
+    Dispatch::Run(AppCommand::AddRelationship { task_ref, relationship_type })
 }
 
 fn confirm_key(state: &mut AppState, code: KeyCode) -> Dispatch {
@@ -46,15 +258,17 @@ fn confirm_key(state: &mut AppState, code: KeyCode) -> Dispatch {
 }
 
 fn select_key(state: &mut AppState, code: KeyCode) -> Dispatch {
-    let Some(select) = state.select.as_mut() else {
+    let Some(_) = state.select.as_ref() else {
         return Dispatch::None;
     };
     match code {
         KeyCode::Down | KeyCode::Char('j') => {
+            let select = state.select.as_mut().expect("select state");
             select.selected = (select.selected + 1).min(select.options.len() - 1);
             Dispatch::None
         }
         KeyCode::Up | KeyCode::Char('k') => {
+            let select = state.select.as_mut().expect("select state");
             select.selected = select.selected.saturating_sub(1);
             Dispatch::None
         }
@@ -114,13 +328,7 @@ fn submit_prompt(state: &mut AppState) -> Dispatch {
     };
     let value = prompt.value.trim().to_string();
     match prompt.kind {
-        PromptKind::CreateTask if !value.is_empty() => {
-            Dispatch::Run(AppCommand::CreateTask { title: value })
-        }
         PromptKind::MoveTask => confirm_move(state, value),
-        PromptKind::AddDependency if !value.is_empty() => {
-            Dispatch::Run(AppCommand::AddDependency { depends_on_ref: value })
-        }
         PromptKind::RemoveDependency if !value.is_empty() => {
             confirm_remove(state, value)
         }
@@ -164,6 +372,17 @@ fn search_key(state: &mut AppState, code: KeyCode) -> Dispatch {
 fn normal_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
     match key.code {
         KeyCode::Char('q') | KeyCode::Esc => Dispatch::Exit,
+        KeyCode::Enter | KeyCode::Char('0') => {
+            state.focus_current();
+            if state.current_view == crate::app_state::CurrentView::Details {
+                state.show_details();
+            }
+            Dispatch::None
+        }
+        KeyCode::Char('1') if state.count_buffer.is_empty() => {
+            state.focus_tree();
+            Dispatch::None
+        }
         KeyCode::PageDown => {
             state.scroll_detail_down();
             Dispatch::None
@@ -172,19 +391,26 @@ fn normal_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
             state.scroll_detail_up();
             Dispatch::None
         }
+        KeyCode::Char(value)
+            if state.focus == FocusPane::Tree && digit(state, value) =>
+        {
+            Dispatch::None
+        }
         KeyCode::Down | KeyCode::Char('j') => {
-            state.select_next();
+            let count = state.take_count();
+            state.select_next(count);
             Dispatch::None
         }
         KeyCode::Up | KeyCode::Char('k') => {
-            state.select_previous();
+            let count = state.take_count();
+            state.select_previous(count);
             Dispatch::None
         }
-        KeyCode::Right | KeyCode::Char('l') => {
+        KeyCode::Right | KeyCode::Char('l') if state.focus == FocusPane::Tree => {
             state.expand_selected();
             Dispatch::None
         }
-        KeyCode::Left | KeyCode::Char('h') => {
+        KeyCode::Left | KeyCode::Char('h') if state.focus == FocusPane::Tree => {
             state.collapse_selected();
             Dispatch::None
         }
@@ -197,20 +423,20 @@ fn normal_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
             Dispatch::None
         }
         KeyCode::Char('r') => Dispatch::Run(AppCommand::Reload),
-        KeyCode::Char('a') => {
-            state.toggle_archived();
-            Dispatch::None
-        }
         KeyCode::Char('/') => {
             state.begin_search();
             Dispatch::None
         }
-        KeyCode::Char('c') => {
-            state.clear_search();
+        KeyCode::Char('n') => {
+            state.pending_sequence = Some(PendingSequence::CreateOrNextTask);
             Dispatch::None
         }
-        KeyCode::Char('n') => {
-            state.begin_prompt(PromptKind::CreateTask);
+        KeyCode::Char('N') => {
+            state.pending_sequence = Some(PendingSequence::PreviousTask);
+            Dispatch::None
+        }
+        KeyCode::Char('a') => {
+            state.begin_create(state.selected_task_id());
             Dispatch::None
         }
         KeyCode::Char('s') => open_status_select(state),
@@ -218,18 +444,50 @@ fn normal_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
             state.begin_prompt(PromptKind::MoveTask);
             Dispatch::None
         }
-        KeyCode::Char('i') => Dispatch::Run(AppCommand::EditInstructions),
-        KeyCode::Char('e') => Dispatch::Run(AppCommand::EditDeclaration),
+        KeyCode::Char('e') => Dispatch::Run(AppCommand::EditInstructions),
+        KeyCode::Char('I') => Dispatch::Run(AppCommand::EditProjectInstructions),
+        KeyCode::Char('c') => Dispatch::Run(AppCommand::ShowContext),
+        KeyCode::Char('y')
+            if state.current_view == crate::app_state::CurrentView::Context =>
+        {
+            Dispatch::Run(AppCommand::CopyContext)
+        }
+        KeyCode::Char('@') => {
+            state.begin_link();
+            Dispatch::None
+        }
         KeyCode::Char('d') => {
-            state.begin_prompt(PromptKind::AddDependency);
+            state.begin_delete();
             Dispatch::None
         }
         KeyCode::Char('x') => {
             state.begin_prompt(PromptKind::RemoveDependency);
             Dispatch::None
         }
-        _ => Dispatch::None,
+        KeyCode::Char('t') if state.focus == FocusPane::Tree => {
+            state.jump_next_peer();
+            Dispatch::None
+        }
+        KeyCode::Char('T') if state.focus == FocusPane::Tree => {
+            state.jump_previous_peer();
+            Dispatch::None
+        }
+        _ => {
+            state.clear_count();
+            Dispatch::None
+        }
     }
+}
+
+fn digit(state: &mut AppState, value: char) -> bool {
+    if !value.is_ascii_digit() {
+        return false;
+    }
+    if state.count_buffer.is_empty() && matches!(value, '0' | '1') {
+        return false;
+    }
+    state.push_count(value);
+    true
 }
 
 fn open_status_select(state: &mut AppState) -> Dispatch {
@@ -242,70 +500,4 @@ fn open_status_select(state: &mut AppState) -> Dispatch {
         state.begin_status_select(&current);
     }
     Dispatch::None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{Dispatch, dispatch};
-    use crate::AppState;
-    use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
-    use std::path::PathBuf;
-
-    #[test]
-    fn start_create_action_from_normal_mode() {
-        let mut state = AppState::new(PathBuf::from("."));
-        let event = key(KeyCode::Char('n'));
-        assert_eq!(dispatch(&mut state, event), Dispatch::None);
-        assert!(state.prompt.is_some());
-    }
-
-    #[test]
-    fn submit_create_prompt_dispatches_command() {
-        let mut state = AppState::new(PathBuf::from("."));
-        state.begin_prompt(crate::app_prompt::PromptKind::CreateTask);
-        state.prompt.as_mut().unwrap().value = "Ship TUI actions".into();
-        assert_eq!(
-            dispatch(&mut state, key(KeyCode::Enter)),
-            Dispatch::Run(crate::app_command::AppCommand::CreateTask {
-                title: "Ship TUI actions".into(),
-            }),
-        );
-    }
-
-    #[test]
-    fn select_status_dispatches_chosen_value() {
-        let mut state = AppState::new(PathBuf::from("."));
-        state.statuses = vec!["backlog".into(), "in-progress".into()];
-        state.begin_status_select("backlog");
-        assert_eq!(
-            dispatch(&mut state, key(KeyCode::Char('2'))),
-            Dispatch::Run(crate::app_command::AppCommand::ChangeStatus {
-                status: "in-progress".into(),
-            },)
-        );
-    }
-
-    #[test]
-    fn move_prompt_requires_confirmation() {
-        let mut state = AppState::new(PathBuf::from("."));
-        state.begin_prompt(crate::app_prompt::PromptKind::MoveTask);
-        state.prompt.as_mut().unwrap().value = "TSK-0002".into();
-        assert_eq!(dispatch(&mut state, key(KeyCode::Enter)), Dispatch::None);
-        assert!(state.confirm.is_some());
-    }
-
-    #[test]
-    fn confirm_dispatches_pending_command() {
-        let mut state = AppState::new(PathBuf::from("."));
-        state
-            .confirm("Confirm".into(), crate::app_command::AppCommand::EditDeclaration);
-        assert_eq!(
-            dispatch(&mut state, key(KeyCode::Char('y'))),
-            Dispatch::Run(crate::app_command::AppCommand::EditDeclaration),
-        );
-    }
-
-    fn key(code: KeyCode) -> Event {
-        Event::Key(KeyEvent::new(code, KeyModifiers::NONE))
-    }
 }

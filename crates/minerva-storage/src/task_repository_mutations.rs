@@ -4,8 +4,8 @@ use crate::{
     append_parent_changed_event, append_status_changed_event,
     create_relationship as persist_relationship, refresh_task_index,
     remove_relationship as delete_relationship, task_hierarchy,
-    task_repository_support, write_task as persist_task, write_task_declaration,
-    write_task_instructions, write_task_notes,
+    task_repository_support, write_relationships, write_task as persist_task,
+    write_task_declaration, write_task_instructions, write_task_notes,
 };
 use minerva_application::{TaskCreateRecord, TaskWriteResult};
 use minerva_domain::{
@@ -13,6 +13,8 @@ use minerva_domain::{
     Task, TaskId, TaskVersion,
 };
 use std::{
+    collections::BTreeSet,
+    fs,
     path::{Path, PathBuf},
     time::SystemTime,
 };
@@ -201,6 +203,25 @@ pub fn archive_task(
     })
 }
 
+pub fn delete_tasks(root: &Path, task_ids: &[TaskId]) -> Result<(), MinervaError> {
+    let layout = MinervaLayout::new(root);
+    let _project_lock = crate::ProjectLock::acquire(&layout)?;
+    let deleted = task_ids.iter().copied().collect::<BTreeSet<_>>();
+    let _task_locks = crate::TaskLocks::acquire(&layout, deleted.iter().copied())?;
+    for task_id in &deleted {
+        task_repository_support::read_existing(&layout, *task_id)?;
+    }
+    remove_relationships(&layout, &deleted)?;
+    for task_id in deleted {
+        let path = layout.task_dir(task_id);
+        if path.exists() {
+            fs::remove_dir_all(&path).map_err(|err| schema(&path, err))?;
+        }
+    }
+    refresh_task_index(&layout)?;
+    Ok(())
+}
+
 pub fn move_task(
     root: &Path,
     task_id: TaskId,
@@ -250,4 +271,29 @@ pub fn remove_relationship(
     relationship_id: RelationshipId,
 ) -> Result<Relationship, MinervaError> {
     delete_relationship(&MinervaLayout::new(root), relationship_id)
+}
+
+fn remove_relationships(
+    layout: &MinervaLayout,
+    deleted: &BTreeSet<TaskId>,
+) -> Result<(), MinervaError> {
+    for task in crate::task_catalog::list_tasks(layout)? {
+        if deleted.contains(&task.id) {
+            continue;
+        }
+        let relationships = crate::read_relationships(layout, task.id)?;
+        let kept = relationships
+            .into_iter()
+            .filter(|item| !deleted.contains(&item.target_task))
+            .collect::<Vec<_>>();
+        write_relationships(layout, task.id, &kept)?;
+    }
+    Ok(())
+}
+
+fn schema(path: &Path, err: impl std::fmt::Display) -> MinervaError {
+    MinervaError::SchemaError {
+        path: path.display().to_string(),
+        reason: err.to_string(),
+    }
 }

@@ -10,11 +10,13 @@ fn draw_renders_selected_task_details() {
     let state = sample_state("Render TUI tree");
     let screen = normalize(&render_screen(&state));
     assert!(screen.contains(&normalize("Render TUI tree")));
+    assert!(screen.contains(&normalize(&state.rows[0].task.id.to_string())));
+    assert!(screen.contains(&normalize("backlog")));
+    assert!(screen.contains(&normalize("feature")));
     assert!(screen.contains(&normalize("Parent: No parent.")));
     assert!(screen.contains(&normalize("No dependencies.")));
     assert!(screen.contains(&normalize("related-to outgoing TSK-0002 Other task")));
     assert!(screen.contains(&normalize("Modules: minerva-tui")));
-    assert!(screen.contains(&normalize("[backlog|feature]")));
 }
 
 #[test]

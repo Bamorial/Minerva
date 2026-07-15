@@ -1,4 +1,7 @@
-use crate::AppState;
+use crate::{
+    AppState,
+    app_state::{CreateField, CurrentView, FocusPane, LinkField},
+};
 use ratatui::{
     style::{Color, Modifier, Style},
     text::Line,
@@ -22,6 +25,24 @@ fn body(state: &AppState) -> String {
     if let Some(prompt) = &state.prompt {
         return prompt_line(prompt.kind, &prompt.value);
     }
+    if let Some(create) = &state.create {
+        let field = match create.field {
+            CreateField::Title => "title",
+            CreateField::TaskType => "type",
+        };
+        return format!("create task: editing {field}");
+    }
+    if let Some(link) = &state.link {
+        let field = match link.field {
+            LinkField::Query => "query",
+            LinkField::Relationship => "relationship",
+            LinkField::Results => "results",
+        };
+        return format!("add relation: editing {field}");
+    }
+    if let Some(delete) = &state.delete {
+        return format!("delete {} {}?", delete.task_ref, delete.title);
+    }
     if state.search_mode {
         return format!("/{}", state.search);
     }
@@ -35,20 +56,27 @@ fn body(state: &AppState) -> String {
 }
 
 fn help(state: &AppState) -> String {
-    if state.search_mode {
-        return format!("/{}", state.search);
-    }
+    let focus = match state.focus {
+        FocusPane::CurrentView => "0 current",
+        FocusPane::Tree => "1 tree",
+    };
+    let current = match state.current_view {
+        CurrentView::Details => "details",
+        CurrentView::Context => "context",
+    };
+    let count = if state.count_buffer.is_empty() {
+        String::new()
+    } else {
+        format!(" count:{} ", state.count_buffer)
+    };
     format!(
-        "j/k move  h/l fold  n new  s status  m move  i/e edit  d add dep  x rm dep  / search  a archived:{}  r reload  q quit",
-        if state.show_archived { "on" } else { "off" }
+        "{focus} {current}{count} j/k move  h/l fold  0/enter current  1 tree  n new  a child  nt/Nt jump tasks  e task instructions  I project instructions  c context  y copy context  @ link  d delete  s status  m move  / search  r reload  q quit"
     )
 }
 
 fn prompt_line(kind: crate::app_prompt::PromptKind, value: &str) -> String {
     let label = match kind {
-        crate::app_prompt::PromptKind::CreateTask => "New child task title",
         crate::app_prompt::PromptKind::MoveTask => "Move task to parent ref or root",
-        crate::app_prompt::PromptKind::AddDependency => "Add dependency on task ref",
         crate::app_prompt::PromptKind::RemoveDependency => {
             "Remove dependency on task ref"
         }

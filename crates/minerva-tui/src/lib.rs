@@ -8,6 +8,7 @@ mod app_services;
 mod app_state;
 mod app_state_nav;
 mod app_state_search;
+mod clipboard;
 mod render;
 mod render_status;
 mod render_task_detail;

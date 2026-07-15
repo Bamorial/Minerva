@@ -33,6 +33,7 @@ pub enum Command {
     Show(ShowArgs),
     Context(ContextArgs),
     Log(LogArgs),
+    Delete(TaskRefArg),
     Instruction {
         task_ref: Option<String>,
     },
@@ -204,6 +205,7 @@ impl Command {
             Self::Show(_) => "show",
             Self::Context(_) => "context",
             Self::Log(_) => "log",
+            Self::Delete(_) => "delete",
             Self::Instruction { .. } => "instruction",
             Self::Declaration { .. } => "declaration",
             Self::Status(_) => "status",

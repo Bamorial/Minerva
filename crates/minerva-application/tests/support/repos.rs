@@ -226,6 +226,9 @@ impl TaskRepository for FakeTaskRepo {
             },
         ))
     }
+    fn delete_tasks(&self, _: &Path, _: &[TaskId]) -> Result<(), MinervaError> {
+        Ok(())
+    }
     fn create_relationship(
         &self,
         _: &Path,

@@ -1,9 +1,12 @@
 use minerva_application::{
-    CreateTaskRequest, MoveTaskRequest, ProjectRepository, TaskCreationResult,
-    TaskCreationService, TaskDeclarationService, TaskInstructionService,
-    TaskListArchiveFilter, TaskMovementService, TaskRelationshipService,
+    CreateTaskRequest, MoveTaskRequest, ProjectInstructionService, ProjectRepository,
+    TaskCreationResult, TaskCreationService, TaskDeletionResult, TaskDeletionService,
+    TaskInstructionService, TaskMovementService, TaskRelationshipService,
     TaskRepository, TaskShowOptions, TaskShowResult, TaskShowService, TaskStatusResult,
     TaskStatusService, TaskTreeOptions, TaskTreeResult, TaskTreeService,
+};
+use minerva_context::{
+    ContextCompilationError, ContextCompilationRequest, ContextCompilationService,
 };
 use minerva_domain::{
     MinervaError, Project, Relationship, RelationshipType, StatusKey, TaskId,
@@ -16,7 +19,10 @@ pub fn load_tree(start: &Path) -> Result<TaskTreeResult, MinervaError> {
         &FilesystemProjectRepository,
         &FilesystemTaskRepository,
         start,
-        &TaskTreeOptions { status: None, archive_state: TaskListArchiveFilter::All },
+        &TaskTreeOptions {
+            status: None,
+            archive_state: minerva_application::TaskListArchiveFilter::Active,
+        },
     )
 }
 
@@ -34,6 +40,13 @@ pub fn load_project(start: &Path) -> Result<Project, MinervaError> {
     FilesystemProjectRepository.load_project(start)
 }
 
+pub fn load_task_types(start: &Path) -> Result<Vec<String>, MinervaError> {
+    let root = FilesystemProjectRepository.locate_project_root(start)?;
+    FilesystemProjectRepository
+        .load_task_types(&root)
+        .map(|types| types.into_iter().map(|item| item.name.to_string()).collect())
+}
+
 pub fn project_root(start: &Path) -> Result<std::path::PathBuf, MinervaError> {
     FilesystemProjectRepository.locate_project_root(start)
 }
@@ -41,6 +54,7 @@ pub fn project_root(start: &Path) -> Result<std::path::PathBuf, MinervaError> {
 pub fn create_task(
     start: &Path,
     title: String,
+    task_type: String,
     parent_id: Option<TaskId>,
 ) -> Result<TaskCreationResult, MinervaError> {
     TaskCreationService::create(
@@ -49,7 +63,7 @@ pub fn create_task(
         start,
         CreateTaskRequest {
             title,
-            task_type: None,
+            task_type: Some(task_type.parse()?),
             parent_id,
             priority: None,
             tags: None,
@@ -100,11 +114,46 @@ pub fn edit_instructions(
     )
 }
 
-pub fn edit_declaration(
+pub fn edit_project_instructions(
+    start: &Path,
+) -> Result<std::path::PathBuf, MinervaError> {
+    ProjectInstructionService::edit(&FilesystemProjectRepository, start)
+}
+
+pub fn load_context(start: &Path, task_ref: &str) -> Result<String, MinervaError> {
+    ContextCompilationService::compile(
+        &FilesystemProjectRepository,
+        &FilesystemTaskRepository,
+        start,
+        &ContextCompilationRequest::new(task_ref),
+    )
+    .map(|result| result.markdown)
+    .map_err(map_context_error)
+}
+
+pub fn add_relationship(
     start: &Path,
     task_ref: &str,
-) -> Result<std::path::PathBuf, MinervaError> {
-    TaskDeclarationService::edit(
+    related_ref: &str,
+    relationship_type: RelationshipType,
+) -> Result<Relationship, MinervaError> {
+    let source = FilesystemTaskRepository.resolve_task(start, task_ref)?;
+    let target = FilesystemTaskRepository.resolve_task(start, related_ref)?;
+    TaskRelationshipService::create(
+        &FilesystemTaskRepository,
+        start,
+        source.id,
+        target.id,
+        relationship_type,
+        None,
+    )
+}
+
+pub fn delete_task(
+    start: &Path,
+    task_ref: &str,
+) -> Result<TaskDeletionResult, MinervaError> {
+    TaskDeletionService::delete(
         &FilesystemProjectRepository,
         &FilesystemTaskRepository,
         start,
@@ -112,21 +161,31 @@ pub fn edit_declaration(
     )
 }
 
-pub fn add_dependency(
+fn map_context_error(error: ContextCompilationError) -> MinervaError {
+    match error {
+        ContextCompilationError::Minerva(error) => error,
+        ContextCompilationError::Budget(error) => MinervaError::InvalidConfiguration {
+            key: "context.budget".into(),
+            reason: error.to_string(),
+        },
+        ContextCompilationError::StaleReference { task_ref, reasons } => {
+            MinervaError::InvalidConfiguration {
+                key: format!("context.task.{task_ref}.declaration"),
+                reason: reasons
+                    .into_iter()
+                    .map(|reason| format!("{reason:?}").to_ascii_lowercase())
+                    .collect::<Vec<_>>()
+                    .join(", "),
+            }
+        }
+    }
+}
+
+pub fn edit_task_instructions(
     start: &Path,
     task_ref: &str,
-    depends_on_ref: &str,
-) -> Result<Relationship, MinervaError> {
-    let source = FilesystemTaskRepository.resolve_task(start, task_ref)?;
-    let target = FilesystemTaskRepository.resolve_task(start, depends_on_ref)?;
-    TaskRelationshipService::create(
-        &FilesystemTaskRepository,
-        start,
-        source.id,
-        target.id,
-        RelationshipType::DependsOn,
-        None,
-    )
+) -> Result<std::path::PathBuf, MinervaError> {
+    edit_instructions(start, task_ref)
 }
 
 pub fn remove_dependency(

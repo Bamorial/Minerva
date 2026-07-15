@@ -120,6 +120,13 @@ impl TaskRepository for FilesystemTaskRepository {
     ) -> Result<TaskWriteResult, MinervaError> {
         crate::task_repository_mutations::archive_task(root, task_id, version)
     }
+    fn delete_tasks(
+        &self,
+        root: &Path,
+        task_ids: &[TaskId],
+    ) -> Result<(), MinervaError> {
+        crate::task_repository_mutations::delete_tasks(root, task_ids)
+    }
     fn move_task(
         &self,
         root: &Path,

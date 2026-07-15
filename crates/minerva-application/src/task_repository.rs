@@ -77,6 +77,11 @@ pub trait TaskRepository {
         task_id: TaskId,
         version: TaskVersion,
     ) -> Result<TaskWriteResult, MinervaError>;
+    fn delete_tasks(
+        &self,
+        root: &Path,
+        task_ids: &[TaskId],
+    ) -> Result<(), MinervaError>;
     fn move_task(
         &self,
         root: &Path,

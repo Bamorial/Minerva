@@ -1,7 +1,8 @@
 use crate::{
     cli::{Cli, Command, ShowArgs},
-    context_command, hierarchy_command, list_command, log_command, migrate_output,
-    move_command, new_command, output, relationship_command, repair_output,
+    context_command, delete_command, hierarchy_command, list_command, log_command,
+    migrate_output, move_command, new_command, output, relationship_command,
+    repair_output,
     response::CommandOutput,
     show_output, status_command, tree_command, validate_command,
 };
@@ -67,6 +68,10 @@ fn dispatch_command(
         }
         Command::Log(args) => {
             log_command::execute(&project_repo, &task_repo, root, args)
+                .map_err(Failure::Domain)
+        }
+        Command::Delete(args) => {
+            delete_command::execute(&project_repo, &task_repo, root, &args.task_ref)
                 .map_err(Failure::Domain)
         }
         Command::Status(args) => {
