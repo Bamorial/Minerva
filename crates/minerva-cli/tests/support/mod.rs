@@ -95,5 +95,5 @@ pub fn task(sequence: u32, title: &str) -> Task {
 }
 
 fn binary() -> PathBuf {
-    std::env::var_os("CARGO_BIN_EXE_minerva-cli").unwrap().into()
+    std::env::var_os("CARGO_BIN_EXE_minerva").unwrap().into()
 }

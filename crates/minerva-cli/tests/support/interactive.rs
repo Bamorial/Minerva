@@ -20,5 +20,5 @@ pub fn run_with_input(root: &PathBuf, args: &[&str], input: &str) -> Output {
 }
 
 fn binary() -> PathBuf {
-    std::env::var_os("CARGO_BIN_EXE_minerva-cli").unwrap().into()
+    std::env::var_os("CARGO_BIN_EXE_minerva").unwrap().into()
 }

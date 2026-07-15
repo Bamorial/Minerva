@@ -11,7 +11,7 @@ Prompt tags:
 Before starting work:
 
 1. Read `.minerva/instructions.md` for project-specific rules.
-2. Read the current task's `task.md`, `instructions.md`, and `declaration.md`.
+2. Read the current task's `task.yaml`, `instructions.md`, and `declaration.md`.
 3. Prefer Minerva CLI or MCP operations over manual edits to task metadata.
 4. Update `declaration.md` after meaningful progress, decisions, or blockers.
 5. Validate task state before marking work complete.

@@ -51,7 +51,7 @@ fn json_errors_use_stable_exit_codes_and_root_override() {
     assert!(run(&root, &["init"]).status.success());
     create_task(&root, task(1, "Inspect status output"));
     let other = temp_dir("cli-json-cwd");
-    let output = Command::new(std::env::var_os("CARGO_BIN_EXE_minerva-cli").unwrap())
+    let output = Command::new(std::env::var_os("CARGO_BIN_EXE_minerva").unwrap())
         .args([
             "--root",
             root.to_str().unwrap(),

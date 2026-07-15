@@ -1,20 +1,21 @@
 use minerva_application::{ProjectRepository, TaskRepository};
 use minerva_domain::{
-    AgentPromptMode, DeclarationDocument, MinervaError, Task, TaskId,
+    AgentPromptMode, DeclarationDocument, MinervaError, RelationshipType, Task, TaskId,
 };
 use minerva_storage::{
     FilesystemProjectRepository, FilesystemTaskRepository, MinervaLayout,
 };
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::path::Path;
 
 const PROJECT_INSTRUCTIONS_PLACEHOLDER: &str =
     "# Project Instructions\n\nAdd repository-wide Minerva instructions here.";
 const STATIC_EXECUTION_CONTRACT: &str = "- Work only on the current task.\n\
 - Do not resolve sibling tasks or unrelated work.\n\
+- Use dependency task context only as reference.\n\
 - Use sibling task context only as reference.\n\
 - Use only the project instructions, parent task context, current task \
-context, and sibling task context included below.";
+context, dependency task context, and sibling task context included below.";
 
 pub fn load(
     start: &Path,
@@ -37,6 +38,7 @@ fn static_prompt(start: &Path, task_ref: &str) -> Result<String, MinervaError> {
     add_project_instructions(&mut sections, &root)?;
     add_parent_context(&mut sections, &root, &tasks, &task)?;
     add_current_task_context(&mut sections, &root, task.id)?;
+    add_dependency_context(&mut sections, &root, &tasks, task.id)?;
     add_sibling_context(&mut sections, &root, &tasks, &task)?;
     sections.push(section("Output Requirements", output_requirements(&task)));
     Ok(format!("[static]\n\n{}", sections.join("\n\n")))
@@ -47,13 +49,16 @@ fn exploration_prompt(start: &Path, task_ref: &str) -> Result<String, MinervaErr
     let task = FilesystemTaskRepository.resolve_task(&root, task_ref)?;
     let tasks = FilesystemTaskRepository.list_tasks(&root)?;
     let layout = MinervaLayout::new(&root);
+    let parents = ancestor_paths(&layout, &tasks, &task)?;
+    let dependencies = dependency_paths(&layout, &tasks, &root, task.id)?;
     let siblings = sibling_paths(&layout, &tasks, &task);
     Ok(format!(
-        "[exploration]\n\nInvestigate the referenced Minerva files before changing code.\nTask path: `{}`\nProject instructions: `{}`\nParent path: {}\nSibling paths:\n{}\nTask instructions: `{}`\nDeclaration to complete: `{}`",
+        "[exploration]\n\nInvestigate the referenced Minerva files before changing code.\nVerify all existing parent tasks before changing code.\nTask path: `{}`\nProject instructions: `{}`\nParent paths:\n{}\nDependency paths:\n{}\nSibling paths:\n{}\nTask instructions: `{}`\nDeclaration to complete: `{}`",
         layout.task_dir(task.id).display(),
         layout.instructions_file().display(),
-        parent_path(&layout, &task),
-        sibling_block(&siblings),
+        path_block(&parents),
+        path_block(&dependencies),
+        path_block(&siblings),
         layout.task_instructions_file(task.id).display(),
         layout.declaration_file(task.id).display(),
     ))
@@ -81,8 +86,10 @@ fn add_parent_context(
         return Ok(());
     }
     let mut blocks = Vec::new();
-    for task in parents {
-        blocks.extend(task_context_blocks(root, task)?);
+    let count = parents.len();
+    for (index, task_id) in parents.into_iter().enumerate() {
+        let generation = count - index;
+        blocks.push(parent_generation_block(root, task_id, generation)?);
     }
     if !blocks.is_empty() {
         sections.push(section("Parent Task Context", blocks.join("\n\n")));
@@ -98,6 +105,26 @@ fn add_current_task_context(
     let blocks = task_context_blocks(root, task_id)?;
     if !blocks.is_empty() {
         sections.push(section("Current Task Context", blocks.join("\n\n")));
+    }
+    Ok(())
+}
+
+fn add_dependency_context(
+    sections: &mut Vec<String>,
+    root: &Path,
+    tasks: &[Task],
+    task_id: TaskId,
+) -> Result<(), MinervaError> {
+    let dependency_ids = dependency_ids(tasks, root, task_id)?;
+    if dependency_ids.is_empty() {
+        return Ok(());
+    }
+    let mut blocks = Vec::new();
+    for dependency_id in dependency_ids {
+        blocks.extend(task_context_blocks(root, dependency_id)?);
+    }
+    if !blocks.is_empty() {
+        sections.push(section("Dependency Task Context", blocks.join("\n\n")));
     }
     Ok(())
 }
@@ -143,12 +170,47 @@ fn ancestor_lineage(
     Ok(lineage)
 }
 
+fn dependency_ids(
+    tasks: &[Task],
+    root: &Path,
+    task_id: TaskId,
+) -> Result<Vec<TaskId>, MinervaError> {
+    let outgoing = FilesystemTaskRepository.list_relationships_from(root, task_id)?;
+    let incoming = FilesystemTaskRepository.list_relationships_to(root, task_id)?;
+    let ids = outgoing
+        .into_iter()
+        .filter(|rel| {
+            rel.relationship_type == RelationshipType::DependsOn
+                && rel.source_task == task_id
+        })
+        .map(|rel| rel.target_task)
+        .chain(incoming.into_iter().filter_map(|rel| {
+            (rel.relationship_type == RelationshipType::Blocks
+                && rel.target_task == task_id)
+                .then_some(rel.source_task)
+        }))
+        .collect::<BTreeSet<_>>();
+    Ok(tasks.iter().filter(|task| ids.contains(&task.id)).map(|task| task.id).collect())
+}
+
 fn sibling_ids(tasks: &[Task], target: &Task) -> Vec<TaskId> {
     tasks
         .iter()
         .filter(|item| item.parent_id == target.parent_id && item.id != target.id)
         .map(|item| item.id)
         .collect()
+}
+
+fn dependency_paths(
+    layout: &MinervaLayout,
+    tasks: &[Task],
+    root: &Path,
+    task_id: TaskId,
+) -> Result<Vec<String>, MinervaError> {
+    Ok(dependency_ids(tasks, root, task_id)?
+        .into_iter()
+        .map(|id| format!("- `{}`", layout.task_dir(id).display()))
+        .collect())
 }
 
 fn task_context_blocks(
@@ -170,6 +232,15 @@ fn task_context_blocks(
         blocks.push(subsection("Declaration", declaration.trim().to_owned()));
     }
     Ok(blocks)
+}
+
+fn parent_generation_block(
+    root: &Path,
+    task_id: TaskId,
+    generation: usize,
+) -> Result<String, MinervaError> {
+    let body = task_context_blocks(root, task_id)?.join("\n\n");
+    Ok(format!("### Parent Generation {generation}\n\n{}", body.trim()))
 }
 
 fn meaningful_project_instructions(text: &str) -> bool {
@@ -195,11 +266,15 @@ fn subsection(title: &str, body: String) -> String {
     format!("#### {title}\n\n{}", body.trim())
 }
 
-fn parent_path(layout: &MinervaLayout, task: &Task) -> String {
-    task.parent_id.map_or_else(
-        || "none".into(),
-        |id| format!("`{}`", layout.task_dir(id).display()),
-    )
+fn ancestor_paths(
+    layout: &MinervaLayout,
+    tasks: &[Task],
+    target: &Task,
+) -> Result<Vec<String>, MinervaError> {
+    Ok(ancestor_lineage(tasks, target)?
+        .into_iter()
+        .map(|id| format!("- `{}`", layout.task_dir(id).display()))
+        .collect())
 }
 
 fn sibling_paths(layout: &MinervaLayout, tasks: &[Task], task: &Task) -> Vec<String> {
@@ -210,7 +285,7 @@ fn sibling_paths(layout: &MinervaLayout, tasks: &[Task], task: &Task) -> Vec<Str
         .collect()
 }
 
-fn sibling_block(paths: &[String]) -> String {
+fn path_block(paths: &[String]) -> String {
     if paths.is_empty() { "- none".into() } else { paths.join("\n") }
 }
 
@@ -220,8 +295,8 @@ mod tests {
     use minerva_application::{ProjectRepository, TaskCreateRecord, TaskRepository};
     use minerva_domain::{
         AgentPromptMode, ArchiveState, DeclarationActor, DeclarationDocument,
-        DeclarationMetadata, StatusKey, Task, TaskFacts, TaskIdAllocator, TaskPriority,
-        TaskTypeKey, TaskVersion,
+        DeclarationMetadata, Relationship, RelationshipId, RelationshipType, StatusKey,
+        Task, TaskFacts, TaskIdAllocator, TaskPriority, TaskTypeKey, TaskVersion,
     };
     use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
     use std::collections::BTreeSet;
@@ -271,6 +346,15 @@ mod tests {
             "Sibling context.",
             "Sibling declaration.",
         );
+        let dependency = persist_task(
+            &root,
+            5,
+            "Dependency",
+            None,
+            "Dependency context.",
+            "Dependency declaration.",
+        );
+        create_dependency(&root, target.id, dependency.id);
 
         let prompt =
             load(&root, &target.id.to_string(), AgentPromptMode::Static).unwrap();
@@ -278,12 +362,18 @@ mod tests {
         assert!(prompt.starts_with("[static]\n\n## Minerva Execution Contract"));
         assert!(prompt.contains("## Project Instructions"));
         assert!(prompt.contains("## Parent Task Context"));
+        assert!(prompt.contains("### Parent Generation 2"));
+        assert!(prompt.contains("### Parent Generation 1"));
         assert!(
             prompt.contains(&format!("### {} {}", grandparent.id, grandparent.title))
         );
         assert!(prompt.contains(&format!("### {} {}", parent.id, parent.title)));
         assert!(prompt.contains("## Current Task Context"));
         assert!(prompt.contains(&format!("### {} {}", target.id, target.title)));
+        assert!(prompt.contains("## Dependency Task Context"));
+        assert!(
+            prompt.contains(&format!("### {} {}", dependency.id, dependency.title))
+        );
         assert!(prompt.contains("Do not resolve sibling tasks."));
         assert!(
             prompt
@@ -296,7 +386,16 @@ mod tests {
         assert!(prompt.contains("## Sibling Task Context"));
         assert!(prompt.contains(&format!("### {} {}", sibling.id, sibling.title)));
         assert!(ordered(&prompt, "## Parent Task Context", "## Current Task Context"));
-        assert!(ordered(&prompt, "## Current Task Context", "## Sibling Task Context"));
+        assert!(ordered(
+            &prompt,
+            "## Current Task Context",
+            "## Dependency Task Context"
+        ));
+        assert!(ordered(
+            &prompt,
+            "## Dependency Task Context",
+            "## Sibling Task Context"
+        ));
     }
 
     #[test]
@@ -346,6 +445,73 @@ mod tests {
         assert!(!prompt.contains("Sibling declaration."));
     }
 
+    #[test]
+    fn static_prompt_includes_dependency_context_and_skips_empty_declaration() {
+        let root = temp_dir("static-prompt-dependency-declaration");
+        FilesystemProjectRepository.initialize_project(&root, false).unwrap();
+        let target = persist_task(&root, 1, "Target", None, "Target context.", "");
+        let dependency =
+            persist_task(&root, 2, "Dependency", None, "Dependency context.", "");
+        clear_declaration(&root, dependency.id);
+        create_dependency(&root, target.id, dependency.id);
+
+        let prompt =
+            load(&root, &target.id.to_string(), AgentPromptMode::Static).unwrap();
+
+        assert!(prompt.contains("## Dependency Task Context"));
+        assert!(
+            prompt.contains(&format!("### {} {}", dependency.id, dependency.title))
+        );
+        assert!(prompt.contains("Dependency context."));
+        assert!(!prompt.contains("Dependency declaration."));
+    }
+
+    #[test]
+    fn exploration_prompt_lists_dependency_paths() {
+        let root = temp_dir("exploration-prompt-dependencies");
+        FilesystemProjectRepository.initialize_project(&root, false).unwrap();
+        let grandparent =
+            persist_task(&root, 1, "Grandparent", None, "Grandparent context.", "");
+        let parent = persist_task(
+            &root,
+            2,
+            "Parent",
+            Some(grandparent.id),
+            "Parent context.",
+            "",
+        );
+        let target =
+            persist_task(&root, 3, "Target", Some(parent.id), "Target context.", "");
+        let dependency =
+            persist_task(&root, 4, "Dependency", None, "Dependency context.", "");
+        create_dependency(&root, target.id, dependency.id);
+
+        let prompt =
+            load(&root, &target.id.to_string(), AgentPromptMode::Exploration).unwrap();
+
+        assert!(
+            prompt.contains("Verify all existing parent tasks before changing code.")
+        );
+        assert!(prompt.contains("Parent paths:"));
+        assert!(prompt.contains(&format!(
+                "- `{}`",
+                minerva_storage::MinervaLayout::new(&root)
+                    .task_dir(grandparent.id)
+                    .display()
+            )));
+        assert!(prompt.contains(&format!(
+            "- `{}`",
+            minerva_storage::MinervaLayout::new(&root).task_dir(parent.id).display()
+        )));
+        assert!(prompt.contains("Dependency paths:"));
+        assert!(prompt.contains(&format!(
+            "- `{}`",
+            minerva_storage::MinervaLayout::new(&root)
+                .task_dir(dependency.id)
+                .display()
+        )));
+    }
+
     fn ordered(text: &str, first: &str, second: &str) -> bool {
         let first = text.find(first).unwrap();
         let second = text.find(second).unwrap();
@@ -392,6 +558,28 @@ mod tests {
                 DeclarationActor::Human,
                 None,
                 &DeclarationDocument::template(),
+            )
+            .unwrap();
+    }
+
+    fn create_dependency(
+        root: &Path,
+        source_task: minerva_domain::TaskId,
+        target_task: minerva_domain::TaskId,
+    ) {
+        FilesystemTaskRepository
+            .create_relationship(
+                root,
+                &Relationship::new(Relationship {
+                    schema_version: 1,
+                    id: RelationshipId::new(),
+                    source_task,
+                    target_task,
+                    relationship_type: RelationshipType::DependsOn,
+                    reason: None,
+                    created_at: UNIX_EPOCH,
+                })
+                .unwrap(),
             )
             .unwrap();
     }
