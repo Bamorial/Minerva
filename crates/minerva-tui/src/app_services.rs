@@ -6,7 +6,6 @@ use minerva_application::{
     TaskRepository, TaskShowOptions, TaskShowResult, TaskShowService, TaskStatusResult,
     TaskStatusService, TaskTreeOptions, TaskTreeResult, TaskTreeService,
 };
-use minerva_context::ContextCompilationError;
 use minerva_domain::{
     AgentPromptMode, MinervaError, Project, Relationship, RelationshipType, StatusKey,
     TaskId,
@@ -173,26 +172,6 @@ pub fn delete_task(
         start,
         task_ref,
     )
-}
-
-pub(crate) fn map_context_error(error: ContextCompilationError) -> MinervaError {
-    match error {
-        ContextCompilationError::Minerva(error) => error,
-        ContextCompilationError::Budget(error) => MinervaError::InvalidConfiguration {
-            key: "context.budget".into(),
-            reason: error.to_string(),
-        },
-        ContextCompilationError::StaleReference { task_ref, reasons } => {
-            MinervaError::InvalidConfiguration {
-                key: format!("context.task.{task_ref}.declaration"),
-                reason: reasons
-                    .into_iter()
-                    .map(|reason| format!("{reason:?}").to_ascii_lowercase())
-                    .collect::<Vec<_>>()
-                    .join(", "),
-            }
-        }
-    }
 }
 
 pub fn edit_task_instructions(
