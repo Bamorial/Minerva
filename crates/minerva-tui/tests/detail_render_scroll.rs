@@ -11,5 +11,5 @@ fn draw_applies_detail_scroll() {
     state.detail_scroll = 9;
     let screen = normalize(&render_screen(&state));
     assert!(!screen.contains(&normalize("Parent: No parent.")));
-    assert!(screen.contains(&normalize("task-metadata-updated-after-declaration")));
+    assert!(screen.contains(&normalize("covered-commit-differs")));
 }

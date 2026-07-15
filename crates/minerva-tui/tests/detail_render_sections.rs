@@ -24,7 +24,7 @@ fn draw_renders_scrolled_detail_sections() {
     let mut state = sample_state("Render TUI tree");
     state.detail_scroll = 10;
     let screen = normalize(&render_screen(&state));
-    assert!(screen.contains(&normalize("task-metadata-updated-after-declaration")));
+    assert!(screen.contains(&normalize("covered-commit-differs")));
     assert!(screen.contains(&normalize("Detail pane is implemented.")));
 }
 

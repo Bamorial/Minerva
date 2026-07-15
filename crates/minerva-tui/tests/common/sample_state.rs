@@ -71,7 +71,7 @@ fn sample_detail(task: Task) -> TaskShowResult {
         }],
         freshness: TaskShowFreshness {
             status: "stale".into(),
-            reasons: vec!["task-metadata-updated-after-declaration".into()],
+            reasons: vec!["covered-commit-differs".into()],
         },
         timestamps: TaskShowTimestamps {
             created_at: "1970-01-01T00:00:00Z".into(),

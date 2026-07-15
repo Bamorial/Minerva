@@ -1,15 +1,13 @@
 mod support;
 
 use minerva_application::{TaskCreateRecord, TaskRepository};
-use minerva_domain::{
-    DeclarationDocument, DeclarationFreshnessReason, RelationshipType,
-};
+use minerva_domain::{DeclarationDocument, RelationshipType};
 use minerva_storage::FilesystemTaskRepository;
 use std::{thread::sleep, time::Duration};
 use support::{relationship, task, temp_repo};
 
 #[test]
-fn instruction_updates_mark_declarations_stale() {
+fn instruction_updates_do_not_stale_declarations() {
     let root = temp_repo("task-freshness-instructions");
     let repo = FilesystemTaskRepository;
     let task = task(1, "Track declaration freshness");
@@ -23,14 +21,11 @@ fn instruction_updates_mark_declarations_stale() {
     )
     .unwrap();
     let report = report(repo, &root, task.id);
-    assert_eq!(
-        report.reasons,
-        vec![DeclarationFreshnessReason::InstructionsUpdatedAfterDeclaration]
-    );
+    assert!(report.reasons.is_empty());
 }
 
 #[test]
-fn relationship_updates_mark_declarations_stale() {
+fn relationship_updates_do_not_stale_declarations() {
     let root = temp_repo("task-freshness-relationships");
     let repo = FilesystemTaskRepository;
     let left = task(1, "Track declaration freshness");
@@ -44,14 +39,11 @@ fn relationship_updates_mark_declarations_stale() {
     )
     .unwrap();
     let report = report(repo, &root, left.id);
-    assert_eq!(
-        report.reasons,
-        vec![DeclarationFreshnessReason::RelationshipsUpdatedAfterDeclaration]
-    );
+    assert!(report.reasons.is_empty());
 }
 
 #[test]
-fn task_metadata_updates_without_file_changes_mark_declarations_stale() {
+fn task_metadata_updates_do_not_stale_declarations() {
     let root = temp_repo("task-freshness-metadata");
     let repo = FilesystemTaskRepository;
     let child = task(1, "Track declaration freshness");
@@ -61,10 +53,7 @@ fn task_metadata_updates_without_file_changes_mark_declarations_stale() {
     sleep(Duration::from_millis(20));
     repo.move_task(&root, child.id, Some(parent.id), child.version).unwrap();
     let report = report(repo, &root, child.id);
-    assert_eq!(
-        report.reasons,
-        vec![DeclarationFreshnessReason::TaskMetadataUpdatedAfterDeclaration]
-    );
+    assert!(report.reasons.is_empty());
 }
 
 fn record(task: minerva_domain::Task) -> TaskCreateRecord {

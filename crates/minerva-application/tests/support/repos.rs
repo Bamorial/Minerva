@@ -144,10 +144,6 @@ impl TaskRepository for FakeTaskRepo {
     ) -> Result<DeclarationFreshnessProbe, MinervaError> {
         let task = self.read_task(Path::new("."), task_id)?;
         Ok(DeclarationFreshnessProbe {
-            declaration_updated_at: task.declaration.updated_at,
-            task_updated_at: task.updated_at,
-            instructions_updated_at: None,
-            relationships_updated_at: None,
             covered_commit_hash: task.declaration.commit_hash,
             current_commit_hash: None,
         })

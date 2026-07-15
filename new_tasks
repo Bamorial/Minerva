@@ -1,0 +1,69 @@
+
+So i want you to do the following changes:
+1. On "e" i should be able to edit the current task
+2. On "i" i should be able to edit the current task's instructions
+3. On "I" i should be able to edit project instructions
+4. On "0" i should be able to go to Details tab so i can navigate the compiled context or something
+5. On "a" i should be able to add a child to the current task
+6. The user should bot be able to modify the declaration yet.
+7. I want the task to look like this in the tree - task-id - name - status - type. The status and type should be colored accordingly
+8. Vim keybindings on treeview so i can jump multiple lines down/up. (3j (3 lines down) 3k (3 lines up))
+9. The task creation should happen in a window on top of the tui interface where the user should be asked for a task name and task type
+10. The dependency addition and reference addition should happen by in a window on top of tui where the user can search by task id or task name, or by the tree view
+
+So in agents.md we need to use this rule:
+- if prompt starts with [minerva-investigate] the agent should look into minerva files and investigate tasks
+- if prompt starts with [minerva], the agent should ignore minerva investiagtion, but he completes the declaration
+- if prompt has no tag, the agent should igonre minerva
+
+also, remove the archive feature. Make a deletion service and a delete cli command and tui command that deletes tasks. On d, the task should be deleted (with a confirmation window) . the deletion should be recursive. The dependency addition should be moved from d to r
+
+
+# Refactor
+
+  ## Target area
+
+  Declaration freshness and task update flows in Minerva, specifically the logic that marks a declaration stale when `instructions.md` changes.
+
+  ## Current pain
+
+  Minerva currently treats instruction, state, dependency edits as invalidating `declaration.md`, which creates noisy stale-declaration warnings such as `instructions-updated-after-declaration`.
+
+  That coupling is wrong for the intended workflow. `declaration.md` should be an agent-authored handoff/status document. It should only need updating when an agent has
+  meaningful progress, decisions, blockers, verification notes, or a real handoff to record. Editing task instructions, state, dependency should not, by itself, require refreshing the declaration.
+
+  ## Goal
+
+  Remove the freshness dependency between `instructions.md`, state, dependencies updates and `declaration.md`.
+
+  ## Requirements
+
+  - Stop marking declarations stale solely because task instructions, state, dependencies were edited.
+  - Preserve declaration freshness checks for actual declaration-relevant invalidators if they still make sense, such as commit coverage or other explicit handoff-state signals.
+  - Keep `declaration.md` as an agent-maintained handoff document, not a mirror of instruction edits.
+  - Update tests to reflect the new behavior.
+  - Update any user-facing wording or validation output that assumes instruction edits stale the declaration.
+
+  ## Constraints
+
+  - Do not weaken unrelated freshness guarantees without justification.
+  - Do not turn declaration updates into an automatic side effect of instruction edits.
+  - Preserve existing task editing flows unless a change is required to remove this coupling.
+
+  ## Acceptance criteria
+
+  - Editing `instructions.md`, state, dependencies alone no longer produces `instructions-updated-after-declaration`.
+  - Declaration freshness still reports meaningful stale states for the reasons that remain valid after this change.
+  - Tests cover the new contract.
+  - If `instructions-updated-after-declaration` becomes obsolete, it is removed from the domain model and all surfaced outputs.
+
+  Handoff note for the next agent
+
+  The declaration is intended to be a human/agent handoff artifact. Treat it as a progress/decision record, not as something that must be refreshed whenever instructions change.
+
+
+## on context view, y does a copy in clipboard, so i can quickly copy and paste the context of a task
+also, i should have a config for modes. If i press s i should see and be able to see those modes. There should be 2 modes: curious, direct. On curious, the compiled context should begin with the tag  [minerva-investigate] , otherwise the context should start with the [minerva] tag
+
+
+In the context compiler, remove declarations of new tasks.. only the one solved should have declarations

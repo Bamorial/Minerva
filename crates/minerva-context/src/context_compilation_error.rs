@@ -47,14 +47,5 @@ fn reason(value: DeclarationFreshnessReason) -> &'static str {
             "covered-commit-unavailable"
         }
         DeclarationFreshnessReason::CoveredCommitDiffers => "covered-commit-differs",
-        DeclarationFreshnessReason::InstructionsUpdatedAfterDeclaration => {
-            "instructions-updated-after-declaration"
-        }
-        DeclarationFreshnessReason::RelationshipsUpdatedAfterDeclaration => {
-            "relationships-updated-after-declaration"
-        }
-        DeclarationFreshnessReason::TaskMetadataUpdatedAfterDeclaration => {
-            "task-metadata-updated-after-declaration"
-        }
     }
 }

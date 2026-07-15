@@ -50,7 +50,7 @@ fn expected(
     related: &minerva_domain::Task,
 ) -> String {
     format!(
-        "{id} Inspect declaration freshness\ntype: feature\nstatus: backlog\npriority: medium\nparent: {parent_id} Parent task\ndependencies: {dep_id} Prepare repository\ndeclaration freshness: stale\nfreshness reasons: relationships-updated-after-declaration, missing-covered-commit\ncreated_at: 1970-01-01T00:00:00Z\nupdated_at: 1970-01-01T00:00:00Z\ncompleted_at: none\ndeclaration_updated_at: 1970-01-01T00:00:00Z\nversion: 1\ndeclaration version: 1\nfacts.modules: none\nfacts.files: none\nfacts.migrations_required: false\nfacts.feature_flags: none\nfacts.acceptance_checks: none\nfacts.resources.reads: none\nfacts.resources.writes: none\nrelationships:\n- related-to outgoing {rel_id} Document repository (same surface)\n",
+        "{id} Inspect declaration freshness\ntype: feature\nstatus: backlog\npriority: medium\nparent: {parent_id} Parent task\ndependencies: {dep_id} Prepare repository\ndeclaration freshness: potentially-stale\nfreshness reasons: missing-covered-commit\ncreated_at: 1970-01-01T00:00:00Z\nupdated_at: 1970-01-01T00:00:00Z\ncompleted_at: none\ndeclaration_updated_at: 1970-01-01T00:00:00Z\nversion: 1\ndeclaration version: 1\nfacts.modules: none\nfacts.files: none\nfacts.migrations_required: false\nfacts.feature_flags: none\nfacts.acceptance_checks: none\nfacts.resources.reads: none\nfacts.resources.writes: none\nrelationships:\n- related-to outgoing {rel_id} Document repository (same surface)\n",
         id = task.id,
         parent_id = parent.id,
         dep_id = dependency.id,
