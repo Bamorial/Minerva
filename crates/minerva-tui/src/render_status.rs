@@ -74,7 +74,7 @@ fn help(state: &AppState) -> String {
         format!(" count:{} ", state.count_buffer)
     };
     format!(
-        "{focus} {current} mode:{}{count} j/k move  h/l fold  0/enter current  1 tree  n new  a child  nt/Nt jump tasks  e task instructions  I project instructions  c context  y copy context  @ link  d delete  s settings  S status  m move  / search  r reload  q quit",
+        "{focus} {current} mode:{}{count} j/k move  h/l fold  0/enter current  1 tree  n new  a child  A sibling  nt/Nt jump tasks  e task instructions  I project instructions  c context  y copy context  @ link  d delete  s settings  S status  m move  / search  r reload  q quit",
         prompt_mode(state.prompt_mode),
     )
 }

@@ -84,6 +84,30 @@ fn create_modal_prioritizes_feature_and_wraps_task_types() {
     assert_eq!(create.task_types[create.selected_type], "feature");
 }
 
+#[test]
+fn sibling_shortcut_uses_selected_parent_for_children_and_root_for_roots() {
+    let root_task = common::sample_state::sample_task("Root task", None, false);
+    let child_task =
+        common::sample_state::sample_task("Child task", Some(root_task.id), false);
+    let child = TaskTreeNode { task: child_task.clone(), children: Vec::new() };
+    let root = TaskTreeNode { task: root_task.clone(), children: vec![child] };
+    let mut state = AppState::new(PathBuf::from("."));
+    state.set_task_types(vec!["feature".into(), "bug".into()]);
+    state.set_tree(vec![root]);
+
+    state.select_next(1);
+    assert_eq!(press(&mut state, KeyCode::Char('A')), Dispatch::None);
+    assert_eq!(
+        state.create.as_ref().and_then(|create| create.parent_id),
+        Some(root_task.id)
+    );
+
+    state.cancel_action();
+    state.selected = 0;
+    assert_eq!(press(&mut state, KeyCode::Char('A')), Dispatch::None);
+    assert_eq!(state.create.as_ref().and_then(|create| create.parent_id), None);
+}
+
 fn titles(state: &AppState) -> Vec<String> {
     state.rows.iter().map(|row| row.task.title.clone()).collect()
 }

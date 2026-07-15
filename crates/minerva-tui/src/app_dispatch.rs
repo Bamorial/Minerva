@@ -484,6 +484,10 @@ fn normal_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
             state.begin_create(state.selected_task_id());
             Dispatch::None
         }
+        KeyCode::Char('A') => {
+            state.begin_create(state.selected_parent_id());
+            Dispatch::None
+        }
         KeyCode::Char('s') => {
             state.begin_settings();
             Dispatch::None

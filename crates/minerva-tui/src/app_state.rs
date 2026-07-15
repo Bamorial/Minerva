@@ -167,6 +167,11 @@ impl AppState {
     }
 
     #[must_use]
+    pub fn selected_parent_id(&self) -> Option<TaskId> {
+        self.rows.get(self.selected).and_then(|row| row.parent_id)
+    }
+
+    #[must_use]
     pub fn selected_task_ref(&self) -> Option<String> {
         self.selected_task_id().map(|id| id.to_string())
     }
