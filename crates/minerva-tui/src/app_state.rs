@@ -171,7 +171,7 @@ impl AppState {
     }
 
     pub fn set_task_types(&mut self, task_types: Vec<String>) {
-        self.task_types = task_types;
+        self.task_types = feature_first(task_types);
     }
 
     pub fn begin_prompt(&mut self, kind: PromptKind) {
@@ -319,6 +319,14 @@ impl AppState {
         flatten(&self.tree, 0, &mut items);
         items
     }
+}
+
+fn feature_first(mut task_types: Vec<String>) -> Vec<String> {
+    if let Some(index) = task_types.iter().position(|item| item == "feature") {
+        let feature = task_types.remove(index);
+        task_types.insert(0, feature);
+    }
+    task_types
 }
 
 fn flatten(tree: &[TaskTreeNode], depth: usize, items: &mut Vec<LinkCandidate>) {

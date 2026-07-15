@@ -43,6 +43,13 @@ impl AppState {
         }
     }
 
+    #[must_use]
+    pub fn selected_children_hidden(&self) -> bool {
+        self.rows
+            .get(self.selected)
+            .is_some_and(|row| row.has_children && !row.expanded)
+    }
+
     pub fn collapse_selected(&mut self) {
         if let Some(row) = self.rows.get(self.selected).filter(|row| row.expanded) {
             self.expanded.remove(&row.task.id);

@@ -3,7 +3,11 @@ use crate::{
     render_task_summary,
 };
 use minerva_domain::ContextDetail;
+use minerva_domain::DeclarationDocument;
 use minerva_domain::RelationshipType;
+
+const PROJECT_INSTRUCTIONS_PLACEHOLDER: &str =
+    "# Project Instructions\n\nAdd repository-wide Minerva instructions here.";
 
 pub fn detail_text(text: &str, detail: ContextDetail) -> String {
     match detail {
@@ -16,6 +20,17 @@ pub fn detail_text(text: &str, detail: ContextDetail) -> String {
             .collect::<Vec<_>>()
             .join("\n"),
     }
+}
+
+pub fn declaration_text(text: &str, detail: ContextDetail) -> Option<String> {
+    (!DeclarationDocument::is_effectively_empty(text))
+        .then(|| detail_text(text, detail))
+}
+
+pub fn project_instructions_text(text: &str, detail: ContextDetail) -> Option<String> {
+    let trimmed = text.trim();
+    (!trimmed.is_empty() && trimmed != PROJECT_INSTRUCTIONS_PLACEHOLDER)
+        .then(|| detail_text(text, detail))
 }
 
 pub fn render_collection(items: &[(&ContextSelectionItem, String)]) -> String {

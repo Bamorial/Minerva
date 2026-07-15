@@ -1,4 +1,6 @@
-use crate::context_compilation_render::{detail_text, render_related};
+use crate::context_compilation_render::{
+    declaration_text, detail_text, render_related,
+};
 use crate::{
     ContextCompilationError, ContextGraphSelection, ContextInclusionReason,
     ContextSection, ContextSectionId,
@@ -22,11 +24,11 @@ pub fn add_target_sections(
         );
     }
     if let Some(detail) = policy.target_declaration {
-        push(
-            sections,
-            ContextSectionId::TargetDeclaration,
-            detail_text(&repo.read_task_declaration(root, target.id)?, detail),
-        );
+        if let Some(body) =
+            declaration_text(&repo.read_task_declaration(root, target.id)?, detail)
+        {
+            push(sections, ContextSectionId::TargetDeclaration, body);
+        }
     }
     Ok(())
 }

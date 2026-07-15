@@ -19,7 +19,7 @@ fn context_command_prints_deterministic_markdown() {
     assert_eq!(first.stdout, second.stdout);
     let stdout = str::from_utf8(&first.stdout).unwrap();
     assert!(stdout.contains("## Target Metadata and Facts"));
-    assert!(stdout.contains("## Context Manifest Summary"));
+    assert!(!stdout.contains("## Context Manifest Summary"));
     fs::remove_dir_all(root).unwrap();
 }
 
@@ -34,7 +34,7 @@ fn context_command_writes_markdown_to_a_file() {
     );
     assert!(output.status.success(), "{output:?}");
     assert!(str::from_utf8(&output.stdout).unwrap().contains("wrote context to"));
-    assert!(fs::read_to_string(path).unwrap().contains("## Context Manifest Summary"));
+    assert!(!fs::read_to_string(path).unwrap().contains("## Context Manifest Summary"));
     fs::remove_dir_all(root).unwrap();
 }
 

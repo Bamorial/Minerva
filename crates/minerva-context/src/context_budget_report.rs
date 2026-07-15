@@ -41,13 +41,6 @@ impl ContextBudgetReport {
 
     #[must_use]
     pub fn render_with_manifest(&self) -> String {
-        let body = self.document.render();
-        let manifest = self.manifest().render_yaml();
-        let heading = "## Context Manifest Summary\n\n";
-        if body.is_empty() {
-            format!("{heading}{manifest}")
-        } else {
-            format!("{body}\n\n{heading}{manifest}")
-        }
+        self.document.render()
     }
 }

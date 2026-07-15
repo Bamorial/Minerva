@@ -1,5 +1,5 @@
 use crate::{
-    ApproximateTokenEstimator, ContextManifest, ContextSection, ContextSectionId,
+    ApproximateTokenEstimator, ContextManifest, ContextSection,
     MIXED_TOKEN_ESTIMATION_METHOD,
 };
 
@@ -37,14 +37,7 @@ impl ContextDocument {
 
     #[must_use]
     pub fn render_with_manifest(&self) -> String {
-        let body = self.render();
-        let manifest = self.manifest().render_yaml();
-        let heading = ContextSectionId::ContextManifestSummary.heading();
-        if body.is_empty() {
-            format!("## {heading}\n\n{manifest}")
-        } else {
-            format!("{body}\n\n## {heading}\n\n{manifest}")
-        }
+        self.render()
     }
 
     #[must_use]

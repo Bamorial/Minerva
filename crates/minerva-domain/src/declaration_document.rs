@@ -64,6 +64,12 @@ impl DeclarationDocument {
     }
 
     #[must_use]
+    pub fn is_effectively_empty(contents: &str) -> bool {
+        Self::parse(contents).is_ok()
+            && SECTIONS.iter().all(|section| !has_content(contents, section))
+    }
+
+    #[must_use]
     pub fn content_hash(contents: &str) -> String {
         let mut hash = 0xcbf2_9ce4_8422_2325_u64;
         for byte in contents.as_bytes() {

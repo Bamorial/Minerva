@@ -1,4 +1,6 @@
-use crate::context_compilation_render::{detail_text, render_collection};
+use crate::context_compilation_render::{
+    declaration_text, detail_text, render_collection,
+};
 use crate::{
     ContextCompilationError, ContextGraphSelection, ContextInclusionReason,
     ContextSection, ContextSectionId,
@@ -51,16 +53,23 @@ pub fn add_dependencies(
 }
 
 pub fn output_requirements(target: &Task) -> String {
-    if target.facts.acceptance_checks.is_empty() {
-        return "Follow the target task instructions and satisfy the declaration before completion.".into();
-    }
-    target
-        .facts
-        .acceptance_checks
-        .iter()
-        .map(|check| format!("- {check}"))
-        .collect::<Vec<_>>()
-        .join("\n")
+    let mut requirements = if target.facts.acceptance_checks.is_empty() {
+        Vec::new()
+    } else {
+        target
+            .facts
+            .acceptance_checks
+            .iter()
+            .map(|check| format!("- {check}"))
+            .collect::<Vec<_>>()
+    };
+    requirements
+        .push("The agent must complete the declaration before finishing.".into());
+    requirements.push(format!(
+        "Declaration path: `.minerva/tasks/{}/declaration.md`",
+        target.id
+    ));
+    requirements.join("\n")
 }
 
 fn read_collection(
@@ -71,15 +80,24 @@ fn read_collection(
     instructions: bool,
     detail: ContextDetail,
 ) -> Result<String, ContextCompilationError> {
-    let items = selection.items.iter().filter(|item| keep(item.reason)).map(|item| {
+    let mut items = Vec::new();
+    for item in selection.items.iter().filter(|item| keep(item.reason)) {
         let text = if instructions {
-            repo.read_task_instructions(root, item.task.id)
+            repo.read_task_instructions(root, item.task.id)?
         } else {
-            repo.read_task_declaration(root, item.task.id)
-        }?;
-        Ok((item, detail_text(&text, detail)))
-    });
-    Ok(render_collection(&items.collect::<Result<Vec<_>, ContextCompilationError>>()?))
+            repo.read_task_declaration(root, item.task.id)?
+        };
+        let body = if instructions {
+            Some(detail_text(&text, detail))
+        } else {
+            declaration_text(&text, detail)
+        };
+        let Some(body) = body else {
+            continue;
+        };
+        items.push((item, body));
+    }
+    Ok(render_collection(&items))
 }
 
 fn ancestor(reason: ContextInclusionReason) -> bool {

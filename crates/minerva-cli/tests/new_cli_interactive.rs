@@ -35,7 +35,7 @@ fn new_command_keeps_fresh_tasks_context_compilable_after_initial_edit() {
     assert!(context.status.success(), "{context:?}");
     assert!(
         String::from_utf8_lossy(&context.stdout)
-            .contains("## Context Manifest Summary")
+            .contains("## Target Metadata and Facts")
     );
 }
 

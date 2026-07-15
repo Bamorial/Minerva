@@ -9,7 +9,7 @@ use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Line, Span},
+    text::Line,
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Tabs},
 };
 
@@ -20,11 +20,11 @@ pub fn draw(frame: &mut Frame<'_>, state: &AppState) {
         .split(frame.area());
     let horizontal = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(52), Constraint::Percentage(48)])
+        .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
         .split(vertical[1]);
     frame.render_widget(tabs(state), vertical[0]);
-    frame.render_widget(task_detail(state), horizontal[0]);
-    frame.render_widget(task_tree(state), horizontal[1]);
+    frame.render_widget(task_tree(state), horizontal[0]);
+    frame.render_widget(task_detail(state), horizontal[1]);
     frame.render_widget(status_line(state), vertical[2]);
     render_overlay(frame, state);
 }
@@ -47,26 +47,22 @@ fn render_overlay(frame: &mut Frame<'_>, state: &AppState) {
         let area = centered(frame.area(), 60, 8);
         frame.render_widget(Clear, area);
         let body = vec![
-            Line::from(format!(
-                "Title{}: {}",
-                marker(create.field == CreateField::Title),
-                create.title
-            )),
+            selected_line(
+                format!("Title: {}", create.title),
+                create.field == CreateField::Title,
+            ),
             Line::from(String::new()),
-            Line::from(vec![
-                Span::raw(format!(
-                    "Type{}: ",
-                    marker(create.field == CreateField::TaskType)
-                )),
-                Span::styled(
+            selected_line(
+                format!(
+                    "Type: {}",
                     create
                         .task_types
                         .get(create.selected_type)
                         .cloned()
-                        .unwrap_or_else(|| "none".into()),
-                    Style::default().fg(Color::LightCyan),
+                        .unwrap_or_else(|| "none".into())
                 ),
-            ]),
+                create.field == CreateField::TaskType,
+            ),
             Line::from(String::new()),
             Line::from("Tab switch  Left/Right type  Enter submit  Esc cancel"),
         ];
@@ -139,16 +135,28 @@ fn render_overlay(frame: &mut Frame<'_>, state: &AppState) {
     }
 }
 
-fn marker(active: bool) -> &'static str {
-    if active { "*" } else { "" }
-}
-
 fn relationship_label(value: minerva_domain::RelationshipType) -> &'static str {
     match value {
         minerva_domain::RelationshipType::DependsOn => "depends-on",
         minerva_domain::RelationshipType::References => "references",
         _ => "depends-on",
     }
+}
+
+fn selected_line(text: String, selected: bool) -> Line<'static> {
+    Line::styled(text, selection_style(selected))
+}
+
+fn selection_style(selected: bool) -> Style {
+    if selected {
+        Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+    }
+}
+
+fn marker(active: bool) -> &'static str {
+    if active { "*" } else { "" }
 }
 
 fn centered(area: Rect, width: u16, height: u16) -> Rect {

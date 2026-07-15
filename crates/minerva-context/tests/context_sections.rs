@@ -10,7 +10,7 @@ use support::task;
 fn workspace_context_compilation_is_deterministic() {
     let context = compile_workspace_context();
     assert!(context.contains("Workspace crates: minerva-domain"));
-    assert!(context.contains("## Context Manifest Summary"));
+    assert!(!context.contains("## Context Manifest Summary"));
 }
 
 #[test]
@@ -19,9 +19,7 @@ fn task_context_includes_structured_facts_under_stable_heading() {
     assert!(context.starts_with("## Target Metadata and Facts"));
     assert!(context.contains("facts.modules: minerva-domain"));
     assert!(context.contains("facts.migrations_required: true"));
-    assert!(context.contains("## Context Manifest Summary"));
-    assert!(context.contains("total_estimated_tokens:"));
-    assert!(context.contains("policy: section_order_v1"));
+    assert!(!context.contains("## Context Manifest Summary"));
 }
 
 #[test]

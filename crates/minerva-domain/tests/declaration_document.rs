@@ -53,3 +53,13 @@ fn content_hash_is_stable_for_identical_contents() {
         DeclarationDocument::content_hash(&declaration)
     );
 }
+
+#[test]
+fn empty_template_is_detected_as_effectively_empty() {
+    assert!(
+        DeclarationDocument::is_effectively_empty(&DeclarationDocument::template())
+    );
+    let filled = DeclarationDocument::template()
+        .replace("## Current State\n", "## Current State\nImplemented.\n");
+    assert!(!DeclarationDocument::is_effectively_empty(&filled));
+}

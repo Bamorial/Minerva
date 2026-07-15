@@ -1,7 +1,7 @@
 use crate::context_compilation_collections::{
     add_ancestors, add_dependencies, output_requirements,
 };
-use crate::context_compilation_render::detail_text;
+use crate::context_compilation_render::project_instructions_text;
 use crate::context_compilation_task_sections::{add_related, add_target_sections};
 use crate::{
     ContextCompilationError, ContextGraphSelection, ContextSection, ContextSectionId,
@@ -48,11 +48,11 @@ fn add_project_instructions(
     policy: &ContextPolicy,
 ) -> Result<(), ContextCompilationError> {
     if let Some(detail) = policy.project_instructions {
-        push(
-            sections,
-            ContextSectionId::ProjectInstructions,
-            detail_text(&repo.read_project_instructions(root)?, detail),
-        );
+        if let Some(body) =
+            project_instructions_text(&repo.read_project_instructions(root)?, detail)
+        {
+            push(sections, ContextSectionId::ProjectInstructions, body);
+        }
     }
     Ok(())
 }

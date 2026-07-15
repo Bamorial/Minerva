@@ -23,5 +23,7 @@ mod tree_match;
 mod tree_row;
 
 pub use app::run;
+pub use app_dispatch::{Dispatch, dispatch};
 pub use app_state::AppState;
+pub use app_state::FocusPane;
 pub use render::draw;

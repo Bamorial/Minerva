@@ -104,16 +104,19 @@ fn create_key(state: &mut AppState, code: KeyCode) -> Dispatch {
         }
         KeyCode::Left => {
             let create = state.create.as_mut().expect("create modal");
-            if create.field == CreateField::TaskType {
-                create.selected_type = create.selected_type.saturating_sub(1);
+            if create.field == CreateField::TaskType && !create.task_types.is_empty() {
+                create.selected_type = create
+                    .selected_type
+                    .checked_sub(1)
+                    .unwrap_or(create.task_types.len().saturating_sub(1));
             }
             Dispatch::None
         }
         KeyCode::Right => {
             let create = state.create.as_mut().expect("create modal");
-            if create.field == CreateField::TaskType {
-                create.selected_type = (create.selected_type + 1)
-                    .min(create.task_types.len().saturating_sub(1));
+            if create.field == CreateField::TaskType && !create.task_types.is_empty() {
+                create.selected_type =
+                    (create.selected_type + 1) % create.task_types.len();
             }
             Dispatch::None
         }
@@ -372,11 +375,14 @@ fn search_key(state: &mut AppState, code: KeyCode) -> Dispatch {
 fn normal_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
     match key.code {
         KeyCode::Char('q') | KeyCode::Esc => Dispatch::Exit,
+        KeyCode::Enter
+            if state.focus == FocusPane::Tree && state.selected_children_hidden() =>
+        {
+            state.expand_selected();
+            Dispatch::None
+        }
         KeyCode::Enter | KeyCode::Char('0') => {
             state.focus_current();
-            if state.current_view == crate::app_state::CurrentView::Details {
-                state.show_details();
-            }
             Dispatch::None
         }
         KeyCode::Char('1') if state.count_buffer.is_empty() => {
