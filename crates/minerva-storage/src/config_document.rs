@@ -1,4 +1,4 @@
-use minerva_domain::{MinervaError, ProjectConfig};
+use minerva_domain::{AgentPromptMode, MinervaError, ProjectConfig};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 
@@ -11,6 +11,8 @@ pub struct ProjectConfigDocument {
     pub editor: Option<String>,
     pub default_priority: minerva_domain::TaskPriority,
     pub default_tags: BTreeSet<minerva_domain::TaskTag>,
+    #[serde(default = "default_prompt_mode")]
+    pub agent_prompt_mode: String,
 }
 
 impl TryFrom<ProjectConfigDocument> for ProjectConfig {
@@ -23,6 +25,7 @@ impl TryFrom<ProjectConfigDocument> for ProjectConfig {
             editor: doc.editor,
             default_priority: doc.default_priority,
             default_tags: doc.default_tags,
+            agent_prompt_mode: doc.agent_prompt_mode.parse()?,
         })
     }
 }
@@ -34,8 +37,13 @@ impl From<&ProjectConfig> for ProjectConfigDocument {
             editor: config.editor.clone(),
             default_priority: config.default_priority,
             default_tags: config.default_tags.clone(),
+            agent_prompt_mode: config.agent_prompt_mode.to_string(),
         }
     }
+}
+
+fn default_prompt_mode() -> String {
+    AgentPromptMode::Static.to_string()
 }
 
 fn require_schema(schema_version: u32) -> Result<(), MinervaError> {

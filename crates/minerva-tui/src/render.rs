@@ -1,5 +1,6 @@
 use crate::{
     AppState,
+    app_settings::SettingsModal,
     app_state::{CreateField, FocusPane, LinkField},
     render_status::status_line,
     render_task_detail::task_detail,
@@ -43,6 +44,9 @@ fn tabs(state: &AppState) -> Tabs<'static> {
 }
 
 fn render_overlay(frame: &mut Frame<'_>, state: &AppState) {
+    if let Some(settings) = &state.settings {
+        render_settings(frame, settings);
+    }
     if let Some(create) = &state.create {
         let area = centered(frame.area(), 60, 8);
         frame.render_widget(Clear, area);
@@ -133,6 +137,29 @@ fn render_overlay(frame: &mut Frame<'_>, state: &AppState) {
             area,
         );
     }
+}
+
+fn render_settings(frame: &mut Frame<'_>, settings: &SettingsModal) {
+    let area = centered(frame.area(), 54, 7);
+    frame.render_widget(Clear, area);
+    let body = vec![
+        selected_line(
+            "1 Static".into(),
+            settings.selected_mode == minerva_domain::AgentPromptMode::Static,
+        ),
+        Line::from(String::new()),
+        selected_line(
+            "2 Exploration".into(),
+            settings.selected_mode == minerva_domain::AgentPromptMode::Exploration,
+        ),
+        Line::from(String::new()),
+        Line::from("Tab/arrows switch  Enter save  Esc cancel"),
+    ];
+    frame.render_widget(
+        Paragraph::new(body)
+            .block(Block::default().title("Settings").borders(Borders::ALL)),
+        area,
+    );
 }
 
 fn relationship_label(value: minerva_domain::RelationshipType) -> &'static str {

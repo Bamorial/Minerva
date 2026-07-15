@@ -2,6 +2,7 @@ use crate::{
     AppState,
     app_state::{CreateField, CurrentView, FocusPane, LinkField},
 };
+use minerva_domain::AgentPromptMode;
 use ratatui::{
     style::{Color, Modifier, Style},
     text::Line,
@@ -24,6 +25,9 @@ fn body(state: &AppState) -> String {
     }
     if let Some(prompt) = &state.prompt {
         return prompt_line(prompt.kind, &prompt.value);
+    }
+    if state.settings.is_some() {
+        return "settings: choose prompt mode".into();
     }
     if let Some(create) = &state.create {
         let field = match create.field {
@@ -70,8 +74,16 @@ fn help(state: &AppState) -> String {
         format!(" count:{} ", state.count_buffer)
     };
     format!(
-        "{focus} {current}{count} j/k move  h/l fold  0/enter current  1 tree  n new  a child  nt/Nt jump tasks  e task instructions  I project instructions  c context  y copy context  @ link  d delete  s status  m move  / search  r reload  q quit"
+        "{focus} {current} mode:{}{count} j/k move  h/l fold  0/enter current  1 tree  n new  a child  nt/Nt jump tasks  e task instructions  I project instructions  c context  y copy context  @ link  d delete  s settings  S status  m move  / search  r reload  q quit",
+        prompt_mode(state.prompt_mode),
     )
+}
+
+fn prompt_mode(mode: AgentPromptMode) -> &'static str {
+    match mode {
+        AgentPromptMode::Static => "static",
+        AgentPromptMode::Exploration => "exploration",
+    }
 }
 
 fn prompt_line(kind: crate::app_prompt::PromptKind, value: &str) -> String {

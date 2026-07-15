@@ -3,3 +3,4 @@ editor: zed --wait
 default_priority: High
 default_tags:
 - release
+agent_prompt_mode: static

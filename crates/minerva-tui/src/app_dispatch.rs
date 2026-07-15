@@ -24,6 +24,9 @@ fn handle_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
     if let Some(sequence) = state.pending_sequence.take() {
         return pending_key(state, sequence, key);
     }
+    if state.settings.is_some() {
+        return settings_key(state, key.code);
+    }
     if state.delete.is_some() {
         return delete_key(state, key.code);
     }
@@ -80,6 +83,42 @@ fn delete_key(state: &mut AppState, code: KeyCode) -> Dispatch {
         KeyCode::Char('n') | KeyCode::Esc => {
             state.cancel_action();
             Dispatch::None
+        }
+        _ => Dispatch::None,
+    }
+}
+
+fn settings_key(state: &mut AppState, code: KeyCode) -> Dispatch {
+    let Some(settings) = state.settings.as_mut() else {
+        return Dispatch::None;
+    };
+    match code {
+        KeyCode::Esc => {
+            state.cancel_action();
+            Dispatch::None
+        }
+        KeyCode::Tab
+        | KeyCode::Left
+        | KeyCode::Right
+        | KeyCode::Up
+        | KeyCode::Down
+        | KeyCode::Char('h')
+        | KeyCode::Char('j')
+        | KeyCode::Char('k')
+        | KeyCode::Char('l') => {
+            settings.toggle();
+            Dispatch::None
+        }
+        KeyCode::Char('1') => {
+            settings.selected_mode = minerva_domain::AgentPromptMode::Static;
+            Dispatch::None
+        }
+        KeyCode::Char('2') => {
+            settings.selected_mode = minerva_domain::AgentPromptMode::Exploration;
+            Dispatch::None
+        }
+        KeyCode::Enter => {
+            Dispatch::Run(AppCommand::SetPromptMode { mode: settings.selected_mode })
         }
         _ => Dispatch::None,
     }
@@ -445,14 +484,20 @@ fn normal_key(state: &mut AppState, key: KeyEvent) -> Dispatch {
             state.begin_create(state.selected_task_id());
             Dispatch::None
         }
-        KeyCode::Char('s') => open_status_select(state),
+        KeyCode::Char('s') => {
+            state.begin_settings();
+            Dispatch::None
+        }
+        KeyCode::Char('S') => open_status_select(state),
         KeyCode::Char('m') => {
             state.begin_prompt(PromptKind::MoveTask);
             Dispatch::None
         }
         KeyCode::Char('e') => Dispatch::Run(AppCommand::EditInstructions),
         KeyCode::Char('I') => Dispatch::Run(AppCommand::EditProjectInstructions),
-        KeyCode::Char('c') => Dispatch::Run(AppCommand::ShowContext),
+        KeyCode::Char('c') => {
+            Dispatch::Run(AppCommand::ShowContext { mode: state.prompt_mode })
+        }
         KeyCode::Char('y')
             if state.current_view == crate::app_state::CurrentView::Context =>
         {

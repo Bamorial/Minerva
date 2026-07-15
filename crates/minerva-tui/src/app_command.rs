@@ -1,3 +1,4 @@
+use minerva_domain::AgentPromptMode;
 use minerva_domain::RelationshipType;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -16,7 +17,12 @@ pub enum AppCommand {
     },
     EditInstructions,
     EditProjectInstructions,
-    ShowContext,
+    ShowContext {
+        mode: AgentPromptMode,
+    },
+    SetPromptMode {
+        mode: AgentPromptMode,
+    },
     CopyContext,
     AddRelationship {
         task_ref: String,

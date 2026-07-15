@@ -1,4 +1,4 @@
-use crate::{MinervaError, TaskPriority, TaskTag};
+use crate::{AgentPromptMode, MinervaError, TaskPriority, TaskTag};
 use std::collections::BTreeSet;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -7,6 +7,7 @@ pub struct ProjectConfig {
     pub editor: Option<String>,
     pub default_priority: TaskPriority,
     pub default_tags: BTreeSet<TaskTag>,
+    pub agent_prompt_mode: AgentPromptMode,
 }
 
 impl ProjectConfig {

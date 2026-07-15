@@ -5,8 +5,9 @@ mod repos;
 pub use repos::{FakeProjectRepo, FakeTaskRepo, task};
 
 use minerva_domain::{
-    ContextPolicy, Project, ProjectConfig, ProjectId, StatusDefinition, StatusKey,
-    StatusTransition, TaskPriority, TaskTypeDefinition, TaskTypeKey,
+    AgentPromptMode, ContextPolicy, Project, ProjectConfig, ProjectId,
+    StatusDefinition, StatusKey, StatusTransition, TaskPriority, TaskTypeDefinition,
+    TaskTypeKey,
 };
 use std::collections::BTreeSet;
 use std::time::UNIX_EPOCH;
@@ -40,6 +41,7 @@ pub fn config() -> ProjectConfig {
         default_tags: BTreeSet::from(
             [minerva_domain::TaskTag::new("release").unwrap()],
         ),
+        agent_prompt_mode: AgentPromptMode::Static,
     })
     .unwrap()
 }

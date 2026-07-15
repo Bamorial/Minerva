@@ -38,6 +38,15 @@ impl ProjectRepository for FakeProjectRepo {
     fn load_project_config(&self, _: &Path) -> Result<ProjectConfig, MinervaError> {
         Ok(self.config.clone())
     }
+
+    fn save_project_config(
+        &self,
+        _: &Path,
+        config: &ProjectConfig,
+    ) -> Result<(), MinervaError> {
+        let _ = config;
+        Ok(())
+    }
     fn load_task_types(
         &self,
         _: &Path,

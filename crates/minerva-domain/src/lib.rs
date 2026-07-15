@@ -1,3 +1,4 @@
+mod agent_prompt_mode;
 mod archive_state;
 mod context_detail;
 mod context_policy;
@@ -35,6 +36,7 @@ mod task_tag;
 mod task_transition;
 mod task_version;
 
+pub use agent_prompt_mode::AgentPromptMode;
 pub use archive_state::ArchiveState;
 pub use context_detail::ContextDetail;
 pub use context_policy::ContextPolicy;

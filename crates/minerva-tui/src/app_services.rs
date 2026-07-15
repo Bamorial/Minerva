@@ -1,3 +1,4 @@
+use crate::app_context;
 use minerva_application::{
     CreateTaskRequest, MoveTaskRequest, ProjectInstructionService, ProjectRepository,
     TaskCreationResult, TaskCreationService, TaskDeletionResult, TaskDeletionService,
@@ -5,11 +6,10 @@ use minerva_application::{
     TaskRepository, TaskShowOptions, TaskShowResult, TaskShowService, TaskStatusResult,
     TaskStatusService, TaskTreeOptions, TaskTreeResult, TaskTreeService,
 };
-use minerva_context::{
-    ContextCompilationError, ContextCompilationRequest, ContextCompilationService,
-};
+use minerva_context::ContextCompilationError;
 use minerva_domain::{
-    MinervaError, Project, Relationship, RelationshipType, StatusKey, TaskId,
+    AgentPromptMode, MinervaError, Project, Relationship, RelationshipType, StatusKey,
+    TaskId,
 };
 use minerva_storage::{FilesystemProjectRepository, FilesystemTaskRepository};
 use std::path::Path;
@@ -45,6 +45,13 @@ pub fn load_task_types(start: &Path) -> Result<Vec<String>, MinervaError> {
     FilesystemProjectRepository
         .load_task_types(&root)
         .map(|types| types.into_iter().map(|item| item.name.to_string()).collect())
+}
+
+pub fn load_prompt_mode(start: &Path) -> Result<AgentPromptMode, MinervaError> {
+    let root = FilesystemProjectRepository.locate_project_root(start)?;
+    FilesystemProjectRepository
+        .load_project_config(&root)
+        .map(|config| config.agent_prompt_mode)
 }
 
 pub fn project_root(start: &Path) -> Result<std::path::PathBuf, MinervaError> {
@@ -120,15 +127,22 @@ pub fn edit_project_instructions(
     ProjectInstructionService::edit(&FilesystemProjectRepository, start)
 }
 
-pub fn load_context(start: &Path, task_ref: &str) -> Result<String, MinervaError> {
-    ContextCompilationService::compile(
-        &FilesystemProjectRepository,
-        &FilesystemTaskRepository,
-        start,
-        &ContextCompilationRequest::new(task_ref),
-    )
-    .map(|result| result.markdown)
-    .map_err(map_context_error)
+pub fn set_prompt_mode(
+    start: &Path,
+    mode: AgentPromptMode,
+) -> Result<(), MinervaError> {
+    let root = FilesystemProjectRepository.locate_project_root(start)?;
+    let mut config = FilesystemProjectRepository.load_project_config(&root)?;
+    config.agent_prompt_mode = mode;
+    FilesystemProjectRepository.save_project_config(&root, &config)
+}
+
+pub fn load_context(
+    start: &Path,
+    task_ref: &str,
+    mode: AgentPromptMode,
+) -> Result<String, MinervaError> {
+    app_context::load(start, task_ref, mode)
 }
 
 pub fn add_relationship(
@@ -161,7 +175,7 @@ pub fn delete_task(
     )
 }
 
-fn map_context_error(error: ContextCompilationError) -> MinervaError {
+pub(crate) fn map_context_error(error: ContextCompilationError) -> MinervaError {
     match error {
         ContextCompilationError::Minerva(error) => error,
         ContextCompilationError::Budget(error) => MinervaError::InvalidConfiguration {

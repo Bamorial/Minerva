@@ -1,6 +1,6 @@
 use minerva_domain::{
-    ContextPolicy, Project, ProjectConfig, ProjectId, StatusDefinition, StatusKey,
-    StatusTransition, TaskPriority, TaskTypeKey,
+    AgentPromptMode, ContextPolicy, Project, ProjectConfig, ProjectId,
+    StatusDefinition, StatusKey, StatusTransition, TaskPriority, TaskTypeKey,
 };
 use std::collections::BTreeSet;
 use std::{path::Path, time::SystemTime};
@@ -57,6 +57,7 @@ pub fn default_config() -> ProjectConfig {
         editor: None,
         default_priority: TaskPriority::Medium,
         default_tags: BTreeSet::new(),
+        agent_prompt_mode: AgentPromptMode::Static,
     })
     .expect("default config is valid")
 }
@@ -65,6 +66,10 @@ pub fn default_config() -> ProjectConfig {
 pub const fn agents_md() -> &'static str {
     "# Minerva Project\n\n\
 This repository uses Minerva for task and context management.\n\n\
+Prompt tags:\n\n\
+- If the prompt starts with `[exploration]`, inspect Minerva files and the referenced task files before changing code.\n\
+- If the prompt starts with `[static]`, skip extra Minerva investigation, but still complete the declaration.\n\
+- If the prompt has no tag, ignore Minerva investigation and focus only on the prompt.\n\n\
 Before starting work:\n\n\
 1. Read `.minerva/instructions.md` for project-specific rules.\n\
 2. Read the current task's `task.md`, `instructions.md`, and `declaration.md`.\n\

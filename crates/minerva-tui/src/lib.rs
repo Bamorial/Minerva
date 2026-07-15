@@ -1,10 +1,12 @@
 mod app;
 mod app_command;
 mod app_confirm;
+mod app_context;
 mod app_dispatch;
 mod app_prompt;
 mod app_select;
 mod app_services;
+mod app_settings;
 mod app_state;
 mod app_state_nav;
 mod app_state_search;

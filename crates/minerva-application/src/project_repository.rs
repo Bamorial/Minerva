@@ -24,6 +24,12 @@ pub trait ProjectRepository {
 
     fn save_project(&self, root: &Path, project: &Project) -> Result<(), MinervaError>;
 
+    fn save_project_config(
+        &self,
+        root: &Path,
+        config: &ProjectConfig,
+    ) -> Result<(), MinervaError>;
+
     fn read_project_instructions(&self, root: &Path) -> Result<String, MinervaError>;
 
     fn write_project_instructions(

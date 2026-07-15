@@ -13,6 +13,7 @@ fn config_fixture_round_trips_through_yaml_storage() {
     let config = read_project_config(&layout).unwrap();
     assert_eq!(config.editor.as_deref(), Some("zed --wait"));
     assert_eq!(config.default_priority, minerva_domain::TaskPriority::High);
+    assert_eq!(config.agent_prompt_mode, minerva_domain::AgentPromptMode::Static);
     assert_eq!(
         config.default_tags,
         std::collections::BTreeSet::from([

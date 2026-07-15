@@ -8,7 +8,7 @@ use crate::{
 };
 use crossterm::event;
 use minerva_application::render_tui;
-use minerva_domain::{MinervaError, TaskId};
+use minerva_domain::{AgentPromptMode, MinervaError, TaskId};
 use std::time::Duration;
 
 pub fn run() -> Result<(), MinervaError> {
@@ -58,6 +58,7 @@ fn load_initial(state: &mut AppState) -> Result<(), MinervaError> {
         project.statuses.into_iter().map(|status| status.key.to_string()).collect();
     state.set_statuses(statuses);
     state.set_task_types(app_services::load_task_types(&state.root)?);
+    state.set_prompt_mode(app_services::load_prompt_mode(&state.root)?);
     let result = app_services::load_tree(&state.root)?;
     state.set_tree_with_selected(result.roots, state.selected_task_id());
     reload_detail(state);
@@ -103,12 +104,22 @@ fn execute(state: &mut AppState, session: &mut TerminalSession, command: AppComm
             edit_selected(state, session, app_services::edit_task_instructions)
         }
         AppCommand::EditProjectInstructions => edit_project(state, session),
-        AppCommand::ShowContext => selected_ref(state).and_then(|task_ref| {
-            app_services::load_context(&state.root, &task_ref).map(|context| {
-                state.notice = Some(format!("Loaded context for {task_ref}"));
+        AppCommand::ShowContext { mode } => selected_ref(state).and_then(|task_ref| {
+            app_services::load_context(&state.root, &task_ref, mode).map(|context| {
+                state.notice = Some(format!(
+                    "Loaded {} context for {task_ref}",
+                    prompt_mode_label(mode)
+                ));
                 state.show_context(context);
             })
         }),
+        AppCommand::SetPromptMode { mode } => {
+            app_services::set_prompt_mode(&state.root, mode).map(|_| {
+                state.set_prompt_mode(mode);
+                state.notice =
+                    Some(format!("Prompt mode set to {}", prompt_mode_label(mode)));
+            })
+        }
         AppCommand::CopyContext => state.context.as_deref().map_or_else(
             || {
                 Err(MinervaError::InvalidConfiguration {
@@ -236,4 +247,11 @@ fn relationship_name(value: minerva_domain::RelationshipType) -> &'static str {
 
 fn terminal_error(key: &'static str, error: &std::io::Error) -> MinervaError {
     MinervaError::InvalidConfiguration { key: key.into(), reason: error.to_string() }
+}
+
+fn prompt_mode_label(mode: AgentPromptMode) -> &'static str {
+    match mode {
+        AgentPromptMode::Static => "static",
+        AgentPromptMode::Exploration => "exploration",
+    }
 }

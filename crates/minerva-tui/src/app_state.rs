@@ -3,11 +3,12 @@ use crate::{
     app_confirm::ConfirmState,
     app_prompt::{PromptKind, PromptState},
     app_select::SelectState,
+    app_settings::SettingsModal,
     tree_filter,
     tree_row::TreeRow,
 };
 use minerva_application::{TaskShowResult, TaskTreeNode, TuiErrorMessage};
-use minerva_domain::{RelationshipType, TaskId};
+use minerva_domain::{AgentPromptMode, RelationshipType, TaskId};
 use std::{collections::BTreeSet, path::PathBuf};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -90,9 +91,11 @@ pub struct AppState {
     pub search_mode: bool,
     pub statuses: Vec<String>,
     pub task_types: Vec<String>,
+    pub prompt_mode: AgentPromptMode,
     pub prompt: Option<PromptState>,
     pub select: Option<SelectState>,
     pub confirm: Option<ConfirmState>,
+    pub settings: Option<SettingsModal>,
     pub focus: FocusPane,
     pub current_view: CurrentView,
     pub count_buffer: String,
@@ -120,9 +123,11 @@ impl AppState {
             search_mode: false,
             statuses: Vec::new(),
             task_types: Vec::new(),
+            prompt_mode: AgentPromptMode::Static,
             prompt: None,
             select: None,
             confirm: None,
+            settings: None,
             focus: FocusPane::Tree,
             current_view: CurrentView::Details,
             count_buffer: String::new(),
@@ -179,6 +184,7 @@ impl AppState {
         self.prompt = Some(PromptState::new(kind));
         self.select = None;
         self.confirm = None;
+        self.settings = None;
     }
 
     pub fn begin_status_select(&mut self, current: &str) {
@@ -191,6 +197,7 @@ impl AppState {
         self.select = Some(SelectState::new("Status", self.statuses.clone(), selected));
         self.prompt = None;
         self.confirm = None;
+        self.settings = None;
     }
 
     pub fn confirm(&mut self, message: String, command: AppCommand) {
@@ -198,6 +205,20 @@ impl AppState {
         self.confirm = Some(ConfirmState { message, command });
         self.prompt = None;
         self.select = None;
+        self.settings = None;
+    }
+
+    pub fn begin_settings(&mut self) {
+        self.clear_feedback();
+        self.settings = Some(SettingsModal::new(self.prompt_mode));
+        self.prompt = None;
+        self.select = None;
+        self.confirm = None;
+    }
+
+    pub fn set_prompt_mode(&mut self, mode: AgentPromptMode) {
+        self.prompt_mode = mode;
+        self.settings = None;
     }
 
     pub fn begin_create(&mut self, parent_id: Option<TaskId>) {
@@ -268,6 +289,7 @@ impl AppState {
         self.prompt = None;
         self.select = None;
         self.confirm = None;
+        self.settings = None;
         self.create = None;
         self.link = None;
         self.delete = None;

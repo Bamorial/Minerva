@@ -39,6 +39,13 @@ fn migration_service_locates_the_project_root_before_delegating() {
         fn save_project(&self, _: &Path, _: &Project) -> Result<(), MinervaError> {
             unreachable!()
         }
+        fn save_project_config(
+            &self,
+            _: &Path,
+            _: &ProjectConfig,
+        ) -> Result<(), MinervaError> {
+            unreachable!()
+        }
         fn read_project_instructions(&self, _: &Path) -> Result<String, MinervaError> {
             unreachable!()
         }

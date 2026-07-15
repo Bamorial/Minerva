@@ -1,7 +1,7 @@
 use crate::{
     MinervaLayout, initialize_project, instructions_md, read_project,
     read_project_config, read_project_instructions, read_task_types, schema_migration,
-    write_project, write_project_instructions,
+    write_project, write_project_config, write_project_instructions,
 };
 use minerva_application::{ProjectMigrationResult, ProjectRepository};
 use minerva_domain::{MinervaError, Project, ProjectConfig, TaskTypeDefinition};
@@ -48,6 +48,14 @@ impl ProjectRepository for FilesystemProjectRepository {
 
     fn save_project(&self, root: &Path, project: &Project) -> Result<(), MinervaError> {
         write_project(&MinervaLayout::new(root), project)
+    }
+
+    fn save_project_config(
+        &self,
+        root: &Path,
+        config: &ProjectConfig,
+    ) -> Result<(), MinervaError> {
+        write_project_config(&MinervaLayout::new(root), config)
     }
 
     fn read_project_instructions(&self, root: &Path) -> Result<String, MinervaError> {
